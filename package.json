@@ -1,6 +1,6 @@
 {
 	"name": "@wrel/prettier-plugin-wolfram",
-	"version": "0.5.7",
+	"version": "0.5.8",
 	"description": "Prettier plugin for Wolfram Language using Wolfram CodeParser",
 	"license": "MIT",
 	"repository": {
@@ -40,6 +40,7 @@
 	},
 	"scripts": {
 		"build:addon": "node-gyp rebuild --directory wstp-addon",
+		"bump:version": "node scripts/bump-version.mjs",
 		"package:vscode": "node scripts/package-vscode-extension.mjs",
 		"package:vscode:standalone": "node scripts/package-vscode-extension.mjs",
 		"package:vscode:pre-release": "node scripts/package-vscode-extension.mjs --pre-release",

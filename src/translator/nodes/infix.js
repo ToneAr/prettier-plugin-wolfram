@@ -32,6 +32,46 @@ const OP_DISPLAY = {
 	Alternatives: "|",
 };
 
+function lineNumberAtOffset(text, offset) {
+	if (typeof text !== "string" || typeof offset !== "number" || offset < 0) {
+		return null;
+	}
+
+	const limit = Math.min(offset, text.length);
+	let line = 1;
+	let searchFrom = 0;
+
+	while (searchFrom < limit) {
+		const newlineOffset = text.indexOf("\n", searchFrom);
+		if (newlineOffset === -1 || newlineOffset >= limit) break;
+		line++;
+		searchFrom = newlineOffset + 1;
+	}
+
+	return line;
+}
+
+function nodeStartLine(node, options) {
+	const sourceStartLine = node?.source?.[0]?.[0];
+	if (Number.isFinite(sourceStartLine)) return sourceStartLine;
+	return lineNumberAtOffset(options?.originalText, node?.locStart);
+}
+
+function nodeEndLine(node, options) {
+	const sourceEndLine = node?.source?.[1]?.[0];
+	if (Number.isFinite(sourceEndLine)) return sourceEndLine;
+
+	if (typeof node?.locEnd === "number") {
+		const lastIncludedOffset =
+			typeof node?.locStart === "number" && node.locEnd > node.locStart
+				? node.locEnd - 1
+				: node.locEnd;
+		return lineNumberAtOffset(options?.originalText, lastIncludedOffset);
+	}
+
+	return nodeStartLine(node, options);
+}
+
 function isSemanticTokenLeaf(node) {
 	return (
 		node?.type === "LeafNode" &&
@@ -75,53 +115,96 @@ function operands(node) {
 export function printInfix(node, options, print) {
 	if (node.op === "CompoundExpression") {
 		const semanticChildren = node.children.filter((c) => !isTrivia(c));
-		const nonCommentNonToken = semanticChildren.filter(
-			(c) => !isComment(c) && !isSemicolonToken(c),
-		);
-		const trailingComments = semanticChildren.filter((c) => isComment(c));
+		const entries = [];
+		let leadingCommentDocs = [];
+		let previousEntry = null;
 
-		if (nonCommentNonToken.length === 1 && trailingComments.length > 0) {
-			const entry = {
-				doc: [print(nonCommentNonToken[0]), ";"],
-				trailingCommentDoc: joinDocsWithSpace(
-					trailingComments.map((c) => print(c)),
-				),
-			};
-			const column = documentationCommentColumn(
-				[entry],
-				options,
-				() => "",
-			);
-			return withAlignedTrailingComment(entry, options, column);
-		}
-
-		const docs = [];
-		let sawSemicolon = false;
-		let lastWasComment = false;
-
-		for (const child of node.children) {
-			if (isTrivia(child)) continue;
+		for (const child of semanticChildren) {
 			if (isSemicolonToken(child)) {
-				if (lastWasComment) continue;
-				sawSemicolon = true;
+				if (previousEntry) previousEntry.hasSemicolon = true;
 				continue;
 			}
 
-			if (docs.length > 0) {
-				if (sawSemicolon) {
-					docs.push(";", line);
-				} else if (lastWasComment) {
-					docs.push(line);
+			if (isComment(child)) {
+				const previousLine = nodeEndLine(previousEntry?.node, options);
+				const commentLine = nodeStartLine(child, options);
+				if (
+					previousEntry?.hasSemicolon &&
+					(!previousLine ||
+						!commentLine ||
+						previousLine === commentLine)
+				) {
+					previousEntry.trailingCommentDocs.push(print(child));
+					continue;
+				}
+
+				leadingCommentDocs.push(print(child));
+				continue;
+			}
+
+			const entry = {
+				node: child,
+				doc: print(child),
+				leadingCommentDocs,
+				trailingCommentDocs: [],
+				hasSemicolon: false,
+			};
+			entries.push(entry);
+			previousEntry = entry;
+			leadingCommentDocs = [];
+		}
+
+		for (const entry of entries) {
+			entry.trailingCommentDoc = joinDocsWithSpace(entry.trailingCommentDocs);
+		}
+
+		const suffixForEntry = (entry) => (entry.hasSemicolon ? ";" : "");
+		const trailingEntries = entries.filter((entry) => entry.trailingCommentDoc);
+		const alignTrailingComments =
+			(options.wolframDocumentationCommentColumn ?? 0) > 0 ||
+			trailingEntries.length > 1;
+		const trailingColumn =
+			alignTrailingComments && trailingEntries.length > 0
+				? documentationCommentColumn(trailingEntries, options, suffixForEntry)
+				: null;
+
+		const docs = [];
+
+		for (const entry of entries) {
+			if (docs.length > 0) docs.push(line);
+
+			if (entry.leadingCommentDocs.length > 0) {
+				for (const commentDoc of entry.leadingCommentDocs) {
+					docs.push(commentDoc, line);
 				}
 			}
 
-			docs.push(print(child));
-			sawSemicolon = false;
-			lastWasComment = isComment(child);
+			if (!entry.trailingCommentDoc) {
+				docs.push([entry.doc, suffixForEntry(entry)]);
+				continue;
+			}
+
+			if (trailingColumn == null) {
+				docs.push([entry.doc, suffixForEntry(entry), " ", entry.trailingCommentDoc]);
+				continue;
+			}
+
+			docs.push(
+				withAlignedTrailingComment(
+					entry,
+					options,
+					trailingColumn,
+					suffixForEntry(entry),
+				),
+			);
 		}
 
-		if (sawSemicolon && docs.length > 0) {
-			docs.push(";");
+		if (leadingCommentDocs.length > 0) {
+			if (docs.length > 0) docs.push(line);
+			for (let i = 0; i < leadingCommentDocs.length; i++) {
+				docs.push(leadingCommentDocs[i]);
+				if (i < leadingCommentDocs.length - 1) docs.push(line);
+			}
 		}
 
 		return group(docs);

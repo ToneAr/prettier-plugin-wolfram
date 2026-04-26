@@ -12,6 +12,27 @@ function fmt(doc) {
 	}).formatted;
 }
 
+const sym = (value) => ({ type: "LeafNode", kind: "Symbol", value });
+const token = (kind, value) => ({ type: "LeafNode", kind, value });
+
+function call(head, args = []) {
+	return {
+		type: "CallNode",
+		head: sym(head),
+		children: args,
+	};
+}
+
+function definition(op, lhs, value, source) {
+	return {
+		type: "BinaryNode",
+		op,
+		value,
+		source,
+		children: [lhs, token("Token`Equal", "="), sym("rhs")],
+	};
+}
+
 describe("printContainer", () => {
 	it("keeps leading comments attached to the following declaration and inserts blank lines above the comment block", () => {
 		const node = {
@@ -341,6 +362,71 @@ describe("printContainer", () => {
 		);
 
 		expect(out).toBe("a = 1\n\n\nb := 2");
+	});
+
+	it("does not insert blank lines between same-name function, option, and attribute definitions", () => {
+		const node = {
+			type: "ContainerNode",
+			kind: "String",
+			children: [
+				{
+					type: "CallNode",
+					head: sym("SetAttributes"),
+					value: "SetAttributes[f, HoldAll]",
+					source: [
+						[1, 1],
+						[1, 26],
+					],
+					children: [
+						sym("f"),
+						token("Token`Comma", ","),
+						sym("HoldAll"),
+					],
+				},
+				definition(
+					"Set",
+					call("Options", [sym("f")]),
+					"Options[f] = {opt -> Automatic}",
+					[
+						[4, 1],
+						[4, 32],
+					],
+				),
+				definition(
+					"Set",
+					call("Attributes", [sym("f")]),
+					"Attributes[f] = {HoldAll}",
+					[
+						[7, 1],
+						[7, 26],
+					],
+				),
+				definition("SetDelayed", call("f", [sym("x")]), "f[x_] := x", [
+					[10, 1],
+					[10, 11],
+				]),
+				definition("SetDelayed", call("f", [sym("y")]), "f[y_] := y", [
+					[13, 1],
+					[13, 11],
+				]),
+				definition("SetDelayed", call("g", [sym("x")]), "g[x_] := x", [
+					[14, 1],
+					[14, 11],
+				]),
+			],
+		};
+
+		const print = (child) => String(child.value ?? "");
+		const out = fmt(printContainer(node, {}, print));
+
+		expect(out).toBe(
+			"SetAttributes[f, HoldAll]\n" +
+				"Options[f] = {opt -> Automatic}\n" +
+				"Attributes[f] = {HoldAll}\n" +
+				"f[x_] := x\n" +
+				"f[y_] := y\n\n" +
+				"g[x_] := x",
+		);
 	});
 
 	it("treats semicolon-terminated top-level definitions as definitions for spacing", () => {

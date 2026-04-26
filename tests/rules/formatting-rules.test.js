@@ -14,6 +14,26 @@ function makeContext(options = {}) {
 	};
 }
 
+const sym = (value) => ({ type: "LeafNode", kind: "Symbol", value });
+const token = (kind, value) => ({ type: "LeafNode", kind, value });
+
+function call(head, args = []) {
+	return {
+		type: "CallNode",
+		head: sym(head),
+		children: args,
+	};
+}
+
+function definition(op, lhs, source) {
+	return {
+		type: "BinaryNode",
+		op,
+		source,
+		children: [lhs, token("Token`Equal", "="), sym("rhs")],
+	};
+}
+
 describe("newlines-between-definitions", () => {
 	it("requires the blank line above a leading comment block, not between the comment and the definition", () => {
 		const ctx = makeContext();
@@ -412,6 +432,54 @@ describe("newlines-between-definitions", () => {
 		newlinesRule.visit(node, ctx);
 		expect(ctx.reports).toHaveLength(1);
 		expect(ctx.reports[0].message).toMatch(/Expected 2 blank lines/);
+	});
+
+	it("requires no blank lines between same-name function, option, and attribute definitions", () => {
+		const ctx = makeContext();
+		const node = {
+			type: "ContainerNode",
+			children: [
+				{
+					type: "CallNode",
+					head: sym("SetAttributes"),
+					source: [
+						[1, 1],
+						[1, 26],
+					],
+					children: [
+						sym("f"),
+						token("Token`Comma", ","),
+						sym("HoldAll"),
+					],
+				},
+				definition("Set", call("Options", [sym("f")]), [
+					[3, 1],
+					[3, 32],
+				]),
+				definition("Set", call("Attributes", [sym("f")]), [
+					[5, 1],
+					[5, 26],
+				]),
+				definition("SetDelayed", call("f", [sym("x")]), [
+					[7, 1],
+					[7, 11],
+				]),
+				definition("SetDelayed", call("f", [sym("y")]), [
+					[9, 1],
+					[9, 11],
+				]),
+				definition("SetDelayed", call("g", [sym("x")]), [
+					[11, 1],
+					[11, 11],
+				]),
+			],
+		};
+
+		newlinesRule.visit(node, ctx);
+		expect(ctx.reports).toHaveLength(4);
+		for (const report of ctx.reports) {
+			expect(report.message).toMatch(/Expected 0 blank lines/);
+		}
 	});
 
 	it("treats semicolon-terminated top-level definitions as adjacent definitions", () => {

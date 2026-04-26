@@ -21,6 +21,8 @@ const TRIVIA_KINDS = new Set([
 ]);
 
 const SEMICOLON_KINDS = new Set(["Token`Semi", "Token`Semicolon"]);
+const SAME_DEFINITION_TARGET_HEADS = new Set(["Options", "Attributes"]);
+const ATTRIBUTE_SETTER_HEADS = new Set(["SetAttributes"]);
 
 export function nonNegativeIntegerOption(value, fallback) {
 	const numeric = Number(value);
@@ -54,6 +56,16 @@ function isComment(node) {
 	return node?.type === "LeafNode" && node.kind === "Token`Comment";
 }
 
+function isToken(node) {
+	return node?.type === "LeafNode" && node.kind?.startsWith("Token`");
+}
+
+function semanticChildren(node) {
+	return (node?.children ?? []).filter(
+		(child) => !isTrivia(child) && !isComment(child) && !isToken(child),
+	);
+}
+
 function isSingleStatementCompound(node) {
 	return (
 		(node?.type === "InfixNode" && node.op === "CompoundExpression") ||
@@ -81,6 +93,142 @@ export function isDeclarationNode(node) {
 	);
 }
 
+function firstSemanticChild(node) {
+	return semanticChildren(node)[0] ?? null;
+}
+
+function symbolName(node) {
+	if (node?.type === "LeafNode" && node.kind === "Symbol") {
+		return String(node.value ?? "");
+	}
+
+	return null;
+}
+
+function callHeadName(node) {
+	return symbolName(node?.head);
+}
+
+function callArgumentNodes(node) {
+	if (node?.type !== "CallNode") return [];
+
+	const commaWrapper = (node.children ?? []).find(
+		(child) => child.type === "InfixNode" && child.op === "Comma",
+	);
+	if (commaWrapper) {
+		return semanticChildren(commaWrapper);
+	}
+
+	return semanticChildren(node);
+}
+
+function subjectNamesFromExpression(node) {
+	const name = symbolName(node);
+	if (name) return new Set([name]);
+
+	if (
+		node?.type === "GroupNode" ||
+		node?.type === "InfixNode" ||
+		node?.type === "CompoundNode"
+	) {
+		const names = new Set();
+		for (const child of semanticChildren(node)) {
+			for (const childName of subjectNamesFromExpression(child)) {
+				names.add(childName);
+			}
+		}
+		return names;
+	}
+
+	return new Set();
+}
+
+function definitionTargetNamesFromCall(node, allowedHeads) {
+	if (node?.type !== "CallNode" || !allowedHeads.has(callHeadName(node))) {
+		return new Set();
+	}
+
+	return subjectNamesFromExpression(callArgumentNodes(node)[0]);
+}
+
+function functionNameFromCallHead(node) {
+	const name = symbolName(node);
+	if (name) return name;
+
+	if (node?.type === "CallNode") {
+		return functionNameFromCallHead(node.head);
+	}
+
+	if (node?.type === "BinaryNode" || node?.type === "CompoundNode") {
+		return functionNameFromCallHead(firstSemanticChild(node));
+	}
+
+	return null;
+}
+
+function functionDefinitionSubjectNamesFromLhs(
+	node,
+	{ allowBareSymbol = false } = {},
+) {
+	const bareName = symbolName(node);
+	if (allowBareSymbol && bareName) return new Set([bareName]);
+
+	const targetNames = definitionTargetNamesFromCall(
+		node,
+		SAME_DEFINITION_TARGET_HEADS,
+	);
+	if (targetNames.size > 0) return targetNames;
+
+	if (node?.type === "CallNode") {
+		const name = functionNameFromCallHead(node.head);
+		return name ? new Set([name]) : new Set();
+	}
+
+	if (node?.type === "BinaryNode" || node?.type === "CompoundNode") {
+		return functionDefinitionSubjectNamesFromLhs(firstSemanticChild(node), {
+			allowBareSymbol,
+		});
+	}
+
+	return new Set();
+}
+
+function binaryLhs(node) {
+	return firstSemanticChild(node);
+}
+
+function definitionSubjectNames(node) {
+	const statement = unwrapSingleStatementNode(node);
+	const attributeNames = definitionTargetNamesFromCall(
+		statement,
+		ATTRIBUTE_SETTER_HEADS,
+	);
+	if (attributeNames.size > 0) return attributeNames;
+
+	if (
+		statement?.type !== "BinaryNode" ||
+		!DECLARATION_OPS.has(statement.op)
+	) {
+		return new Set();
+	}
+
+	return functionDefinitionSubjectNamesFromLhs(binaryLhs(statement), {
+		allowBareSymbol: ["TagSet", "TagSetDelayed"].includes(statement.op),
+	});
+}
+
+function hasSharedDefinitionSubject(prevNode, nextNode) {
+	const prevNames = definitionSubjectNames(prevNode);
+	if (prevNames.size === 0) return false;
+
+	const nextNames = definitionSubjectNames(nextNode);
+	for (const name of prevNames) {
+		if (nextNames.has(name)) return true;
+	}
+
+	return false;
+}
+
 export function observedBlankLinesBetween(prevEndLine, nextStartLine) {
 	if (!Number.isFinite(prevEndLine) || !Number.isFinite(nextStartLine)) {
 		return 0;
@@ -98,6 +246,10 @@ export function blankLinesForCodeGap(
 ) {
 	const mode = options.wolframTopLevelSpacingMode ?? "declarations";
 	if (topLevel && mode === "none") return 0;
+
+	if (hasSharedDefinitionSubject(prevNode, nextNode)) {
+		return 0;
+	}
 
 	if (isDeclarationNode(prevNode) && isDeclarationNode(nextNode)) {
 		return blankLinesBetweenDefinitions(options);

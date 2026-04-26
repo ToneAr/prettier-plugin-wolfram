@@ -537,6 +537,28 @@ scrapeCustomerStoryData[]:=
 		expect(comments(result)).toEqual(comments(source));
 	}, 15000);
 
+	it("keeps wl-disable-line comments attached to the preceding statement inside Module bodies", async () => {
+		const source =
+			'CommandLineSplit[s_String, opts : OptionsPattern[]] := Catch[Module[{delimStr, escStr, raw}, delimStr = StringJoin @ Flatten @ {OptionValue["TokenDelimiters"]}; escStr = OptionValue["EscapeCharacter"]; raw = scan[s, delimStr, escStr]; (* wl-disable-line UndefinedSymbol *) decode[raw, StringLength[s], StringLength[s]]], "CommandLineSplitError"]';
+
+		const result = await prettier.format(source, {
+			parser: "wolfram",
+			plugins: [plugin],
+			printWidth: 80,
+			tabWidth: 2,
+		});
+
+		expect(result).toContain(
+			"raw = scan[s, delimStr, escStr]; (* wl-disable-line UndefinedSymbol *)",
+		);
+		expect(result).toContain(
+			"\n      decode[raw, StringLength[s], StringLength[s]]",
+		);
+		expect(result).not.toContain(
+			";\n      (* wl-disable-line UndefinedSymbol *)\n",
+		);
+	}, 15000);
+
 	it("prints PatternBlank as x_", () => {
 		const node = {
 			type: "CompoundNode",
