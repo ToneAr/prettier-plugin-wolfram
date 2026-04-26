@@ -180,6 +180,53 @@ describe("printContainer", () => {
 		);
 	});
 
+	it("keeps offset-only same-line comments in the documentation comment column", () => {
+		const source =
+			"a = 1;(* doc *)\n" +
+			"b = 2";
+		const node = {
+			type: "ContainerNode",
+			kind: "String",
+			children: [
+				{
+					type: "BinaryNode",
+					op: "Set",
+					value: "a = 1;",
+					locStart: 0,
+					locEnd: 6,
+				},
+				{
+					type: "LeafNode",
+					kind: "Token`Comment",
+					value: "(* doc *)",
+					locStart: 6,
+					locEnd: 15,
+				},
+				{
+					type: "BinaryNode",
+					op: "Set",
+					value: "b = 2",
+					locStart: 16,
+					locEnd: 21,
+				},
+			],
+		};
+
+		const print = (child) => String(child.value ?? "");
+		const out = fmt(
+			printContainer(
+				node,
+				{
+					originalText: source,
+					wolframDocumentationCommentColumn: 12,
+				},
+				print,
+			),
+		);
+
+		expect(out).toBe("a = 1;      (* doc *)\n\nb = 2");
+	});
+
 	it("supports top-level spacing mode none", () => {
 		const node = {
 			type: "ContainerNode",

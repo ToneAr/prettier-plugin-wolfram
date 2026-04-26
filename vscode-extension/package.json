@@ -2,7 +2,7 @@
 	"name": "wolfram-prettier-vscode",
 	"displayName": "Prettier - Code formatter (Wolfram Language)",
 	"description": "Formats Wolfram Language files and surfaces formatter-backed diagnostics using bundled Prettier.",
-	"version": "0.5.5",
+	"version": "0.5.7",
 	"license": "MIT",
 	"publisher": "Tone",
 	"icon": "assets/icon.png",

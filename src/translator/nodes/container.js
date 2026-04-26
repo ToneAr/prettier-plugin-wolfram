@@ -25,6 +25,46 @@ function isComment(node) {
 	return node.type === "LeafNode" && node.kind === "Token`Comment";
 }
 
+function lineNumberAtOffset(text, offset) {
+	if (typeof text !== "string" || typeof offset !== "number" || offset < 0) {
+		return null;
+	}
+
+	const limit = Math.min(offset, text.length);
+	let line = 1;
+	let searchFrom = 0;
+
+	while (searchFrom < limit) {
+		const newlineOffset = text.indexOf("\n", searchFrom);
+		if (newlineOffset === -1 || newlineOffset >= limit) break;
+		line++;
+		searchFrom = newlineOffset + 1;
+	}
+
+	return line;
+}
+
+function nodeStartLine(node, options) {
+	const sourceStartLine = node?.source?.[0]?.[0];
+	if (Number.isFinite(sourceStartLine)) return sourceStartLine;
+	return lineNumberAtOffset(options?.originalText, node?.locStart);
+}
+
+function nodeEndLine(node, options) {
+	const sourceEndLine = node?.source?.[1]?.[0];
+	if (Number.isFinite(sourceEndLine)) return sourceEndLine;
+
+	if (typeof node?.locEnd === "number") {
+		const lastIncludedOffset =
+			typeof node?.locStart === "number" && node.locEnd > node.locStart
+				? node.locEnd - 1
+				: node.locEnd;
+		return lineNumberAtOffset(options?.originalText, lastIncludedOffset);
+	}
+
+	return nodeStartLine(node, options);
+}
+
 function trailingDocumentationCommentColumns(entries, options) {
 	const columns = new Map();
 	let block = [];
@@ -77,8 +117,8 @@ export function printContainer(node, options, print) {
 	for (const child of children) {
 		if (isComment(child) && entries.length > 0) {
 			const prev = entries[entries.length - 1];
-			const prevEndLine = prev.node?.source?.[1]?.[0];
-			const commentStartLine = child.source?.[0]?.[0];
+			const prevEndLine = nodeEndLine(prev.node, options);
+			const commentStartLine = nodeStartLine(child, options);
 			if (
 				prevEndLine &&
 				commentStartLine &&
@@ -87,7 +127,7 @@ export function printContainer(node, options, print) {
 				prev.trailingCommentDocs.push(print(child));
 				prev.endLine = Math.max(
 					prev.endLine,
-					child.source?.[1]?.[0] ?? prev.endLine,
+					nodeEndLine(child, options) ?? prev.endLine,
 				);
 				continue;
 			}
@@ -95,14 +135,14 @@ export function printContainer(node, options, print) {
 
 		if (isComment(child)) {
 			leadingCommentDocs.push(print(child));
-			leadingCommentStartLine ??= child.source?.[0]?.[0] ?? null;
+			leadingCommentStartLine ??= nodeStartLine(child, options);
 			leadingCommentEndLine =
-				child.source?.[1]?.[0] ?? leadingCommentEndLine;
+				nodeEndLine(child, options) ?? leadingCommentEndLine;
 			continue;
 		}
 
-		const childStartLine = child.source?.[0]?.[0] ?? null;
-		const childEndLine = child.source?.[1]?.[0] ?? childStartLine ?? 0;
+		const childStartLine = nodeStartLine(child, options);
+		const childEndLine = nodeEndLine(child, options) ?? childStartLine ?? 0;
 
 		entries.push({
 			node: child,
