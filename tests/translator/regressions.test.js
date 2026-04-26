@@ -440,6 +440,25 @@ describe('translator regressions', () => {
     expect(twice).toBe(once);
   }, 15000);
 
+  it('formats semicolon-terminated adjacent definitions in one pass', async () => {
+    const source = 'f[x_] := x ^ 2;\ng[x_] := x + 1;';
+    const once = await prettier.format(source, {
+      parser: 'wolfram',
+      plugins: [plugin],
+      printWidth: 80,
+      tabWidth: 2,
+    });
+    const twice = await prettier.format(once, {
+      parser: 'wolfram',
+      plugins: [plugin],
+      printWidth: 80,
+      tabWidth: 2,
+    });
+
+    expect(once).toBe('f[x_] := x ^ 2\n\ng[x_] := x + 1');
+    expect(twice).toBe(once);
+  }, 15000);
+
   it('preserves trailing comments inside block-structured calls', async () => {
     const source = `scrapeCustomerStoryData // PackageScoped;
 scrapeCustomerStoryData[]:=

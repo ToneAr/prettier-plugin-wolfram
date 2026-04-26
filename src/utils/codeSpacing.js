@@ -10,6 +10,18 @@ const DECLARATION_OPS = new Set([
   'UpSetDelayed',
 ]);
 
+const TRIVIA_KINDS = new Set([
+  'Token`Whitespace',
+  'Whitespace',
+  'Token`Newline',
+  'Newline',
+  'Token`LineContinuation',
+  'LineContinuation',
+  'Token`Fake`ImplicitNull',
+]);
+
+const SEMICOLON_KINDS = new Set(['Token`Semi', 'Token`Semicolon']);
+
 export function nonNegativeIntegerOption(value, fallback) {
   const numeric = Number(value);
   if (!Number.isFinite(numeric)) return fallback;
@@ -30,8 +42,40 @@ export function blankLinesBetweenDefinitions(options = {}) {
   );
 }
 
+function isTrivia(node) {
+  return node?.type === 'LeafNode' && TRIVIA_KINDS.has(node.kind);
+}
+
+function isSemicolonToken(node) {
+  return node?.type === 'LeafNode' && SEMICOLON_KINDS.has(node.kind);
+}
+
+function isComment(node) {
+  return node?.type === 'LeafNode' && node.kind === 'Token`Comment';
+}
+
+function isSingleStatementCompound(node) {
+  return (
+    (node?.type === 'InfixNode' && node.op === 'CompoundExpression') ||
+    (node?.type === 'CompoundNode' &&
+      (node.op === 'CompoundExpression' || node.op === 'Semicolon'))
+  );
+}
+
+export function unwrapSingleStatementNode(node) {
+  if (!isSingleStatementCompound(node)) return node;
+
+  const statements = (node.children ?? []).filter(
+    (child) => !isTrivia(child) && !isSemicolonToken(child) && !isComment(child),
+  );
+
+  if (statements.length !== 1) return node;
+  return unwrapSingleStatementNode(statements[0]);
+}
+
 export function isDeclarationNode(node) {
-  return node?.type === 'BinaryNode' && DECLARATION_OPS.has(node.op);
+  const statement = unwrapSingleStatementNode(node);
+  return statement?.type === 'BinaryNode' && DECLARATION_OPS.has(statement.op);
 }
 
 export function observedBlankLinesBetween(prevEndLine, nextStartLine) {

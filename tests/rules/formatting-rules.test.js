@@ -153,6 +153,48 @@ describe('newlines-between-definitions', () => {
     expect(ctx.reports).toHaveLength(1);
     expect(ctx.reports[0].message).toMatch(/Expected 2 blank lines/);
   });
+
+  it('treats semicolon-terminated top-level definitions as adjacent definitions', () => {
+    const ctx = makeContext();
+    const node = {
+      type: 'ContainerNode',
+      children: [
+        {
+          type: 'InfixNode',
+          op: 'CompoundExpression',
+          source: [[1, 1], [1, 5]],
+          children: [
+            { type: 'BinaryNode', op: 'Set', source: [[1, 1], [1, 4]] },
+            { type: 'LeafNode', kind: 'Token`Semi', source: [[1, 4], [1, 5]] },
+            {
+              type: 'LeafNode',
+              kind: 'Token`Fake`ImplicitNull',
+              source: [[1, 5], [1, 5]],
+            },
+          ],
+        },
+        { type: 'LeafNode', kind: 'Token`Newline', source: [[1, 5], [2, 1]] },
+        {
+          type: 'InfixNode',
+          op: 'CompoundExpression',
+          source: [[2, 1], [2, 5]],
+          children: [
+            { type: 'BinaryNode', op: 'SetDelayed', source: [[2, 1], [2, 4]] },
+            { type: 'LeafNode', kind: 'Token`Semi', source: [[2, 4], [2, 5]] },
+            {
+              type: 'LeafNode',
+              kind: 'Token`Fake`ImplicitNull',
+              source: [[2, 5], [2, 5]],
+            },
+          ],
+        },
+      ],
+    };
+
+    newlinesRule.visit(node, ctx);
+    expect(ctx.reports).toHaveLength(1);
+    expect(ctx.reports[0].message).toMatch(/Expected 1 blank line/);
+  });
 });
 
 describe('spacing-operators', () => {

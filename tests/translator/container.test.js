@@ -134,4 +134,40 @@ describe('printContainer', () => {
 
     expect(out).toBe('a = 1\n\n\nb := 2');
   });
+
+  it('treats semicolon-terminated top-level definitions as definitions for spacing', () => {
+    const node = {
+      type: 'ContainerNode',
+      kind: 'String',
+      children: [
+        {
+          type: 'InfixNode',
+          op: 'CompoundExpression',
+          value: 'a = 1',
+          source: [[1, 1], [1, 5]],
+          children: [
+            { type: 'BinaryNode', op: 'Set', value: 'a = 1' },
+            { type: 'LeafNode', kind: 'Token`Semi', value: ';' },
+            { type: 'LeafNode', kind: 'Token`Fake`ImplicitNull', value: '' },
+          ],
+        },
+        {
+          type: 'InfixNode',
+          op: 'CompoundExpression',
+          value: 'b := 2',
+          source: [[2, 1], [2, 6]],
+          children: [
+            { type: 'BinaryNode', op: 'SetDelayed', value: 'b := 2' },
+            { type: 'LeafNode', kind: 'Token`Semi', value: ';' },
+            { type: 'LeafNode', kind: 'Token`Fake`ImplicitNull', value: '' },
+          ],
+        },
+      ],
+    };
+
+    const print = (child) => String(child.value ?? '');
+    const out = fmt(printContainer(node, {}, print));
+
+    expect(out).toBe('a = 1\n\nb := 2');
+  });
 });
