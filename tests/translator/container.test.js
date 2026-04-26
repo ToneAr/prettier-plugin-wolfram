@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import prettier from 'prettier';
 import { printContainer } from '../../src/translator/nodes/container.js';
+import { printInfix } from '../../src/translator/nodes/infix.js';
 import { documentationCommentColumn } from '../../src/translator/docComments.js';
 
 function fmt(doc) {
@@ -165,9 +166,12 @@ describe('printContainer', () => {
       ],
     };
 
-    const print = (child) => String(child.value ?? '');
+    const print = (child) => {
+      if (child.type === 'InfixNode') return printInfix(child, {}, print);
+      return String(child.value ?? '');
+    };
     const out = fmt(printContainer(node, {}, print));
 
-    expect(out).toBe('a = 1\n\nb := 2');
+    expect(out).toBe('a = 1;\n\nb := 2;');
   });
 });

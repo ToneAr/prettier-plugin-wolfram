@@ -27,6 +27,11 @@ describe('formatted output lint invariants', () => {
         plugins: [plugin],
         filepath: filePath,
       });
+      const reformatted = await prettier.format(formatted, {
+        parser: 'wolfram',
+        plugins: [plugin],
+        filepath: filePath,
+      });
       const ast = await plugin.parsers.wolfram.parse(formatted, { tabWidth: 2 });
       const findings = await runRules(ast, {}, {
         ...defaultRuleOptions,
@@ -36,9 +41,10 @@ describe('formatted output lint invariants', () => {
       });
       const fixableFindings = findings.filter((finding) => finding.fixableByFormatter);
 
-      if (fixableFindings.length > 0) {
+      if (formatted !== reformatted || fixableFindings.length > 0) {
         failures.push({
           file,
+          idempotent: formatted === reformatted,
           findings: fixableFindings.map((finding) => ({
             rule: finding.rule,
             message: finding.message,

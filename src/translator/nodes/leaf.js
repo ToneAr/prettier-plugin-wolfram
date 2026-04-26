@@ -146,7 +146,7 @@ function inlineStringLiteralWidth(options, indentDepth) {
 	);
 }
 
-const STRING_JOIN_LINE_OVERHEAD = -1; // opening quote, closing quote, comma, and one clear ruler column.
+const STRING_JOIN_LINE_OVERHEAD = 3; // opening quote, closing quote, and a trailing comma.
 
 function stringJoinContentWidth(options, indentDepth) {
 	return Math.max(

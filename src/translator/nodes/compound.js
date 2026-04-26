@@ -18,6 +18,21 @@ const BLANK_OPS = new Set([
   'BlankNullSequence',
 ]);
 
+function isSemicolonToken(node) {
+  return node?.type === 'LeafNode' && (
+    node.kind === 'Token`Semi' || node.kind === 'Token`Semicolon'
+  );
+}
+
+function hasTrailingSemicolon(children) {
+  for (let i = children.length - 1; i >= 0; i--) {
+    const child = children[i];
+    if (isTrivia(child) || isComment(child)) continue;
+    return isSemicolonToken(child);
+  }
+  return false;
+}
+
 function printBlankCompound(node, print) {
   const semantic = node.children.filter((c) => !isTrivia(c));
   if (semantic.length === 0) return '';
@@ -45,8 +60,9 @@ export function printCompound(node, options, print) {
   // CompoundNode[Semicolon, {a, ws, ;, ws, b, ...}]
   const stmts = node.children.filter(c => !isTrivia(c) &&
     !isComment(c) &&
-    !(c.type === 'LeafNode' && (c.kind === 'Token`Semi' || c.kind === 'Token`Semicolon')));
+    !isSemicolonToken(c));
   const trailingComments = node.children.filter((c) => isComment(c));
+  const trailingSemicolon = hasTrailingSemicolon(node.children);
 
   if (stmts.length === 1) {
     return trailingComments.length === 0
@@ -75,6 +91,8 @@ export function printCompound(node, options, print) {
     body.push(print(stmt));
     previousStmt = stmt;
   }
+
+  if (trailingSemicolon) body.push(';');
 
   if (trailingComments.length === 0) return body;
   return [body, ' ', joinDocsWithSpace(trailingComments.map((c) => print(c)))];

@@ -29,6 +29,12 @@ function isCommaToken(node) {
   return node?.type === 'LeafNode' && node.kind === 'Token`Comma';
 }
 
+function isSemicolonToken(node) {
+  return node?.type === 'LeafNode' && (
+    node.kind === 'Token`Semi' || node.kind === 'Token`Semicolon'
+  );
+}
+
 /** Extract semantic operands from InfixNode children (skip trivia + operator tokens). */
 function operands(node) {
   // InfixNode children alternate: operand, ws, op-token, ws, operand, ...
@@ -44,7 +50,7 @@ export function printInfix(node, options, print) {
   if (node.op === 'CompoundExpression') {
     const semanticChildren = node.children.filter((c) => !isTrivia(c));
     const nonCommentNonToken = semanticChildren.filter((c) =>
-      !isComment(c) && !(c.type === 'LeafNode' && c.kind === 'Token`Semi')
+      !isComment(c) && !isSemicolonToken(c)
     );
     const trailingComments = semanticChildren.filter((c) => isComment(c));
 
@@ -63,7 +69,7 @@ export function printInfix(node, options, print) {
 
     for (const child of node.children) {
       if (isTrivia(child)) continue;
-      if (child.type === 'LeafNode' && child.kind === 'Token`Semi') {
+      if (isSemicolonToken(child)) {
         if (lastWasComment) continue;
         sawSemicolon = true;
         continue;
@@ -80,6 +86,10 @@ export function printInfix(node, options, print) {
       docs.push(print(child));
       sawSemicolon = false;
       lastWasComment = isComment(child);
+    }
+
+    if (sawSemicolon && docs.length > 0) {
+      docs.push(';');
     }
 
     return group(docs);

@@ -79,8 +79,8 @@ describe('translator regressions', () => {
       '  StringJoin[\n' +
       '    "a very long string ",\n' +
       '    "that should wrap ",\n' +
-      '    "nicely across ",\n' +
-      '    "multiple lines"\n' +
+      '    "nicely across multiple ",\n' +
+      '    "lines"\n' +
       '  ]'
     );
   }, 15000);
@@ -125,8 +125,7 @@ describe('translator regressions', () => {
       'StringJoin[\n' +
       '  "a very long string that ",\n' +
       '  "should wrap nicely ",\n' +
-      '  "across multiple ",\n' +
-      '  "linestail"\n' +
+      '  "across multiple linestail"\n' +
       ']'
     );
     expect(result.split('StringJoin[').length - 1).toBe(1);
@@ -173,7 +172,7 @@ describe('translator regressions', () => {
 
     expect(longestLine(result)).toBeLessThanOrEqual(80);
     expect(result).toContain(
-      '            "https://www.wolfram.com/events/technology-conference/innovator-a",'
+      '            "https://www.wolfram.com/events/technology-conference/innovator-aw",'
     );
   }, 15000);
 
@@ -189,7 +188,7 @@ describe('translator regressions', () => {
     });
 
     expect(longestDisplayLine(result, 4)).toBeLessThanOrEqual(80);
-    expect(result).toContain('"https://www.wolfram.com/events/technology-conference",');
+    expect(result).toContain('"https://www.wolfram.com/events/technology-conference/",');
   }, 15000);
 
   it('fills earlier unbroken joined string chunks before later chunks', async () => {
@@ -203,8 +202,8 @@ describe('translator regressions', () => {
 
     expect(result).toBe(
       'StringJoin[\n' +
-      '  "https://www.wolfram.com/events/technology-conference/i",\n' +
-      '  "nnovator-award/"\n' +
+      '  "https://www.wolfram.com/events/technology-conference/in",\n' +
+      '  "novator-award/"\n' +
       ']'
     );
   }, 15000);
@@ -440,7 +439,7 @@ describe('translator regressions', () => {
     expect(twice).toBe(once);
   }, 15000);
 
-  it('formats semicolon-terminated adjacent definitions in one pass', async () => {
+  it('preserves semicolon-terminated adjacent definitions in one pass', async () => {
     const source = 'f[x_] := x ^ 2;\ng[x_] := x + 1;';
     const once = await prettier.format(source, {
       parser: 'wolfram',
@@ -455,7 +454,7 @@ describe('translator regressions', () => {
       tabWidth: 2,
     });
 
-    expect(once).toBe('f[x_] := x ^ 2\n\ng[x_] := x + 1');
+    expect(once).toBe('f[x_] := x ^ 2;\n\ng[x_] := x + 1;');
     expect(twice).toBe(once);
   }, 15000);
 
@@ -762,6 +761,21 @@ scrapeCustomerStoryData[]:=
     expect(fmt(printInfix(node, opts, leafPrint))).toBe('a; b');
   });
 
+  it('preserves terminal semicolons in infix compound expressions', () => {
+    const node = {
+      type: 'InfixNode',
+      op: 'CompoundExpression',
+      children: [
+        { type: 'LeafNode', kind: 'Symbol', value: 'a' },
+        { type: 'LeafNode', kind: 'Token`Semi', value: ';' },
+        { type: 'LeafNode', kind: 'Symbol', value: 'b' },
+        { type: 'LeafNode', kind: 'Token`Semi', value: ';' },
+        { type: 'LeafNode', kind: 'Token`Fake`ImplicitNull', value: '' },
+      ],
+    };
+    expect(fmt(printInfix(node, opts, leafPrint))).toBe('a; b;');
+  });
+
   it('preserves capped blank lines between compound statements', () => {
     const node = {
       type: 'CompoundNode',
@@ -774,6 +788,22 @@ scrapeCustomerStoryData[]:=
     };
 
     expect(fmt(printCompound(node, { ...opts, wolframMaxBlankLinesBetweenCode: 2 }, leafPrint))).toBe('a;\n\n\nb');
+  });
+
+  it('preserves trailing semicolons in compound statement nodes', () => {
+    const node = {
+      type: 'CompoundNode',
+      op: 'CompoundExpression',
+      children: [
+        { type: 'LeafNode', kind: 'Symbol', value: 'a', source: [[1, 1], [1, 2]] },
+        { type: 'LeafNode', kind: 'Token`Semi', value: ';', source: [[1, 2], [1, 3]] },
+        { type: 'LeafNode', kind: 'Symbol', value: 'b', source: [[2, 1], [2, 2]] },
+        { type: 'LeafNode', kind: 'Token`Semi', value: ';', source: [[2, 2], [2, 3]] },
+        { type: 'LeafNode', kind: 'Token`Fake`ImplicitNull', value: '', source: [[2, 3], [2, 3]] },
+      ],
+    };
+
+    expect(fmt(printCompound(node, opts, leafPrint))).toBe('a;\nb;');
   });
 
   it('uses definition spacing between compound definition statements', () => {
