@@ -9,6 +9,7 @@ import {
 
 const require = createRequire(import.meta.url);
 const ifFixture = require("../fixtures/if-simple.json");
+const switchFixture = require("../fixtures/switch-simple.json");
 
 function fmt(doc, width = 80) {
 	return prettier.doc.printer.printDocToString(doc, {
@@ -107,5 +108,27 @@ describe("printConditionFirst (If)", () => {
 		const doc = printer(path, opts, mockPrint, ifNode);
 		const result = fmt(doc, 10); // force break
 		expect(result).toBe("If[x > 0,\n  x,\n  -x\n]");
+	});
+});
+
+describe("printSwitchStructure (Switch)", () => {
+	it("stays inline when it fits within printWidth", () => {
+		const switchNode = switchFixture.children[0];
+		const printer = getSpecialPrinter(switchNode, opts);
+		const path = makePath(switchNode);
+		const doc = printer(path, opts, mockPrint, switchNode);
+		const result = fmt(doc, 80);
+		expect(result.trim()).toBe('Switch[x, 1, "one", 2, "two", _, "other"]');
+	});
+
+	it("keeps the first arg on the head line and breaks later args as cases", () => {
+		const switchNode = switchFixture.children[0];
+		const printer = getSpecialPrinter(switchNode, opts);
+		const path = makePath(switchNode);
+		const doc = printer(path, opts, mockPrint, switchNode);
+		const result = fmt(doc, 10);
+		expect(result).toBe(
+			'Switch[x,\n  1,\n    "one",\n  2,\n    "two",\n  _,\n    "other"\n]',
+		);
 	});
 });

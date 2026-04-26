@@ -208,6 +208,23 @@ function printConditionFirst(path, options, print, node) {
 	]);
 }
 
+function buildCasePairs(args) {
+	const pairs = [];
+	for (let i = 0; i + 1 < args.length; i += 2) {
+		pairs.push([args[i], args[i + 1]]);
+	}
+
+	return {
+		pairs,
+		trailing: args.length % 2 === 1 ? args[args.length - 1] : null,
+	};
+}
+
+function casePairDocs(pairs, { forceBreak = false } = {}) {
+	const pairLine = forceBreak ? hardline : line;
+	return pairs.map(([cond, val]) => [cond, ",", indent([pairLine, val])]);
+}
+
 // Module[{vars}, body] — var list breaks per-var when long or when printWidth requires it.
 function printBlockStructure(path, options, print, node) {
 	if (hasDirectCommentArg(node)) return printCall(path, options, print, node);
@@ -244,6 +261,39 @@ function printBlockStructure(path, options, print, node) {
 		indent([line, join([",", line], body)]),
 		softline,
 		"]",
+	]);
+}
+
+function printSwitchStructure(path, options, print, node) {
+	if (hasDirectCommentArg(node)) return printCall(path, options, print, node);
+
+	const head = path.call(print, "head");
+	const args = printedArgs(path, options, print, node);
+	if (args.length === 0) return [head, "[]"];
+
+	const [expr, ...rest] = args;
+	if (rest.length === 0) {
+		return group([head, "[", indent([softline, expr]), softline, "]"]);
+	}
+
+	const { pairs, trailing } = buildCasePairs(rest);
+	const pairDocs = casePairDocs(pairs, { forceBreak: true });
+	const brokenTail = [
+		join([",", hardline], pairDocs),
+		trailing ? [",", hardline, trailing] : "",
+	];
+
+	return conditionalGroup([
+		[head, "[", join([", "], args), "]"],
+		[
+			head,
+			"[",
+			expr,
+			",",
+			indent([hardline, ...brokenTail]),
+			hardline,
+			"]",
+		],
 	]);
 }
 
@@ -500,17 +550,8 @@ function printCaseStructure(path, options, print, node) {
 	const args = printedArgs(path, options, print, node);
 	if (args.length === 0) return [head, "[]"];
 
-	const pairs = [];
-	for (let i = 0; i + 1 < args.length; i += 2) {
-		pairs.push([args[i], args[i + 1]]);
-	}
-	const trailing = args.length % 2 === 1 ? args[args.length - 1] : null;
-
-	const pairDocs = pairs.map(([cond, val]) => [
-		cond,
-		",",
-		indent([line, val]),
-	]);
+	const { pairs, trailing } = buildCasePairs(args);
+	const pairDocs = casePairDocs(pairs);
 
 	return group([
 		head,
@@ -531,6 +572,8 @@ export function getSpecialPrinter(node, options) {
 	if (!name) return null;
 	if (name === "StringJoin") return printStringJoin;
 	const sets = buildDispatchSets(options);
+	if (name === "Switch" && sets.conditionFirst.has(name))
+		return printSwitchStructure;
 	if (sets.conditionFirst.has(name)) return printConditionFirst;
 	if (sets.blockStructure.has(name)) return printBlockStructure;
 	if (sets.caseStructure.has(name)) return printCaseStructure;
