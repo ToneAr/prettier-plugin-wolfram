@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/ToneAr/prettier-wolfram/main/vscode-extension/assets/icon.png" width="96" height="96" alt="Prettier Wolfram VS Code extension logo">
+  <img src="https://raw.githubusercontent.com/ToneAr/prettier-plugin-wolfram/main/vscode-extension/assets/icon.png" width="96" height="96" alt="Prettier Wolfram VS Code extension logo">
 </p>
 
 <h1 align="center">Prettier - Code Formatter<br><sub>Wolfram Language for VS Code</sub></h1>
