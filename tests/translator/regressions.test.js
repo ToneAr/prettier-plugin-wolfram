@@ -331,6 +331,34 @@ describe('translator regressions', () => {
     }
   }, 15000);
 
+  it('respects the condition-first formatting option', async () => {
+    const source = 'If[x > 0, thenValue, elseValue]';
+    const baseOptions = {
+      parser: 'wolfram',
+      plugins: [plugin],
+      printWidth: 12,
+      tabWidth: 2,
+    };
+
+    await expect(prettier.format(source, baseOptions)).resolves.toBe(
+      'If[x > 0,\n' +
+      '  thenValue,\n' +
+      '  elseValue\n' +
+      ']'
+    );
+
+    await expect(prettier.format(source, {
+      ...baseOptions,
+      wolframConditionFirstFunctions: '',
+    })).resolves.toBe(
+      'If[\n' +
+      '  x > 0,\n' +
+      '  thenValue,\n' +
+      '  elseValue\n' +
+      ']'
+    );
+  }, 15000);
+
   it('preserves incomplete expressions instead of printing raw CST internals', async () => {
     const source = 'f[';
     const result = await prettier.format(source, {
@@ -863,7 +891,7 @@ scrapeCustomerStoryData[]:=
         { type: 'LeafNode', kind: 'Token`Comment', value: '(* doc *)' },
       ],
     };
-    const result = fmt(printInfix(node, { ...opts, printWidth: 10, wolframDocumentationCommentColumn: 20 }, leafPrint));
+    const result = fmt(printInfix(node, { ...opts, printWidth: 80, wolframDocumentationCommentColumn: 20 }, leafPrint));
     expect(result).toBe('operation1;         (* doc *)');
   });
 

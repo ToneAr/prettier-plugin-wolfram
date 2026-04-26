@@ -151,7 +151,7 @@ this plugin.
 | `wolframSpaceAfterComma` | boolean | `true` | Inserts a space after commas in argument lists, lists, and associations. |
 | `wolframSpaceAroundOperators` | boolean | `true` | Inserts spaces around most infix, binary, and ternary operators. Operators that are normally tight, such as `::`, `?`, and `;;`, stay tight. |
 | `wolframAlignRuleValues` | boolean | `false` | Vertically aligns `Rule` and `RuleDelayed` values in multiline argument, list, and association layouts. |
-| `wolframDocumentationCommentColumn` | integer | `0` | Column for trailing documentation comments. `0` computes a column per contiguous block. Explicit values are clamped above `printWidth`. |
+| `wolframDocumentationCommentColumn` | integer | `0` | Column for trailing documentation comments. `0` computes a column per contiguous block. |
 | `wolframDocumentationCommentPadding` | integer | `2` | Minimum spaces between code and an aligned trailing documentation comment when the column is computed automatically. |
 | `wolframTopLevelSpacingMode` | string | `"declarations"` | Top-level blank-line policy. Allowed values are `declarations`, `all`, and `none`. |
 | `wolframPreserveTildeInfixFunctions` | string | `""` | Comma-separated function names that stay in `x ~ f ~ y` form instead of normalizing to `f[x, y]`. |

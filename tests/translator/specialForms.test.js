@@ -21,35 +21,49 @@ const opts = {
 };
 
 /** Create a mock prettier path rooted at `root` that supports path.call(print, ...keys). */
-function makePath(root) {
+function makePath(root, options = opts) {
   function makePathAt(node) {
     return {
       getValue: () => node,
       call: (print, ...keys) => {
         let cur = node;
         for (const key of keys) cur = cur[key];
-        return print(makePathAt(cur), opts, print);
+        return print(makePathAt(cur), options, print);
       },
     };
   }
   return makePathAt(root);
 }
 
-const mockPrint = (path, _options, _print) => {
+const mockPrint = (path, options, _print) => {
   const node = path.getValue();
   if (node.type === 'LeafNode') return String(node.value);
-  if (node.type === 'InfixNode') return 'LONG_CONDITION_EXPRESSION';
+  if (node.type === 'InfixNode') return 'x > 0';
+  if (node.type === 'PrefixNode') return '-x';
   if (node.type === 'CallNode') {
-    const printer = getSpecialPrinter(node, opts);
-    if (printer) return printer(path, opts, mockPrint, node);
+    const printer = getSpecialPrinter(node, options);
+    if (printer) return printer(path, options, mockPrint, node);
   }
   return 'EXPR';
 };
 
 describe('getSpecialPrinter', () => {
+  it('uses documented special-form defaults when options are missing', () => {
+    const sets = buildDispatchSets({});
+
+    expect(sets.conditionFirst).toEqual(new Set(['If', 'Switch']));
+    expect(sets.blockStructure).toEqual(new Set(['Module', 'With', 'Block', 'DynamicModule']));
+    expect(sets.caseStructure).toEqual(new Set(['Which']));
+  });
+
   it('returns printConditionFirst for If', () => {
     const callNode = ifFixture.children[0];
     expect(getSpecialPrinter(callNode, opts)).toBeTruthy();
+  });
+
+  it('respects explicit special-form option overrides', () => {
+    const callNode = ifFixture.children[0];
+    expect(getSpecialPrinter(callNode, { ...opts, wolframConditionFirstFunctions: '' })).toBeNull();
   });
 
   it('returns null for unknown function', () => {
@@ -65,7 +79,7 @@ describe('printConditionFirst (If)', () => {
     const path = makePath(ifNode);
     const doc = printer(path, opts, mockPrint, ifNode);
     const result = fmt(doc, 80);
-    expect(result.trim()).toBe('If[LONG_CONDITION_EXPRESSION, x, EXPR]');
+    expect(result.trim()).toBe('If[x > 0, x, -x]');
   });
 
   it('keeps condition on same line, breaks remaining args', () => {
@@ -74,7 +88,6 @@ describe('printConditionFirst (If)', () => {
     const path = makePath(ifNode);
     const doc = printer(path, opts, mockPrint, ifNode);
     const result = fmt(doc, 10); // force break
-    expect(result).toMatch(/^If\[/);
-    expect(result).toContain('\n');
+    expect(result).toBe('If[x > 0,\n  x,\n  -x\n]');
   });
 });

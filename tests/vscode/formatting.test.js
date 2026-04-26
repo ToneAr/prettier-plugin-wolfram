@@ -35,7 +35,7 @@ describe("VS Code formatting helpers", () => {
 			filePath: "/tmp/test.wl",
 			range: undefined,
 			prettier,
-			resolvedConfig: {},
+			resolvedConfig: { wolframConditionFirstFunctions: "" },
 			plugins: ["/tmp/plugin.js"],
 			pluginModule: {},
 			positionToOffset: (offset) => offset,
@@ -46,6 +46,7 @@ describe("VS Code formatting helpers", () => {
 			expect.objectContaining({
 				filepath: "/tmp/test.wl",
 				parser: "wolfram",
+				wolframConditionFirstFunctions: "",
 			}),
 		);
 		expect(plan).toEqual({

@@ -64,14 +64,35 @@ describe('printContainer', () => {
     const print = (child) => String(child.value ?? '');
     const out = fmt(printContainer(node, { printWidth: 10 }, print));
 
-    expect(out).toBe('a = 1      (* first *)\n\nlongName = 2  (* second *)');
+    expect(out).toBe('a = 1         (* first *)\n\nlongName = 2  (* second *)');
   });
 
-  it('manual documentation comment column is clamped above line width', () => {
+  it('honors manual documentation comment columns below line width', () => {
     const entries = [
       { doc: 'a = 1', trailingCommentDoc: '(* c *)' },
     ];
-    expect(documentationCommentColumn(entries, { printWidth: 20, wolframDocumentationCommentColumn: 5 })).toBe(21);
+    expect(documentationCommentColumn(entries, { printWidth: 20, wolframDocumentationCommentColumn: 5 })).toBe(5);
+  });
+
+  it('places same-line documentation comments at the configured column', () => {
+    const node = {
+      type: 'ContainerNode',
+      kind: 'String',
+      children: [
+        { type: 'BinaryNode', op: 'Set', value: 'a = 1', source: [[1, 1], [1, 6]] },
+        { type: 'LeafNode', kind: 'Token`Comment', value: '(* first *)', source: [[1, 8], [1, 19]] },
+        { type: 'BinaryNode', op: 'Set', value: 'longName = 2', source: [[2, 1], [2, 13]] },
+        { type: 'LeafNode', kind: 'Token`Comment', value: '(* second *)', source: [[2, 15], [2, 27]] },
+      ],
+    };
+
+    const print = (child) => String(child.value ?? '');
+    const out = fmt(printContainer(node, {
+      printWidth: 80,
+      wolframDocumentationCommentColumn: 20,
+    }, print));
+
+    expect(out).toBe('a = 1               (* first *)\n\nlongName = 2        (* second *)');
   });
 
   it('supports top-level spacing mode none', () => {

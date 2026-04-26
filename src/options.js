@@ -37,7 +37,7 @@ export const options = {
 		category: "Wolfram",
 		default: 0,
 		description:
-			"Column for trailing documentation comments. 0 = auto-compute per contiguous block; always clamped above line width.",
+			"Column for trailing documentation comments. 0 = auto-compute per contiguous block.",
 	},
 	wolframDocumentationCommentPadding: {
 		type: "int",

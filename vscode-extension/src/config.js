@@ -1,7 +1,16 @@
 'use strict';
 
+const WOLFRAM_PLUGIN_PACKAGE_NAMES = new Set([
+  '@wrel/prettier-plugin-wolfram',
+  'prettier-plugin-wolfram',
+]);
+
 function normalizeResolvedConfig(resolvedConfig = {}) {
   return { ...resolvedConfig };
+}
+
+function isConfiguredWolframPlugin(plugin) {
+  return typeof plugin === 'string' && WOLFRAM_PLUGIN_PACKAGE_NAMES.has(plugin);
 }
 
 function mergeConfiguredPlugins(resolvedConfig, pluginPath) {
@@ -10,7 +19,10 @@ function mergeConfiguredPlugins(resolvedConfig, pluginPath) {
     : [];
   const merged = [];
 
-  for (const plugin of [...configuredPlugins, pluginPath]) {
+  for (const plugin of [
+    ...configuredPlugins.filter((plugin) => !isConfiguredWolframPlugin(plugin)),
+    pluginPath,
+  ]) {
     if (!plugin) continue;
     if (merged.some((existing) => existing === plugin)) continue;
     merged.push(plugin);

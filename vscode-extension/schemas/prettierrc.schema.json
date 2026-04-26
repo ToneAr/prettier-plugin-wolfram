@@ -37,7 +37,7 @@
 			"type": "integer",
 			"default": 0,
 			"minimum": 0,
-			"markdownDescription": "Column for trailing documentation comments. `0` = auto-compute per contiguous block; always clamped above line width."
+			"markdownDescription": "Column for trailing documentation comments. `0` = auto-compute per contiguous block."
 		},
 		"wolframDocumentationCommentPadding": {
 			"type": "integer",

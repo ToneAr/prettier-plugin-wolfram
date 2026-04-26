@@ -3,7 +3,11 @@ import { doc } from 'prettier';
 const { builders } = doc;
 import { isTrivia, stringLineIndentDepth, stringLiteralRunDocs } from './nodes/leaf.js';
 import { argPathEntries, hasDirectCommentArg, printCall, printedArgs } from './nodes/call.js';
-const { group, indent, hardline, line, softline, join } = builders;
+const { conditionalGroup, group, indent, hardline, line, softline, join } = builders;
+
+const DEFAULT_CONDITION_FIRST_FUNCTIONS = 'If,Switch';
+const DEFAULT_BLOCK_STRUCTURE_FUNCTIONS = 'Module,With,Block,DynamicModule';
+const DEFAULT_CASE_STRUCTURE_FUNCTIONS = 'Which';
 
 const PATTERN_BLANK_OPS = new Set([
   'PatternBlank',
@@ -18,12 +22,22 @@ const BLANK_OPS = new Set([
 ]);
 
 // Build Sets from comma-separated option strings
-export function buildDispatchSets(options) {
-  const toSet = (str) => new Set((str || '').split(',').map(s => s.trim()).filter(Boolean));
+export function buildDispatchSets(options = {}) {
+  const toOptionString = (name, fallback) => {
+    const value = options[name];
+    return value == null ? fallback : String(value);
+  };
+  const toSet = (str) => new Set(str.split(',').map(s => s.trim()).filter(Boolean));
   return {
-    conditionFirst: toSet(options.wolframConditionFirstFunctions),
-    blockStructure: toSet(options.wolframBlockStructureFunctions),
-    caseStructure: toSet(options.wolframCaseStructureFunctions),
+    conditionFirst: toSet(
+      toOptionString('wolframConditionFirstFunctions', DEFAULT_CONDITION_FIRST_FUNCTIONS)
+    ),
+    blockStructure: toSet(
+      toOptionString('wolframBlockStructureFunctions', DEFAULT_BLOCK_STRUCTURE_FUNCTIONS)
+    ),
+    caseStructure: toSet(
+      toOptionString('wolframCaseStructureFunctions', DEFAULT_CASE_STRUCTURE_FUNCTIONS)
+    ),
   };
 }
 
@@ -140,17 +154,31 @@ function printConditionFirst(path, options, print, node) {
     ]);
   }
 
-  return group([
-    head,
-    '[',
-    indent([
-      softline,
+  return conditionalGroup([
+    [head, '[', join([', '], [cond, ...rest]), ']'],
+    [
+      head,
+      '[',
       cond,
       ',',
-      ...rest.flatMap((r, i) => [line, r, i < rest.length - 1 ? ',' : '']),
-    ]),
-    softline,
-    ']',
+      indent(
+        rest.flatMap((r, i) => [hardline, r, i < rest.length - 1 ? ',' : ''])
+      ),
+      hardline,
+      ']',
+    ],
+    [
+      head,
+      '[',
+      indent([
+        hardline,
+        cond,
+        ',',
+        ...rest.flatMap((r, i) => [hardline, r, i < rest.length - 1 ? ',' : '']),
+      ]),
+      hardline,
+      ']',
+    ],
   ]);
 }
 

@@ -13,6 +13,44 @@ function isComment(node) {
   return node.type === 'LeafNode' && node.kind === 'Token`Comment';
 }
 
+function trailingDocumentationCommentColumns(entries, options) {
+  const columns = new Map();
+  let block = [];
+  let previousEntry = null;
+
+  const flushBlock = () => {
+    if (block.length === 0) return;
+    const column = documentationCommentColumn(block, options);
+    for (const entry of block) {
+      columns.set(entry, column);
+    }
+    block = [];
+  };
+
+  for (const entry of entries) {
+    const observedBlankLines = previousEntry
+      ? observedBlankLinesBetween(previousEntry.endLine, entry.startLine)
+      : 0;
+
+    if (
+      !entry.trailingCommentDoc ||
+      entry.leadingCommentDocs.length > 0 ||
+      observedBlankLines > 0
+    ) {
+      flushBlock();
+    }
+
+    if (entry.trailingCommentDoc) {
+      block.push(entry);
+    }
+
+    previousEntry = entry;
+  }
+
+  flushBlock();
+  return columns;
+}
+
 /** Print a ContainerNode[File, ...] with declaration-aware top-level spacing. */
 export function printContainer(node, options, print) {
   const children = node.children.filter((c) => !isTrivia(c));
@@ -59,6 +97,11 @@ export function printContainer(node, options, print) {
     leadingCommentEndLine = null;
   }
 
+  for (const entry of entries) {
+    entry.trailingCommentDoc = joinDocsWithSpace(entry.trailingCommentDocs);
+  }
+
+  const trailingCommentColumns = trailingDocumentationCommentColumns(entries, options);
   const docs = [];
   let previousNode = null;
 
@@ -82,9 +125,8 @@ export function printContainer(node, options, print) {
       }
     }
 
-    const trailingCommentDoc = joinDocsWithSpace(entry.trailingCommentDocs);
-    const column = documentationCommentColumn([{ ...entry, trailingCommentDoc }], options);
-    docs.push(withAlignedTrailingComment({ ...entry, trailingCommentDoc }, options, column));
+    const column = trailingCommentColumns.get(entry) ?? documentationCommentColumn([entry], options);
+    docs.push(withAlignedTrailingComment(entry, options, column));
     previousNode = entry;
   }
 

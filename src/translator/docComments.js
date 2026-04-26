@@ -1,9 +1,5 @@
 import { doc } from 'prettier';
 
-function lineWidth(options) {
-  return options.printWidth ?? 80;
-}
-
 export function joinDocsWithSpace(docs) {
   const nonEmptyDocs = docs.filter((docNode) => docNode !== '' && docNode != null);
   if (nonEmptyDocs.length === 0) return '';
@@ -26,9 +22,8 @@ export function renderFlatDoc(docNode, options) {
 }
 
 export function documentationCommentColumn(entries, options, suffixForEntry = () => '') {
-  const minColumn = lineWidth(options) + 1;
   const manual = options.wolframDocumentationCommentColumn ?? 0;
-  if (manual > 0) return Math.max(manual, minColumn);
+  if (manual > 0) return manual;
   const padding = Math.max(1, options.wolframDocumentationCommentPadding ?? 2);
 
   let maxCodeWidth = 0;
@@ -38,7 +33,7 @@ export function documentationCommentColumn(entries, options, suffixForEntry = ()
     if (rendered.includes('\n')) continue;
     maxCodeWidth = Math.max(maxCodeWidth, rendered.length);
   }
-  return Math.max(minColumn, maxCodeWidth + padding);
+  return maxCodeWidth + padding;
 }
 
 export function withAlignedTrailingComment(entry, options, column, suffix = '') {
