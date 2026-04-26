@@ -94,7 +94,12 @@ describe("preprocessRange", () => {
 		const astWithWS = {
 			type: "ContainerNode",
 			children: [
-				{ type: "LeafNode", kind: "Token`Newline", locStart: 20, locEnd: 21 },
+				{
+					type: "LeafNode",
+					kind: "Token`Newline",
+					locStart: 20,
+					locEnd: 21,
+				},
 				{
 					type: "BinaryNode",
 					op: "SetDelayed",

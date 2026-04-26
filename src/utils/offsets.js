@@ -25,7 +25,9 @@ export function lineColToOffset(table, line, col) {
 	if (typeof lineStart !== "number") return 0;
 
 	const sourceText =
-		table && typeof table === "object" && typeof table.sourceText === "string"
+		table &&
+		typeof table === "object" &&
+		typeof table.sourceText === "string"
 			? table.sourceText
 			: null;
 	if (!sourceText) return lineStart + (col - 1);
@@ -87,9 +89,7 @@ function nodeOffsets(node) {
 }
 
 function combinedOffsets(nodes) {
-	const ranges = nodes
-		.map(nodeOffsets)
-		.filter(Boolean);
+	const ranges = nodes.map(nodeOffsets).filter(Boolean);
 	if (ranges.length === 0) return null;
 
 	return {
@@ -108,7 +108,9 @@ export function addOffsets(node, table, fallbackOffset = null) {
 		(typeof fallbackOffset === "number" ? fallbackOffset : null);
 
 	if (node.children) {
-		node.children.forEach((child) => addOffsets(child, table, childFallback));
+		node.children.forEach((child) =>
+			addOffsets(child, table, childFallback),
+		);
 	}
 	if (node.head) {
 		addOffsets(node.head, table, childFallback);

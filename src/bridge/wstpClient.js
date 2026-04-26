@@ -10,7 +10,10 @@ const require = createRequire(import.meta.url);
 
 const WL_INIT_PATH = join(__dirname, "init.m");
 const WL_INIT = readFileSync(WL_INIT_PATH, "utf8");
-const NATIVE_ADDON_PATH = join(__dirname, "../../wstp-addon/build/Release/wstp.node");
+const NATIVE_ADDON_PATH = join(
+	__dirname,
+	"../../wstp-addon/build/Release/wstp.node",
+);
 const WOLFRAMSCRIPT_START_MARKER = "__PRETTIER_WL_JSON_START__";
 const WOLFRAMSCRIPT_END_MARKER = "__PRETTIER_WL_JSON_END__";
 const WOLFRAMKERNEL_READY_MARKER = "__PRETTIER_WL_KERNEL_READY__";
@@ -54,7 +57,9 @@ function formatTimeout(timeoutMs) {
 	return Number.isInteger(seconds) ? `${seconds}s` : `${timeoutMs}ms`;
 }
 
-function cleanupTrackedClients(reason = "Process exiting; closing Wolfram kernels") {
+function cleanupTrackedClients(
+	reason = "Process exiting; closing Wolfram kernels",
+) {
 	for (const client of Array.from(processCleanupState.clients)) {
 		try {
 			client.close(reason);
@@ -442,7 +447,9 @@ export class WstpClient {
 	#evalNative(expr, generation = this.#generation, timeoutMs = null) {
 		this.#assertNotClosed(generation);
 		if (!this.#kernel) {
-			return Promise.reject(new Error("WolframKernel session is not available"));
+			return Promise.reject(
+				new Error("WolframKernel session is not available"),
+			);
 		}
 
 		return new Promise((resolve, reject) => {
@@ -541,7 +548,9 @@ export class WstpClient {
 		if (result === null) return;
 
 		const end = this.#scriptBuffer.indexOf(pending.markers.end);
-		this.#scriptBuffer = this.#scriptBuffer.slice(end + pending.markers.end.length);
+		this.#scriptBuffer = this.#scriptBuffer.slice(
+			end + pending.markers.end.length,
+		);
 
 		clearTimeout(pending.timer);
 		this.#scriptPending = null;
@@ -557,7 +566,9 @@ export class WstpClient {
 
 			const startup = this.#scriptStartup;
 			if (startup) {
-				const readyIndex = this.#scriptBuffer.indexOf(WOLFRAMKERNEL_READY_MARKER);
+				const readyIndex = this.#scriptBuffer.indexOf(
+					WOLFRAMKERNEL_READY_MARKER,
+				);
 				if (readyIndex !== -1) {
 					this.#scriptBuffer = this.#scriptBuffer.slice(
 						readyIndex + WOLFRAMKERNEL_READY_MARKER.length,
@@ -592,7 +603,9 @@ export class WstpClient {
 		proc.once("exit", (code, signal) => {
 			const startupStderr = this.#scriptStartup?.stderr?.trim?.() ?? "";
 			const pendingStderr = this.#scriptPending?.stderr?.trim?.() ?? "";
-			const details = [pendingStderr, startupStderr].filter(Boolean).join("\n");
+			const details = [pendingStderr, startupStderr]
+				.filter(Boolean)
+				.join("\n");
 			const reason =
 				details ||
 				`WolframKernel exited unexpectedly (${signal ?? code ?? "unknown"})`;
@@ -602,7 +615,8 @@ export class WstpClient {
 
 	#ensureScriptKernel(generation = this.#generation) {
 		this.#assertNotClosed(generation);
-		if (this.#scriptProcess && !this.#scriptStartup) return Promise.resolve();
+		if (this.#scriptProcess && !this.#scriptStartup)
+			return Promise.resolve();
 		if (this.#scriptStartup) {
 			return this.#scriptStartup.promise.then(() => {
 				this.#assertNotClosed(generation);
@@ -649,7 +663,12 @@ export class WstpClient {
 		});
 	}
 
-	async #evalScript(sourceText, tabWidth, timeoutMs, generation = this.#generation) {
+	async #evalScript(
+		sourceText,
+		tabWidth,
+		timeoutMs,
+		generation = this.#generation,
+	) {
 		this.#assertNotClosed(generation);
 		await this.#ensureScriptKernel(generation);
 		this.#assertNotClosed(generation);
@@ -659,7 +678,11 @@ export class WstpClient {
 
 		const requestId = ++this.#scriptRequestId;
 		const markers = kernelResultMarkers(requestId);
-		const expr = buildKernelRequestExpression(sourceText, tabWidth, markers);
+		const expr = buildKernelRequestExpression(
+			sourceText,
+			tabWidth,
+			markers,
+		);
 
 		return new Promise((resolve, reject) => {
 			const timer = setTimeout(() => {
@@ -670,7 +693,13 @@ export class WstpClient {
 				);
 			}, timeoutMs);
 
-			this.#scriptPending = { markers, resolve, reject, timer, stderr: "" };
+			this.#scriptPending = {
+				markers,
+				resolve,
+				reject,
+				timer,
+				stderr: "",
+			};
 
 			try {
 				this.#scriptProcess.stdin.write(expr + "\n");
@@ -756,7 +785,7 @@ export class WstpClient {
 		const timeoutMs = normalizeCSTRequestTimeoutMs(
 			typeof options === "number"
 				? options
-				: options.timeoutMs ?? options.wolframCSTRequestTimeoutMs,
+				: (options.timeoutMs ?? options.wolframCSTRequestTimeoutMs),
 		);
 
 		const key = this.#cacheKey(sourceText, tabWidth);
@@ -779,7 +808,12 @@ export class WstpClient {
 
 		const rawTask = this.#requestChain.then(() => {
 			this.#assertNotClosed(generation);
-			return this.#getCSTRawInternal(sourceText, tabWidth, timeoutMs, generation);
+			return this.#getCSTRawInternal(
+				sourceText,
+				tabWidth,
+				timeoutMs,
+				generation,
+			);
 		});
 		this.#requestChain = rawTask.catch(() => {});
 

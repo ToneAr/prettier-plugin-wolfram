@@ -1,169 +1,221 @@
 // src/translator/nodes/infix.js
-import { doc } from 'prettier';
+import { doc } from "prettier";
 const { builders } = doc;
-import { isTrivia, isComment } from './leaf.js';
-import { documentationCommentColumn, joinDocsWithSpace, withAlignedTrailingComment } from '../docComments.js';
-import { wantsSpacesAroundOperator } from '../../utils/operatorSpacing.js';
-import { hasImmediateComment, printOriginalSource } from '../sourcePreservation.js';
+import { isTrivia, isComment } from "./leaf.js";
+import {
+	documentationCommentColumn,
+	joinDocsWithSpace,
+	withAlignedTrailingComment,
+} from "../docComments.js";
+import { wantsSpacesAroundOperator } from "../../utils/operatorSpacing.js";
+import {
+	hasImmediateComment,
+	printOriginalSource,
+} from "../sourcePreservation.js";
 const { group, indent, line, join } = builders;
 
 // Map WL op names to their display strings
 const OP_DISPLAY = {
-  Plus: '+', Times: '*', Power: '^',
-  Equal: '==', Unequal: '!=',
-  Greater: '>', Less: '<', GreaterEqual: '>=', LessEqual: '<=',
-  And: '&&', Or: '||',
-  StringJoin: '<>',
-  Dot: '.',
-  Alternatives: '|',
+	Plus: "+",
+	Times: "*",
+	Power: "^",
+	Equal: "==",
+	Unequal: "!=",
+	Greater: ">",
+	Less: "<",
+	GreaterEqual: ">=",
+	LessEqual: "<=",
+	And: "&&",
+	Or: "||",
+	StringJoin: "<>",
+	Dot: ".",
+	Alternatives: "|",
 };
 
 function isSemanticTokenLeaf(node) {
-  return node?.type === 'LeafNode' && [
-    'Token`Hash', 'Token`HashHash',
-    'Token`Under', 'Token`UnderUnder', 'Token`UnderUnderUnder',
-  ].includes(node.kind);
+	return (
+		node?.type === "LeafNode" &&
+		[
+			"Token`Hash",
+			"Token`HashHash",
+			"Token`Under",
+			"Token`UnderUnder",
+			"Token`UnderUnderUnder",
+		].includes(node.kind)
+	);
 }
 
 function isCommaToken(node) {
-  return node?.type === 'LeafNode' && node.kind === 'Token`Comma';
+	return node?.type === "LeafNode" && node.kind === "Token`Comma";
 }
 
 function isSemicolonToken(node) {
-  return node?.type === 'LeafNode' && (
-    node.kind === 'Token`Semi' || node.kind === 'Token`Semicolon'
-  );
+	return (
+		node?.type === "LeafNode" &&
+		(node.kind === "Token`Semi" || node.kind === "Token`Semicolon")
+	);
 }
 
 /** Extract semantic operands from InfixNode children (skip trivia + operator tokens). */
 function operands(node) {
-  // InfixNode children alternate: operand, ws, op-token, ws, operand, ...
-  // Keep only non-trivia, non-operator-token children.
-  return node.children.filter(c => {
-    if (isTrivia(c)) return false;
-    if (c.type === 'LeafNode' && c.kind.startsWith('Token`') && !isSemanticTokenLeaf(c)) return false;
-    return true;
-  });
+	// InfixNode children alternate: operand, ws, op-token, ws, operand, ...
+	// Keep only non-trivia, non-operator-token children.
+	return node.children.filter((c) => {
+		if (isTrivia(c)) return false;
+		if (
+			c.type === "LeafNode" &&
+			c.kind.startsWith("Token`") &&
+			!isSemanticTokenLeaf(c)
+		)
+			return false;
+		return true;
+	});
 }
 
 export function printInfix(node, options, print) {
-  if (node.op === 'CompoundExpression') {
-    const semanticChildren = node.children.filter((c) => !isTrivia(c));
-    const nonCommentNonToken = semanticChildren.filter((c) =>
-      !isComment(c) && !isSemicolonToken(c)
-    );
-    const trailingComments = semanticChildren.filter((c) => isComment(c));
+	if (node.op === "CompoundExpression") {
+		const semanticChildren = node.children.filter((c) => !isTrivia(c));
+		const nonCommentNonToken = semanticChildren.filter(
+			(c) => !isComment(c) && !isSemicolonToken(c),
+		);
+		const trailingComments = semanticChildren.filter((c) => isComment(c));
 
-    if (nonCommentNonToken.length === 1 && trailingComments.length > 0) {
-      const entry = {
-        doc: [print(nonCommentNonToken[0]), ';'],
-        trailingCommentDoc: joinDocsWithSpace(trailingComments.map((c) => print(c))),
-      };
-      const column = documentationCommentColumn([entry], options, () => '');
-      return withAlignedTrailingComment(entry, options, column);
-    }
+		if (nonCommentNonToken.length === 1 && trailingComments.length > 0) {
+			const entry = {
+				doc: [print(nonCommentNonToken[0]), ";"],
+				trailingCommentDoc: joinDocsWithSpace(
+					trailingComments.map((c) => print(c)),
+				),
+			};
+			const column = documentationCommentColumn(
+				[entry],
+				options,
+				() => "",
+			);
+			return withAlignedTrailingComment(entry, options, column);
+		}
 
-    const docs = [];
-    let sawSemicolon = false;
-    let lastWasComment = false;
+		const docs = [];
+		let sawSemicolon = false;
+		let lastWasComment = false;
 
-    for (const child of node.children) {
-      if (isTrivia(child)) continue;
-      if (isSemicolonToken(child)) {
-        if (lastWasComment) continue;
-        sawSemicolon = true;
-        continue;
-      }
+		for (const child of node.children) {
+			if (isTrivia(child)) continue;
+			if (isSemicolonToken(child)) {
+				if (lastWasComment) continue;
+				sawSemicolon = true;
+				continue;
+			}
 
-      if (docs.length > 0) {
-        if (sawSemicolon) {
-          docs.push(';', line);
-        } else if (lastWasComment) {
-          docs.push(line);
-        }
-      }
+			if (docs.length > 0) {
+				if (sawSemicolon) {
+					docs.push(";", line);
+				} else if (lastWasComment) {
+					docs.push(line);
+				}
+			}
 
-      docs.push(print(child));
-      sawSemicolon = false;
-      lastWasComment = isComment(child);
-    }
+			docs.push(print(child));
+			sawSemicolon = false;
+			lastWasComment = isComment(child);
+		}
 
-    if (sawSemicolon && docs.length > 0) {
-      docs.push(';');
-    }
+		if (sawSemicolon && docs.length > 0) {
+			docs.push(";");
+		}
 
-    return group(docs);
-  }
+		return group(docs);
+	}
 
-  if (node.op === 'Comma') {
-    const docs = [];
-    const commaGap = options.wolframSpaceAfterComma ? line : doc.builders.softline;
-    let previousKind = null;
+	if (node.op === "Comma") {
+		const docs = [];
+		const commaGap = options.wolframSpaceAfterComma
+			? line
+			: doc.builders.softline;
+		let previousKind = null;
 
-    for (const child of node.children) {
-      if (isTrivia(child)) continue;
-      if (isCommaToken(child)) {
-        if (previousKind === null || previousKind === 'comma') continue;
-        docs.push(',', commaGap);
-        previousKind = 'comma';
-        continue;
-      }
+		for (const child of node.children) {
+			if (isTrivia(child)) continue;
+			if (isCommaToken(child)) {
+				if (previousKind === null || previousKind === "comma") continue;
+				docs.push(",", commaGap);
+				previousKind = "comma";
+				continue;
+			}
 
-      if (previousKind !== null && previousKind !== 'comma') {
-        docs.push(line);
-      }
+			if (previousKind !== null && previousKind !== "comma") {
+				docs.push(line);
+			}
 
-      docs.push(print(child));
-      previousKind = isComment(child) ? 'comment' : 'item';
-    }
+			docs.push(print(child));
+			previousKind = isComment(child) ? "comment" : "item";
+		}
 
-    return group(docs);
-  }
+		return group(docs);
+	}
 
-  if (hasImmediateComment(node)) {
-    return printOriginalSource(node, options);
-  }
+	if (hasImmediateComment(node)) {
+		return printOriginalSource(node, options);
+	}
 
-  if (node.op === 'InfixInequality') {
-    const semantic = node.children.filter((c) => !isTrivia(c));
-    if (semantic.length === 3 && semantic[1]?.type === 'LeafNode') {
-      const opStr = semantic[1].value;
-      const space = wantsSpacesAroundOperator(node, options, semantic[1]);
-      const gap = space ? ' ' : '';
-      return group([
-        print(semantic[0]),
-        `${gap}${opStr}`,
-        space ? line : '',
-        print(semantic[2]),
-      ]);
-    }
-  }
+	if (node.op === "InfixInequality") {
+		const semantic = node.children.filter((c) => !isTrivia(c));
+		if (semantic.length === 3 && semantic[1]?.type === "LeafNode") {
+			const opStr = semantic[1].value;
+			const space = wantsSpacesAroundOperator(node, options, semantic[1]);
+			const gap = space ? " " : "";
+			return group([
+				print(semantic[0]),
+				`${gap}${opStr}`,
+				space ? line : "",
+				print(semantic[2]),
+			]);
+		}
+	}
 
-  const semantic = node.children.filter((c) => {
-    if (isTrivia(c)) return false;
-    if (c.type === 'LeafNode' && c.kind.startsWith('Token`') && !isSemanticTokenLeaf(c)) return false;
-    return true;
-  });
-  const tokens = node.children.filter((c) =>
-    !isTrivia(c) && c.type === 'LeafNode' && c.kind.startsWith('Token`') && !isSemanticTokenLeaf(c)
-  );
+	const semantic = node.children.filter((c) => {
+		if (isTrivia(c)) return false;
+		if (
+			c.type === "LeafNode" &&
+			c.kind.startsWith("Token`") &&
+			!isSemanticTokenLeaf(c)
+		)
+			return false;
+		return true;
+	});
+	const tokens = node.children.filter(
+		(c) =>
+			!isTrivia(c) &&
+			c.type === "LeafNode" &&
+			c.kind.startsWith("Token`") &&
+			!isSemanticTokenLeaf(c),
+	);
 
-  if (semantic.length >= 2 && tokens.length === semantic.length - 1) {
-    const parts = [print(semantic[0])];
-    for (let i = 0; i < tokens.length; i++) {
-      const space = wantsSpacesAroundOperator(node, options, tokens[i]);
-      const gap = space ? ' ' : '';
-      if (space) {
-        parts.push(`${gap}${tokens[i].value}`, line, print(semantic[i + 1]));
-      } else {
-        parts.push(tokens[i].value, print(semantic[i + 1]));
-      }
-    }
-    return group(parts);
-  }
+	if (semantic.length >= 2 && tokens.length === semantic.length - 1) {
+		const parts = [print(semantic[0])];
+		for (let i = 0; i < tokens.length; i++) {
+			const space = wantsSpacesAroundOperator(node, options, tokens[i]);
+			const gap = space ? " " : "";
+			if (space) {
+				parts.push(
+					`${gap}${tokens[i].value}`,
+					line,
+					print(semantic[i + 1]),
+				);
+			} else {
+				parts.push(tokens[i].value, print(semantic[i + 1]));
+			}
+		}
+		return group(parts);
+	}
 
-  const opStr = OP_DISPLAY[node.op] ?? node.op;
-  const space = wantsSpacesAroundOperator(node, options);
-  const sep = space ? [' ', opStr, line] : [opStr];
-  return group(join(sep, operands(node).map(o => print(o))));
+	const opStr = OP_DISPLAY[node.op] ?? node.op;
+	const space = wantsSpacesAroundOperator(node, options);
+	const sep = space ? [" ", opStr, line] : [opStr];
+	return group(
+		join(
+			sep,
+			operands(node).map((o) => print(o)),
+		),
+	);
 }

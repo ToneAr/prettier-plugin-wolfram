@@ -1,31 +1,19 @@
 {
-	"type":"ContainerNode",
-	"kind":"String",
-	"children":[
+	"type": "ContainerNode",
+	"kind": "String",
+	"children": [
 		{
-			"type":"LeafNode",
-			"kind":"String",
-			"value":"\"hello\"",
-			"source":[
-				[
-					1,
-					1
-				],
-				[
-					1,
-					8
-				]
+			"type": "LeafNode",
+			"kind": "String",
+			"value": "\"hello\"",
+			"source": [
+				[1, 1],
+				[1, 8]
 			]
 		}
 	],
-	"source":[
-		[
-			1,
-			1
-		],
-		[
-			1,
-			8
-		]
+	"source": [
+		[1, 1],
+		[1, 8]
 	]
 }

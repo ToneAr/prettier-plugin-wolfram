@@ -1,13 +1,22 @@
 payloadPath = $ScriptCommandLine[[2]];
+
+
 initPath = $ScriptCommandLine[[3]];
 
 Get[initPath];
 
 payload = Quiet @ Check[Import[payloadPath, "RawJSON"], <||>];
-result = Quiet @ Check[
-	getCSTJSON[Lookup[payload, "source", ""], Lookup[payload, "tabWidth", 2]],
-	"null"
-];
+
+
+result =
+	Quiet @
+	Check[
+		getCSTJSON[
+			Lookup[payload, "source", ""],
+			Lookup[payload, "tabWidth", 2]
+		],
+		"null"
+	];
 
 WriteString[
 	$Output,

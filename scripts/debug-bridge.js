@@ -86,7 +86,9 @@ async function main() {
 	let t = Date.now();
 	const portOpen = await probePort("127.0.0.1", preferredPort);
 	if (portOpen) {
-		ok(`Port ${preferredPort} is OPEN — a process is already listening ${elapsed(t)}`);
+		ok(
+			`Port ${preferredPort} is OPEN — a process is already listening ${elapsed(t)}`,
+		);
 	} else {
 		warn(
 			`Port ${preferredPort} is CLOSED — KernelBridge will auto-start the bridge ${elapsed(t)}`,
@@ -159,7 +161,9 @@ async function main() {
 	// ── Step 5: close ─────────────────────────────────────────────────────
 	step(5, "Close bridge");
 	bridge.close();
-	ok("bridge.close() called — managed bridge process (if any) will be terminated");
+	ok(
+		"bridge.close() called — managed bridge process (if any) will be terminated",
+	);
 
 	console.error(`\n${BOLD}${GREEN}Debug session complete.${RESET}\n`);
 }

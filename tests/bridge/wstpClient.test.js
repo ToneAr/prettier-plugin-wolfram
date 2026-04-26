@@ -3,8 +3,10 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "fs";
 import os from "os";
 import path from "path";
 
-const scriptName = process.platform === "win32" ? "wolframscript.exe" : "wolframscript";
-const kernelName = process.platform === "win32" ? "WolframKernel.exe" : "WolframKernel";
+const scriptName =
+	process.platform === "win32" ? "wolframscript.exe" : "wolframscript";
+const kernelName =
+	process.platform === "win32" ? "WolframKernel.exe" : "WolframKernel";
 
 function touch(filePath) {
 	mkdirSync(path.dirname(filePath), { recursive: true });
@@ -75,7 +77,9 @@ describe("wstpClient executable resolution", () => {
 		const { resolveWolframScriptInvocation } = await loadTestHelpers();
 
 		expect(() =>
-			resolveWolframScriptInvocation(path.join(tempDir, "missing-engine")),
+			resolveWolframScriptInvocation(
+				path.join(tempDir, "missing-engine"),
+			),
 		).toThrow(/wolframEnginePath does not exist/);
 	});
 

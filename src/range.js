@@ -51,7 +51,10 @@ export function snapRangeToTopLevelChildren(ast, rangeStart, rangeEnd) {
 		startIndex = 0;
 	}
 
-	let endIndex = findLastIndex(children, (child) => child.locStart < rangeEnd);
+	let endIndex = findLastIndex(
+		children,
+		(child) => child.locStart < rangeEnd,
+	);
 	if (endIndex === -1) {
 		endIndex = children.length - 1;
 	}

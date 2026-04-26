@@ -1,487 +1,295 @@
 {
-	"type":"ContainerNode",
-	"kind":"String",
-	"children":[
+	"type": "ContainerNode",
+	"kind": "String",
+	"children": [
 		{
-			"type":"CallNode",
-			"head":{
-				"type":"LeafNode",
-				"kind":"Symbol",
-				"value":"Module",
-				"source":[
-					[
-						1,
-						1
-					],
-					[
-						1,
-						7
-					]
+			"type": "CallNode",
+			"head": {
+				"type": "LeafNode",
+				"kind": "Symbol",
+				"value": "Module",
+				"source": [
+					[1, 1],
+					[1, 7]
 				]
 			},
-			"children":[
+			"children": [
 				{
-					"type":"LeafNode",
-					"kind":"Token`OpenSquare",
-					"value":"[",
-					"source":[
-						[
-							1,
-							7
-						],
-						[
-							1,
-							8
-						]
+					"type": "LeafNode",
+					"kind": "Token`OpenSquare",
+					"value": "[",
+					"source": [
+						[1, 7],
+						[1, 8]
 					]
 				},
 				{
-					"type":"InfixNode",
-					"op":"Comma",
-					"children":[
+					"type": "InfixNode",
+					"op": "Comma",
+					"children": [
 						{
-							"type":"GroupNode",
-							"kind":"List",
-							"children":[
+							"type": "GroupNode",
+							"kind": "List",
+							"children": [
 								{
-									"type":"LeafNode",
-									"kind":"Token`OpenCurly",
-									"value":"{",
-									"source":[
-										[
-											1,
-											8
-										],
-										[
-											1,
-											9
-										]
+									"type": "LeafNode",
+									"kind": "Token`OpenCurly",
+									"value": "{",
+									"source": [
+										[1, 8],
+										[1, 9]
 									]
 								},
 								{
-									"type":"InfixNode",
-									"op":"Comma",
-									"children":[
+									"type": "InfixNode",
+									"op": "Comma",
+									"children": [
 										{
-											"type":"BinaryNode",
-											"op":"Set",
-											"children":[
+											"type": "BinaryNode",
+											"op": "Set",
+											"children": [
 												{
-													"type":"LeafNode",
-													"kind":"Symbol",
-													"value":"a",
-													"source":[
-														[
-															1,
-															9
-														],
-														[
-															1,
-															10
-														]
+													"type": "LeafNode",
+													"kind": "Symbol",
+													"value": "a",
+													"source": [
+														[1, 9],
+														[1, 10]
 													]
 												},
 												{
-													"type":"LeafNode",
-													"kind":"Whitespace",
-													"value":" ",
-													"source":[
-														[
-															1,
-															10
-														],
-														[
-															1,
-															11
-														]
+													"type": "LeafNode",
+													"kind": "Whitespace",
+													"value": " ",
+													"source": [
+														[1, 10],
+														[1, 11]
 													]
 												},
 												{
-													"type":"LeafNode",
-													"kind":"Token`Equal",
-													"value":"=",
-													"source":[
-														[
-															1,
-															11
-														],
-														[
-															1,
-															12
-														]
+													"type": "LeafNode",
+													"kind": "Token`Equal",
+													"value": "=",
+													"source": [
+														[1, 11],
+														[1, 12]
 													]
 												},
 												{
-													"type":"LeafNode",
-													"kind":"Whitespace",
-													"value":" ",
-													"source":[
-														[
-															1,
-															12
-														],
-														[
-															1,
-															13
-														]
+													"type": "LeafNode",
+													"kind": "Whitespace",
+													"value": " ",
+													"source": [
+														[1, 12],
+														[1, 13]
 													]
 												},
 												{
-													"type":"LeafNode",
-													"kind":"Integer",
-													"value":"1",
-													"source":[
-														[
-															1,
-															13
-														],
-														[
-															1,
-															14
-														]
+													"type": "LeafNode",
+													"kind": "Integer",
+													"value": "1",
+													"source": [
+														[1, 13],
+														[1, 14]
 													]
 												}
 											],
-											"source":[
-												[
-													1,
-													9
-												],
-												[
-													1,
-													14
-												]
+											"source": [
+												[1, 9],
+												[1, 14]
 											]
 										},
 										{
-											"type":"LeafNode",
-											"kind":"Token`Comma",
-											"value":",",
-											"source":[
-												[
-													1,
-													14
-												],
-												[
-													1,
-													15
-												]
+											"type": "LeafNode",
+											"kind": "Token`Comma",
+											"value": ",",
+											"source": [
+												[1, 14],
+												[1, 15]
 											]
 										},
 										{
-											"type":"LeafNode",
-											"kind":"Whitespace",
-											"value":" ",
-											"source":[
-												[
-													1,
-													15
-												],
-												[
-													1,
-													16
-												]
+											"type": "LeafNode",
+											"kind": "Whitespace",
+											"value": " ",
+											"source": [
+												[1, 15],
+												[1, 16]
 											]
 										},
 										{
-											"type":"BinaryNode",
-											"op":"Set",
-											"children":[
+											"type": "BinaryNode",
+											"op": "Set",
+											"children": [
 												{
-													"type":"LeafNode",
-													"kind":"Symbol",
-													"value":"b",
-													"source":[
-														[
-															1,
-															16
-														],
-														[
-															1,
-															17
-														]
+													"type": "LeafNode",
+													"kind": "Symbol",
+													"value": "b",
+													"source": [
+														[1, 16],
+														[1, 17]
 													]
 												},
 												{
-													"type":"LeafNode",
-													"kind":"Whitespace",
-													"value":" ",
-													"source":[
-														[
-															1,
-															17
-														],
-														[
-															1,
-															18
-														]
+													"type": "LeafNode",
+													"kind": "Whitespace",
+													"value": " ",
+													"source": [
+														[1, 17],
+														[1, 18]
 													]
 												},
 												{
-													"type":"LeafNode",
-													"kind":"Token`Equal",
-													"value":"=",
-													"source":[
-														[
-															1,
-															18
-														],
-														[
-															1,
-															19
-														]
+													"type": "LeafNode",
+													"kind": "Token`Equal",
+													"value": "=",
+													"source": [
+														[1, 18],
+														[1, 19]
 													]
 												},
 												{
-													"type":"LeafNode",
-													"kind":"Whitespace",
-													"value":" ",
-													"source":[
-														[
-															1,
-															19
-														],
-														[
-															1,
-															20
-														]
+													"type": "LeafNode",
+													"kind": "Whitespace",
+													"value": " ",
+													"source": [
+														[1, 19],
+														[1, 20]
 													]
 												},
 												{
-													"type":"LeafNode",
-													"kind":"Integer",
-													"value":"2",
-													"source":[
-														[
-															1,
-															20
-														],
-														[
-															1,
-															21
-														]
+													"type": "LeafNode",
+													"kind": "Integer",
+													"value": "2",
+													"source": [
+														[1, 20],
+														[1, 21]
 													]
 												}
 											],
-											"source":[
-												[
-													1,
-													16
-												],
-												[
-													1,
-													21
-												]
+											"source": [
+												[1, 16],
+												[1, 21]
 											]
 										}
 									],
-									"source":[
-										[
-											1,
-											9
-										],
-										[
-											1,
-											21
-										]
+									"source": [
+										[1, 9],
+										[1, 21]
 									]
 								},
 								{
-									"type":"LeafNode",
-									"kind":"Token`CloseCurly",
-									"value":"}",
-									"source":[
-										[
-											1,
-											21
-										],
-										[
-											1,
-											22
-										]
+									"type": "LeafNode",
+									"kind": "Token`CloseCurly",
+									"value": "}",
+									"source": [
+										[1, 21],
+										[1, 22]
 									]
 								}
 							],
-							"source":[
-								[
-									1,
-									8
-								],
-								[
-									1,
-									22
-								]
+							"source": [
+								[1, 8],
+								[1, 22]
 							]
 						},
 						{
-							"type":"LeafNode",
-							"kind":"Token`Comma",
-							"value":",",
-							"source":[
-								[
-									1,
-									22
-								],
-								[
-									1,
-									23
-								]
+							"type": "LeafNode",
+							"kind": "Token`Comma",
+							"value": ",",
+							"source": [
+								[1, 22],
+								[1, 23]
 							]
 						},
 						{
-							"type":"LeafNode",
-							"kind":"Whitespace",
-							"value":" ",
-							"source":[
-								[
-									1,
-									23
-								],
-								[
-									1,
-									24
-								]
+							"type": "LeafNode",
+							"kind": "Whitespace",
+							"value": " ",
+							"source": [
+								[1, 23],
+								[1, 24]
 							]
 						},
 						{
-							"type":"InfixNode",
-							"op":"Plus",
-							"children":[
+							"type": "InfixNode",
+							"op": "Plus",
+							"children": [
 								{
-									"type":"LeafNode",
-									"kind":"Symbol",
-									"value":"a",
-									"source":[
-										[
-											1,
-											24
-										],
-										[
-											1,
-											25
-										]
+									"type": "LeafNode",
+									"kind": "Symbol",
+									"value": "a",
+									"source": [
+										[1, 24],
+										[1, 25]
 									]
 								},
 								{
-									"type":"LeafNode",
-									"kind":"Whitespace",
-									"value":" ",
-									"source":[
-										[
-											1,
-											25
-										],
-										[
-											1,
-											26
-										]
+									"type": "LeafNode",
+									"kind": "Whitespace",
+									"value": " ",
+									"source": [
+										[1, 25],
+										[1, 26]
 									]
 								},
 								{
-									"type":"LeafNode",
-									"kind":"Token`Plus",
-									"value":"+",
-									"source":[
-										[
-											1,
-											26
-										],
-										[
-											1,
-											27
-										]
+									"type": "LeafNode",
+									"kind": "Token`Plus",
+									"value": "+",
+									"source": [
+										[1, 26],
+										[1, 27]
 									]
 								},
 								{
-									"type":"LeafNode",
-									"kind":"Whitespace",
-									"value":" ",
-									"source":[
-										[
-											1,
-											27
-										],
-										[
-											1,
-											28
-										]
+									"type": "LeafNode",
+									"kind": "Whitespace",
+									"value": " ",
+									"source": [
+										[1, 27],
+										[1, 28]
 									]
 								},
 								{
-									"type":"LeafNode",
-									"kind":"Symbol",
-									"value":"b",
-									"source":[
-										[
-											1,
-											28
-										],
-										[
-											1,
-											29
-										]
+									"type": "LeafNode",
+									"kind": "Symbol",
+									"value": "b",
+									"source": [
+										[1, 28],
+										[1, 29]
 									]
 								}
 							],
-							"source":[
-								[
-									1,
-									24
-								],
-								[
-									1,
-									29
-								]
+							"source": [
+								[1, 24],
+								[1, 29]
 							]
 						}
 					],
-					"source":[
-						[
-							1,
-							8
-						],
-						[
-							1,
-							29
-						]
+					"source": [
+						[1, 8],
+						[1, 29]
 					]
 				},
 				{
-					"type":"LeafNode",
-					"kind":"Token`CloseSquare",
-					"value":"]",
-					"source":[
-						[
-							1,
-							29
-						],
-						[
-							1,
-							30
-						]
+					"type": "LeafNode",
+					"kind": "Token`CloseSquare",
+					"value": "]",
+					"source": [
+						[1, 29],
+						[1, 30]
 					]
 				}
 			],
-			"source":[
-				[
-					1,
-					1
-				],
-				[
-					1,
-					30
-				]
+			"source": [
+				[1, 1],
+				[1, 30]
 			]
 		}
 	],
-	"source":[
-		[
-			1,
-			1
-		],
-		[
-			1,
-			30
-		]
+	"source": [
+		[1, 1],
+		[1, 30]
 	]
 }

@@ -1,62 +1,38 @@
 {
-	"type":"ContainerNode",
-	"kind":"String",
-	"children":[
+	"type": "ContainerNode",
+	"kind": "String",
+	"children": [
 		{
-			"type":"PrefixNode",
-			"op":"Minus",
-			"children":[
+			"type": "PrefixNode",
+			"op": "Minus",
+			"children": [
 				{
-					"type":"LeafNode",
-					"kind":"Token`Minus",
-					"value":"-",
-					"source":[
-						[
-							1,
-							1
-						],
-						[
-							1,
-							2
-						]
+					"type": "LeafNode",
+					"kind": "Token`Minus",
+					"value": "-",
+					"source": [
+						[1, 1],
+						[1, 2]
 					]
 				},
 				{
-					"type":"LeafNode",
-					"kind":"Symbol",
-					"value":"x",
-					"source":[
-						[
-							1,
-							2
-						],
-						[
-							1,
-							3
-						]
+					"type": "LeafNode",
+					"kind": "Symbol",
+					"value": "x",
+					"source": [
+						[1, 2],
+						[1, 3]
 					]
 				}
 			],
-			"source":[
-				[
-					1,
-					1
-				],
-				[
-					1,
-					3
-				]
+			"source": [
+				[1, 1],
+				[1, 3]
 			]
 		}
 	],
-	"source":[
-		[
-			1,
-			1
-		],
-		[
-			1,
-			3
-		]
+	"source": [
+		[1, 1],
+		[1, 3]
 	]
 }

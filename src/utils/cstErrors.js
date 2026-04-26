@@ -20,7 +20,9 @@ export function containsCstErrors(node) {
 	if (isCstErrorNode(node)) return true;
 	if (containsCstErrors(node.head)) return true;
 
-	return Array.isArray(node.children) && node.children.some(containsCstErrors);
+	return (
+		Array.isArray(node.children) && node.children.some(containsCstErrors)
+	);
 }
 
 export function createUnformattableNode(sourceText = "") {

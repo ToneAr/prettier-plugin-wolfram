@@ -4,12 +4,16 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "fs";
 import os from "os";
 import path from "path";
 
-const kernelName = process.platform === "win32" ? "WolframKernel.exe" : "WolframKernel";
+const kernelName =
+	process.platform === "win32" ? "WolframKernel.exe" : "WolframKernel";
 const fakeCst = {
 	type: "ContainerNode",
 	kind: "File",
 	children: [],
-	source: [[1, 1], [1, 1]],
+	source: [
+		[1, 1],
+		[1, 1],
+	],
 };
 
 let tempDir = "";
@@ -40,7 +44,9 @@ function createMockProcess() {
 		}
 
 		if (spawnMode === "respond") {
-			const requestId = payload.match(/__PRETTIER_WL_JSON_START__(\d+)__/)?.[1];
+			const requestId = payload.match(
+				/__PRETTIER_WL_JSON_START__(\d+)__/,
+			)?.[1];
 			if (requestId) {
 				setImmediate(() => {
 					proc.stdout.emit(
@@ -123,7 +129,9 @@ describe("WstpClient lifecycle", () => {
 		const { WstpClient, __test__ } = await loadClient();
 		const client = new WstpClient();
 
-		await expect(client.getCST("Needs[\"CodeParser`\"]")).resolves.toEqual(fakeCst);
+		await expect(client.getCST('Needs["CodeParser`"]')).resolves.toEqual(
+			fakeCst,
+		);
 
 		__test__.cleanupTrackedClients("Process exiting");
 
@@ -141,14 +149,16 @@ describe("WstpClient lifecycle", () => {
 		const { WstpClient } = await loadClient();
 		const client = new WstpClient();
 
-		await expect(client.getCST("slow[]", 2, { timeoutMs: 1000 })).rejects.toThrow(
-			/WolframKernel CST request timed out after 1s/,
-		);
+		await expect(
+			client.getCST("slow[]", 2, { timeoutMs: 1000 }),
+		).rejects.toThrow(/WolframKernel CST request timed out after 1s/);
 		expect(spawn).toHaveBeenCalledTimes(1);
 		expect(spawned[0].kill).toHaveBeenCalledTimes(1);
 
 		spawnMode = "respond";
-		await expect(client.getCST("fast[]", 2, { timeoutMs: 1000 })).resolves.toEqual(fakeCst);
+		await expect(
+			client.getCST("fast[]", 2, { timeoutMs: 1000 }),
+		).resolves.toEqual(fakeCst);
 		expect(spawn).toHaveBeenCalledTimes(2);
 
 		client.close();

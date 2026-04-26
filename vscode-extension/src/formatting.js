@@ -47,7 +47,10 @@ function snapRangeToTopLevelChildren(ast, rangeStart, rangeEnd) {
 	let startIndex = children.findIndex((child) => child.locEnd > rangeStart);
 	if (startIndex === -1) startIndex = 0;
 
-	let endIndex = findLastIndex(children, (child) => child.locStart < rangeEnd);
+	let endIndex = findLastIndex(
+		children,
+		(child) => child.locStart < rangeEnd,
+	);
 	if (endIndex === -1) endIndex = children.length - 1;
 	if (endIndex < startIndex) endIndex = startIndex;
 

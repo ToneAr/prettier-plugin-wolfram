@@ -58,7 +58,8 @@ describe("VS Code formatting helpers", () => {
 
 	it("maps range formatting onto the same slice produced by full document formatting", async () => {
 		const original = "a=1\n" + "\n" + "bb=cc[ d,e]\n" + "\n" + "z=3\n";
-		const formatted = "a = 1\n" + "\n" + "bb = cc[d, e]\n" + "\n" + "z = 3\n";
+		const formatted =
+			"a = 1\n" + "\n" + "bb = cc[d, e]\n" + "\n" + "z = 3\n";
 		const parse = vi.fn(async (text) => {
 			if (text === original) {
 				return makeAst(original, ["a=1", "bb=cc[ d,e]", "z=3"]);
@@ -100,7 +101,8 @@ describe("VS Code formatting helpers", () => {
 
 	it("does not replace unselected regions that differ from document formatting", async () => {
 		const original = "a=1\n" + "\n" + "bb = cc[d, e]\n" + "\n" + "z=3\n";
-		const formatted = "a = 1\n" + "\n" + "bb = cc[d, e]\n" + "\n" + "z = 3\n";
+		const formatted =
+			"a = 1\n" + "\n" + "bb = cc[d, e]\n" + "\n" + "z = 3\n";
 		const parse = vi.fn(async (text) => {
 			if (text === original) {
 				return makeAst(original, ["a=1", "bb = cc[d, e]", "z=3"]);

@@ -22,19 +22,19 @@ files, and reports formatter-backed diagnostics with Quick Fix actions.
 
 ## Highlights
 
-| Workflow | What you get |
-| --- | --- |
-| Format Wolfram files | Document formatting, selection formatting, and format-on-save support. |
-| Keep feedback close | Formatter-backed diagnostics with Quick Fixes for ranges or whole files. |
-| Share project config | Prettier and EditorConfig resolution from the current workspace file. |
-| Work without setup | Bundled Prettier and Wolfram plugin fallback when a workspace has no local install. |
+| Workflow             | What you get                                                                        |
+| -------------------- | ----------------------------------------------------------------------------------- |
+| Format Wolfram files | Document formatting, selection formatting, and format-on-save support.              |
+| Keep feedback close  | Formatter-backed diagnostics with Quick Fixes for ranges or whole files.            |
+| Share project config | Prettier and EditorConfig resolution from the current workspace file.               |
+| Work without setup   | Bundled Prettier and Wolfram plugin fallback when a workspace has no local install. |
 
 ## Features
 
 - Formats `.wl`, `.wls`, `.wlt`, `.m`, `.mt`, `.nb`, and `.cdf` files assigned
   to the `wolfram` language.
 - Supports VS Code `Format Document`, `Format Selection`, `Format Document
-  With...`, and format-on-save workflows.
+With...`, and format-on-save workflows.
 - Maps selection formatting to complete top-level Wolfram expressions touched by
   the selection.
 - Shows diagnostics for formatter-fixable rule findings and formatting diffs.
@@ -91,10 +91,10 @@ To format on save:
 
 ```json
 {
-  "[wolfram]": {
-    "editor.defaultFormatter": "Tone.wolfram-prettier-vscode",
-    "editor.formatOnSave": true
-  }
+	"[wolfram]": {
+		"editor.defaultFormatter": "Tone.wolfram-prettier-vscode",
+		"editor.formatOnSave": true
+	}
 }
 ```
 
@@ -107,17 +107,17 @@ This extension contributes these VS Code settings:
 
 ```json
 {
-  "wolframPrettier.wolframEnginePath": "",
-  "wolframPrettier.diagnosticSeverity": "information",
-  "wolframPrettier.cstRequestTimeoutMs": 180000
+	"wolframPrettier.wolframEnginePath": "",
+	"wolframPrettier.diagnosticSeverity": "information",
+	"wolframPrettier.cstRequestTimeoutMs": 180000
 }
 ```
 
-| Setting | Default | Description |
-| --- | --- | --- |
-| `wolframPrettier.wolframEnginePath` | `""` | Path to a Wolfram install directory, a `WolframKernel` executable, or a `wolframscript` executable. Empty means auto-detect. |
-| `wolframPrettier.diagnosticSeverity` | `"information"` | Severity used for formatter-backed diagnostics. Allowed values are `information`, `warning`, `hint`, and `error`. |
-| `wolframPrettier.cstRequestTimeoutMs` | `180000` | Milliseconds to wait for a WolframKernel CST parse request before timing out and allowing the kernel session to restart. Minimum effective value is `1000`. |
+| Setting                               | Default         | Description                                                                                                                                                 |
+| ------------------------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `wolframPrettier.wolframEnginePath`   | `""`            | Path to a Wolfram install directory, a `WolframKernel` executable, or a `wolframscript` executable. Empty means auto-detect.                                |
+| `wolframPrettier.diagnosticSeverity`  | `"information"` | Severity used for formatter-backed diagnostics. Allowed values are `information`, `warning`, `hint`, and `error`.                                           |
+| `wolframPrettier.cstRequestTimeoutMs` | `180000`        | Milliseconds to wait for a WolframKernel CST parse request before timing out and allowing the kernel session to restart. Minimum effective value is `1000`. |
 
 Use `wolframPrettier.wolframEnginePath` for editor-only setup. Use the Prettier
 option `wolframEnginePath` when the same path should also apply to CLI
@@ -145,25 +145,25 @@ Complete `.prettierrc` example:
 
 ```json
 {
-  "plugins": ["@wrel/prettier-plugin-wolfram"],
-  "printWidth": 80,
-  "tabWidth": 2,
-  "wolframNewlinesBetweenDefinitions": 1,
-  "wolframMaxBlankLinesBetweenCode": 1,
-  "wolframSpaceAfterComma": true,
-  "wolframSpaceAroundOperators": true,
-  "wolframAlignRuleValues": false,
-  "wolframDocumentationCommentColumn": 0,
-  "wolframDocumentationCommentPadding": 2,
-  "wolframTopLevelSpacingMode": "declarations",
-  "wolframPreserveTildeInfixFunctions": "",
-  "wolframCSTRequestTimeoutMs": 180000,
-  "wolframModuleVarsBreakThreshold": 40,
-  "wolframConditionFirstFunctions": "If,Switch",
-  "wolframBlockStructureFunctions": "Module,With,Block,DynamicModule",
-  "wolframCaseStructureFunctions": "Which",
-  "wolframEnginePath": "",
-  "wolframLintRules": "{}"
+	"plugins": ["@wrel/prettier-plugin-wolfram"],
+	"printWidth": 80,
+	"tabWidth": 2,
+	"wolframNewlinesBetweenDefinitions": 1,
+	"wolframMaxBlankLinesBetweenCode": 1,
+	"wolframSpaceAfterComma": true,
+	"wolframSpaceAroundOperators": true,
+	"wolframAlignRuleValues": false,
+	"wolframDocumentationCommentColumn": 0,
+	"wolframDocumentationCommentPadding": 2,
+	"wolframTopLevelSpacingMode": "declarations",
+	"wolframPreserveTildeInfixFunctions": "",
+	"wolframCSTRequestTimeoutMs": 180000,
+	"wolframModuleVarsBreakThreshold": 40,
+	"wolframConditionFirstFunctions": "If,Switch",
+	"wolframBlockStructureFunctions": "Module,With,Block,DynamicModule",
+	"wolframCaseStructureFunctions": "Which",
+	"wolframEnginePath": "",
+	"wolframLintRules": "{}"
 }
 ```
 
@@ -172,32 +172,32 @@ related options for core Prettier behavior.
 
 ## Wolfram Option Reference
 
-| Option | Type | Default | Description |
-| --- | --- | --- | --- |
-| `wolframNewlinesBetweenDefinitions` | integer | `1` | Blank lines inserted between adjacent top-level definitions such as `Set`, `SetDelayed`, `TagSet`, `TagSetDelayed`, `UpSet`, and `UpSetDelayed`. |
-| `wolframMaxBlankLinesBetweenCode` | integer | `1` | Maximum source blank lines preserved between non-definition code statements. |
-| `wolframSpaceAfterComma` | boolean | `true` | Inserts a space after commas in argument lists, lists, and associations. |
-| `wolframSpaceAroundOperators` | boolean | `true` | Inserts spaces around most infix, binary, and ternary operators. Operators that are normally tight, such as `::`, `?`, and `;;`, stay tight. |
-| `wolframAlignRuleValues` | boolean | `false` | Vertically aligns `Rule` and `RuleDelayed` values in multiline argument, list, and association layouts. |
-| `wolframDocumentationCommentColumn` | integer | `0` | Column for trailing documentation comments. `0` computes a column per contiguous block. |
-| `wolframDocumentationCommentPadding` | integer | `2` | Minimum spaces between code and an aligned trailing documentation comment when the column is computed automatically. |
-| `wolframTopLevelSpacingMode` | string | `"declarations"` | Top-level blank-line policy. Allowed values are `declarations`, `all`, and `none`. |
-| `wolframPreserveTildeInfixFunctions` | string | `""` | Comma-separated function names that stay in `x ~ f ~ y` form instead of normalizing to `f[x, y]`. |
-| `wolframCSTRequestTimeoutMs` | integer | `180000` | Milliseconds to wait for a WolframKernel CST parse request before the request is timed out and the kernel session can be restarted. Minimum effective value is `1000`. |
-| `wolframModuleVarsBreakThreshold` | integer | `40` | Character count at which block-structure variable lists break across lines. |
-| `wolframConditionFirstFunctions` | string | `"If,Switch"` | Comma-separated heads whose first argument stays on the same line as the head when it fits. |
-| `wolframBlockStructureFunctions` | string | `"Module,With,Block,DynamicModule"` | Comma-separated heads formatted with block-structure argument layout. |
-| `wolframCaseStructureFunctions` | string | `"Which"` | Comma-separated heads formatted with alternating condition/body indentation. |
-| `wolframEnginePath` | path string | `""` | Path to a Wolfram install directory, a `WolframKernel` executable, or a `wolframscript` executable. Empty means auto-detect. |
-| `wolframLintRules` | string | `"{}"` | JSON object string for rule-level overrides used by lint integrations, for example `{"prefer-rule-delayed":"error"}`. The extension's diagnostic squiggle severity is controlled by `wolframPrettier.diagnosticSeverity`. |
+| Option                               | Type        | Default                             | Description                                                                                                                                                                                                               |
+| ------------------------------------ | ----------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `wolframNewlinesBetweenDefinitions`  | integer     | `1`                                 | Blank lines inserted between adjacent top-level definitions such as `Set`, `SetDelayed`, `TagSet`, `TagSetDelayed`, `UpSet`, and `UpSetDelayed`.                                                                          |
+| `wolframMaxBlankLinesBetweenCode`    | integer     | `1`                                 | Maximum source blank lines preserved between non-definition code statements.                                                                                                                                              |
+| `wolframSpaceAfterComma`             | boolean     | `true`                              | Inserts a space after commas in argument lists, lists, and associations.                                                                                                                                                  |
+| `wolframSpaceAroundOperators`        | boolean     | `true`                              | Inserts spaces around most infix, binary, and ternary operators. Operators that are normally tight, such as `::`, `?`, and `;;`, stay tight.                                                                              |
+| `wolframAlignRuleValues`             | boolean     | `false`                             | Vertically aligns `Rule` and `RuleDelayed` values in multiline argument, list, and association layouts.                                                                                                                   |
+| `wolframDocumentationCommentColumn`  | integer     | `0`                                 | Column for trailing documentation comments. `0` computes a column per contiguous block.                                                                                                                                   |
+| `wolframDocumentationCommentPadding` | integer     | `2`                                 | Minimum spaces between code and an aligned trailing documentation comment when the column is computed automatically.                                                                                                      |
+| `wolframTopLevelSpacingMode`         | string      | `"declarations"`                    | Top-level blank-line policy. Allowed values are `declarations`, `all`, and `none`.                                                                                                                                        |
+| `wolframPreserveTildeInfixFunctions` | string      | `""`                                | Comma-separated function names that stay in `x ~ f ~ y` form instead of normalizing to `f[x, y]`.                                                                                                                         |
+| `wolframCSTRequestTimeoutMs`         | integer     | `180000`                            | Milliseconds to wait for a WolframKernel CST parse request before the request is timed out and the kernel session can be restarted. Minimum effective value is `1000`.                                                    |
+| `wolframModuleVarsBreakThreshold`    | integer     | `40`                                | Character count at which block-structure variable lists break across lines.                                                                                                                                               |
+| `wolframConditionFirstFunctions`     | string      | `"If,Switch"`                       | Comma-separated heads whose first argument stays on the same line as the head when it fits.                                                                                                                               |
+| `wolframBlockStructureFunctions`     | string      | `"Module,With,Block,DynamicModule"` | Comma-separated heads formatted with block-structure argument layout.                                                                                                                                                     |
+| `wolframCaseStructureFunctions`      | string      | `"Which"`                           | Comma-separated heads formatted with alternating condition/body indentation.                                                                                                                                              |
+| `wolframEnginePath`                  | path string | `""`                                | Path to a Wolfram install directory, a `WolframKernel` executable, or a `wolframscript` executable. Empty means auto-detect.                                                                                              |
+| `wolframLintRules`                   | string      | `"{}"`                              | JSON object string for rule-level overrides used by lint integrations, for example `{"prefer-rule-delayed":"error"}`. The extension's diagnostic squiggle severity is controlled by `wolframPrettier.diagnosticSeverity`. |
 
 `wolframTopLevelSpacingMode` has these values:
 
-| Value | Behavior |
-| --- | --- |
-| `declarations` | Adjacent definitions use `wolframNewlinesBetweenDefinitions`; other top-level code preserves source blank lines up to `wolframMaxBlankLinesBetweenCode`. |
-| `all` | All top-level statements require at least one blank line when `wolframMaxBlankLinesBetweenCode` allows it, while still preserving no more than the configured maximum. |
-| `none` | Removes top-level blank lines. |
+| Value          | Behavior                                                                                                                                                               |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `declarations` | Adjacent definitions use `wolframNewlinesBetweenDefinitions`; other top-level code preserves source blank lines up to `wolframMaxBlankLinesBetweenCode`.               |
+| `all`          | All top-level statements require at least one blank line when `wolframMaxBlankLinesBetweenCode` allows it, while still preserving no more than the configured maximum. |
+| `none`         | Removes top-level blank lines.                                                                                                                                         |
 
 ## Diagnostics And Quick Fixes
 
@@ -248,9 +248,9 @@ To format another custom extension, add a VS Code file association:
 
 ```json
 {
-  "files.associations": {
-    "*.wlx": "wolfram"
-  }
+	"files.associations": {
+		"*.wlx": "wolfram"
+	}
 }
 ```
 

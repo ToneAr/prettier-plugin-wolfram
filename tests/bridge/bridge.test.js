@@ -8,7 +8,10 @@ const fakeCst = {
 	type: "ContainerNode",
 	kind: "File",
 	children: [],
-	source: [[1, 1], [1, 1]],
+	source: [
+		[1, 1],
+		[1, 1],
+	],
 };
 
 let tempDir = "";
@@ -31,7 +34,9 @@ const createConnection = vi.fn(() => {
 			if (socket.destroyed) return;
 			socket.emit(
 				"data",
-				Buffer.from(JSON.stringify({ id: request.id, result: fakeCst }) + "\n"),
+				Buffer.from(
+					JSON.stringify({ id: request.id, result: fakeCst }) + "\n",
+				),
 			);
 		});
 	});
@@ -157,7 +162,10 @@ describe("KernelBridge", () => {
 		expect(cst).toMatchObject(fakeCst);
 		expect(spawn).toHaveBeenCalledTimes(1);
 		expect(createConnection).toHaveBeenCalledTimes(2);
-		expect(writtenRequests.map((request) => request.source)).toEqual(["f[x]", "g[x]"]);
+		expect(writtenRequests.map((request) => request.source)).toEqual([
+			"f[x]",
+			"g[x]",
+		]);
 
 		bridge.close();
 	});

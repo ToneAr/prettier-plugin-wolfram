@@ -48,11 +48,7 @@
 		"wolframTopLevelSpacingMode": {
 			"type": "string",
 			"default": "declarations",
-			"enum": [
-				"declarations",
-				"all",
-				"none"
-			],
+			"enum": ["declarations", "all", "none"],
 			"markdownEnumDescriptions": [
 				"Apply definition spacing only to adjacent declarations; preserve ordinary code spacing up to `wolframMaxBlankLinesBetweenCode`.",
 				"Apply top-level spacing to all statements.",

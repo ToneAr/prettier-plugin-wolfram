@@ -108,9 +108,12 @@ function attachConn(sock) {
 		_pending.clear();
 	};
 
-	sock.on("error", () => drop("Kernel socket error — will reconnect on next request"));
+	sock.on("error", () =>
+		drop("Kernel socket error — will reconnect on next request"),
+	);
 	sock.on("close", () => {
-		if (_sock === sock) drop("Kernel socket closed — will reconnect on next request");
+		if (_sock === sock)
+			drop("Kernel socket closed — will reconnect on next request");
 	});
 }
 
@@ -168,7 +171,8 @@ function spawnServer(enginePath) {
 	const nodeBin = findNodeBin();
 	const env = {
 		...process.env,
-		WOLFRAM_ENGINE_PATH: enginePath || process.env.WOLFRAM_ENGINE_PATH || "",
+		WOLFRAM_ENGINE_PATH:
+			enginePath || process.env.WOLFRAM_ENGINE_PATH || "",
 		WL_KERNEL_SOCKET: SOCKET_PATH,
 		WL_KERNEL_LOCK: LOCK_PATH,
 	};
@@ -300,7 +304,8 @@ export class KernelBridge {
 			prettierOptions.wolframEnginePath ??
 			this.#options.wolframEnginePath ??
 			"";
-		const tabWidth = prettierOptions.tabWidth ?? this.#options.tabWidth ?? 2;
+		const tabWidth =
+			prettierOptions.tabWidth ?? this.#options.tabWidth ?? 2;
 		const timeoutMs = normalizeCSTRequestTimeoutMs(
 			prettierOptions.wolframCSTRequestTimeoutMs ??
 				this.#options.wolframCSTRequestTimeoutMs,
@@ -313,12 +318,19 @@ export class KernelBridge {
 			const timer = setTimeout(() => {
 				_pending.delete(id);
 				reject(
-					new Error(`Kernel CST request timed out after ${formatTimeout(timeoutMs)}`),
+					new Error(
+						`Kernel CST request timed out after ${formatTimeout(timeoutMs)}`,
+					),
 				);
 			}, timeoutMs + CLIENT_TIMEOUT_GRACE_MS);
 			_pending.set(id, { resolve, reject, timer });
 			_sock.write(
-				JSON.stringify({ id, source: sourceText, tabWidth, timeoutMs }) + "\n",
+				JSON.stringify({
+					id,
+					source: sourceText,
+					tabWidth,
+					timeoutMs,
+				}) + "\n",
 			);
 		});
 	}

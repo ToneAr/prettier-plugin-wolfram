@@ -150,7 +150,8 @@ function resolveDirectWorkspacePrettier(workspaceFolder) {
 }
 
 async function resolveFormatterContext(workspaceFolder, filePath) {
-	const workspacePrettierPath = resolveDirectWorkspacePrettier(workspaceFolder);
+	const workspacePrettierPath =
+		resolveDirectWorkspacePrettier(workspaceFolder);
 	const bundledPrettierPath = require.resolve("prettier", {
 		paths: [extensionRoot],
 	});
@@ -169,7 +170,8 @@ async function resolveFormatterContext(workspaceFolder, filePath) {
 		pluginPath = workspacePlugin.pluginEntry;
 	} else {
 		pluginPath =
-			resolveDirectWorkspacePlugin(workspaceFolder) ?? resolveBundledPlugin();
+			resolveDirectWorkspacePlugin(workspaceFolder) ??
+			resolveBundledPlugin();
 	}
 
 	if (!pluginPath) return null;
@@ -182,7 +184,10 @@ async function resolveFormatterContext(workspaceFolder, filePath) {
 
 async function loadFormatterPlugin(pluginPath) {
 	if (!pluginModuleCache.has(pluginPath)) {
-		pluginModuleCache.set(pluginPath, import(pathToFileURL(pluginPath).href));
+		pluginModuleCache.set(
+			pluginPath,
+			import(pathToFileURL(pluginPath).href),
+		);
 	}
 
 	return pluginModuleCache.get(pluginPath);
@@ -275,7 +280,9 @@ async function formatWithPrettier(document, range) {
 	try {
 		plan = await getFormattingPlan(document, range);
 	} catch (err) {
-		vscode.window.showErrorMessage("wolfram-prettier-range: " + err.message);
+		vscode.window.showErrorMessage(
+			"wolfram-prettier-range: " + err.message,
+		);
 		return [];
 	}
 
@@ -406,7 +413,9 @@ async function collectDiagnostics(document, collection, generation) {
 		} else {
 			const bundledPluginEntry = resolvePackagedPlugin([extensionRoot]);
 			if (!bundledPluginEntry)
-				throw new Error("Could not resolve bundled Wolfram Prettier plugin");
+				throw new Error(
+					"Could not resolve bundled Wolfram Prettier plugin",
+				);
 			const bundledPluginDir = path.dirname(bundledPluginEntry);
 			pluginModuleUrl = pathToFileURL(bundledPluginEntry).href;
 			rulesModuleUrl = pathToFileURL(
@@ -513,9 +522,8 @@ function activate(context) {
 			},
 		});
 
-	const provider = vscode.languages.registerDocumentRangeFormattingEditProvider(
-		selector,
-		{
+	const provider =
+		vscode.languages.registerDocumentRangeFormattingEditProvider(selector, {
 			async provideDocumentRangeFormattingEdits(
 				document,
 				range,
@@ -524,14 +532,18 @@ function activate(context) {
 			) {
 				return formatWithPrettier(document, range);
 			},
-		},
-	);
+		});
 
 	const codeActionProvider = vscode.languages.registerCodeActionsProvider(
 		selector,
 		{
 			provideCodeActions(document, range, context) {
-				return provideFormattingCodeActions(vscode, document, range, context);
+				return provideFormattingCodeActions(
+					vscode,
+					document,
+					range,
+					context,
+				);
 			},
 		},
 		{
