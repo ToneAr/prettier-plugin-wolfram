@@ -1,0 +1,107 @@
+{
+	"type": "ContainerNode",
+	"kind": "String",
+	"children": [
+		{
+			"type": "BinaryNode",
+			"op": "Set",
+			"children": [
+				{
+					"type": "LeafNode",
+					"kind": "Symbol",
+					"value": "x",
+					"source": [
+						[
+							1,
+							1
+						],
+						[
+							1,
+							2
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							1,
+							2
+						],
+						[
+							1,
+							3
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Token`Equal",
+					"value": "=",
+					"source": [
+						[
+							1,
+							3
+						],
+						[
+							1,
+							4
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							1,
+							4
+						],
+						[
+							1,
+							5
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Integer",
+					"value": "1",
+					"source": [
+						[
+							1,
+							5
+						],
+						[
+							1,
+							6
+						]
+					]
+				}
+			],
+			"source": [
+				[
+					1,
+					1
+				],
+				[
+					1,
+					6
+				]
+			]
+		}
+	],
+	"source": [
+		[
+			1,
+			1
+		],
+		[
+			1,
+			6
+		]
+	]
+}

@@ -1,0 +1,57 @@
+{
+	"name": "@wrel/prettier-plugin-wolfram",
+	"version": "0.1.1",
+	"description": "Prettier plugin for Wolfram Language using Wolfram CodeParser",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git://github.com/ToneAr/prettier-wolfram.git"
+	},
+	"keywords": [
+		"prettier",
+		"prettier-plugin",
+		"wolfram",
+		"wolfram-language",
+		"mathematica",
+		"formatter"
+	],
+	"type": "module",
+	"main": "src/index.js",
+	"bin": {
+		"prettier-wolfram": "bin/prettier-wolfram.js"
+	},
+	"files": [
+		"bin/",
+		"scripts/find-wstp.js",
+		"scripts/kernel-server.js",
+		"src/",
+		"README.md"
+	],
+	"peerDependencies": {
+		"prettier": "^3.0.0"
+	},
+	"dependencies": {
+		"node-addon-api": "^7.0.0"
+	},
+	"devDependencies": {
+		"prettier": "^3.4.0",
+		"vitest": "^2.0.0",
+		"node-gyp": "^10.0.0"
+	},
+	"scripts": {
+		"build:addon": "node-gyp rebuild --directory wstp-addon",
+		"package:vscode": "node scripts/package-vscode-extension.mjs",
+		"package:vscode:standalone": "node scripts/package-vscode-extension.mjs",
+		"package:vscode:pre-release": "node scripts/package-vscode-extension.mjs --pre-release",
+		"publish:vscode:pre-release": "node scripts/package-vscode-extension.mjs --pre-release --publish",
+		"debug:bridge": "node scripts/debug-bridge.js",
+		"test": "vitest run",
+		"test:watch": "vitest"
+	},
+	"workspaces": [
+		"vscode-extension"
+	],
+	"publishConfig": {
+		"registry": "http://localhost:4873"
+	}
+}

@@ -1,0 +1,106 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "https://wrel.dev/schemas/prettier-plugin-wolfram/prettierrc.schema.json",
+	"title": "Wolfram Prettier Options",
+	"description": "Wolfram Language options recognized by @wrel/prettier-plugin-wolfram.",
+	"type": "object",
+	"additionalProperties": true,
+	"properties": {
+		"wolframNewlinesBetweenDefinitions": {
+			"type": "integer",
+			"default": 1,
+			"minimum": 0,
+			"markdownDescription": "Blank lines inserted between adjacent definitions."
+		},
+		"wolframMaxBlankLinesBetweenCode": {
+			"type": "integer",
+			"default": 1,
+			"minimum": 0,
+			"markdownDescription": "Maximum source blank lines preserved between non-definition code statements."
+		},
+		"wolframSpaceAfterComma": {
+			"type": "boolean",
+			"default": true,
+			"markdownDescription": "Insert space after commas in argument lists."
+		},
+		"wolframSpaceAroundOperators": {
+			"type": "boolean",
+			"default": true,
+			"markdownDescription": "Insert spaces around infix operators."
+		},
+		"wolframAlignRuleValues": {
+			"type": "boolean",
+			"default": false,
+			"markdownDescription": "Align `Rule` and `RuleDelayed` values vertically in multiline argument, list, and association layouts."
+		},
+		"wolframDocumentationCommentColumn": {
+			"type": "integer",
+			"default": 0,
+			"minimum": 0,
+			"markdownDescription": "Column for trailing documentation comments. `0` = auto-compute per contiguous block; always clamped above line width."
+		},
+		"wolframDocumentationCommentPadding": {
+			"type": "integer",
+			"default": 2,
+			"minimum": 1,
+			"markdownDescription": "Minimum spaces between code and an aligned trailing documentation comment in auto mode."
+		},
+		"wolframTopLevelSpacingMode": {
+			"type": "string",
+			"default": "declarations",
+			"enum": [
+				"declarations",
+				"all",
+				"none"
+			],
+			"markdownEnumDescriptions": [
+				"Apply definition spacing only to adjacent declarations; preserve ordinary code spacing up to `wolframMaxBlankLinesBetweenCode`.",
+				"Apply top-level spacing to all statements.",
+				"Remove top-level blank lines."
+			],
+			"markdownDescription": "Top-level spacing policy: `declarations`, `all`, or `none`."
+		},
+		"wolframPreserveTildeInfixFunctions": {
+			"type": "string",
+			"default": "",
+			"markdownDescription": "Comma-separated function names that stay in `~f~` infix form instead of normalizing to `f[x, y]`."
+		},
+		"wolframCSTRequestTimeoutMs": {
+			"type": "integer",
+			"default": 180000,
+			"minimum": 1000,
+			"markdownDescription": "Milliseconds to wait for a WolframKernel CST parse request before restarting the kernel session."
+		},
+		"wolframModuleVarsBreakThreshold": {
+			"type": "integer",
+			"default": 40,
+			"minimum": 0,
+			"markdownDescription": "Character count at which `Module`/`With`/`Block` var list breaks."
+		},
+		"wolframConditionFirstFunctions": {
+			"type": "string",
+			"default": "If,Switch",
+			"markdownDescription": "Comma-separated symbols whose first arg stays on same line as head."
+		},
+		"wolframBlockStructureFunctions": {
+			"type": "string",
+			"default": "Module,With,Block,DynamicModule",
+			"markdownDescription": "Comma-separated symbols using block-structure formatting."
+		},
+		"wolframCaseStructureFunctions": {
+			"type": "string",
+			"default": "Which",
+			"markdownDescription": "Comma-separated symbols using alternating condition/body indentation."
+		},
+		"wolframEnginePath": {
+			"type": "string",
+			"default": "",
+			"markdownDescription": "Path to a Wolfram install or executable. Auto-detected if empty."
+		},
+		"wolframLintRules": {
+			"type": "string",
+			"default": "{}",
+			"markdownDescription": "JSON object string of per-rule level overrides, for example `{\"prefer-rule-delayed\":\"error\"}`."
+		}
+	}
+}

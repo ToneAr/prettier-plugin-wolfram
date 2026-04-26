@@ -1,0 +1,12 @@
+.git/**
+.github/**
+.vscode/**
+tests/**
+coverage/**
+dist/**
+*.log
+*.tgz
+*.vsix
+package-lock.json
+bun.lock
+.npmrc

@@ -1,0 +1,89 @@
+{
+	"name": "wolfram-prettier-vscode",
+	"displayName": "Prettier - Code formatter (Wolfram Language)",
+	"description": "Formats Wolfram Language files and surfaces formatter-backed diagnostics using bundled Prettier.",
+	"version": "0.5.1",
+	"license": "MIT",
+	"publisher": "Tone",
+	"icon": "assets/icon.png",
+	"repository": {
+		"type": "git",
+		"url": "git://github.com/ToneAr/prettier-wolfram.git"
+	},
+	"engines": {
+		"vscode": "^1.75.0"
+	},
+	"categories": [
+		"Formatters"
+	],
+	"activationEvents": [
+		"onLanguage:wolfram"
+	],
+	"main": "./src/extension.js",
+	"scripts": {
+		"package:standalone": "node ../scripts/package-vscode-extension.mjs",
+		"package:pre-release": "node ../scripts/package-vscode-extension.mjs --pre-release",
+		"publish:pre-release": "node ../scripts/package-vscode-extension.mjs --pre-release --publish"
+	},
+	"dependencies": {
+		"prettier": "^3.4.0",
+		"@wrel/prettier-plugin-wolfram": "^0.1.1"
+	},
+	"contributes": {
+		"configuration": {
+			"title": "Prettier Wolfram",
+			"properties": {
+				"wolframPrettier.wolframEnginePath": {
+					"type": "string",
+					"default": "",
+					"description": "Path to the Wolfram Engine or Mathematica install directory. Leave empty for auto-detection."
+				},
+				"wolframPrettier.diagnosticSeverity": {
+					"type": "string",
+					"default": "information",
+					"enum": [
+						"information",
+						"warning",
+						"hint",
+						"error"
+					],
+					"markdownDescription": "Severity used for formatter-backed diagnostics. `information` shows blue squiggles by default; `warning` is stronger; `hint` uses dotted underlines."
+				},
+				"wolframPrettier.cstRequestTimeoutMs": {
+					"type": "number",
+					"default": 180000,
+					"minimum": 1000,
+					"markdownDescription": "Milliseconds to wait for a WolframKernel CST parse request before restarting the kernel session."
+				}
+			}
+		},
+		"jsonValidation": [
+			{
+				"fileMatch": [
+					".prettierrc",
+					".prettierrc.json",
+					".prettierrc.json5"
+				],
+				"url": "./schemas/prettierrc.schema.json"
+			}
+		],
+		"languages": [
+			{
+				"id": "wolfram",
+				"aliases": [
+					"Wolfram",
+					"Wolfram Language"
+				],
+				"extensions": [
+					".wl",
+					".wls",
+					".wlt",
+					".m",
+					".mt",
+					".nb",
+					".cdf"
+				]
+			}
+		]
+	}
+}

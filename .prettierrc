@@ -1,0 +1,23 @@
+{
+	"plugins": [
+		"./src/index.js"
+	],
+	"useTabs": true,
+	"printWidth": 80,
+	"tabWidth": 4,
+	"wolframDocumentationCommentColumn": 100,
+	"wolframDocumentationCommentPadding": 2,
+	"wolframNewlinesBetweenDefinitions": 2,
+	"wolframTopLevelSpacingMode": "declarations",
+	"wolframSpaceAfterComma": true,
+	"wolframSpaceAroundOperators": true,
+	"wolframModuleVarsBreakThreshold": 40,
+	"wolframConditionFirstFunctions": "If,Switch",
+	"wolframBlockStructureFunctions": "Module,With,Block,DynamicModule",
+	"wolframCaseStructureFunctions": "Which",
+	"wolframPreserveTildeInfixFunctions": "Join",
+	"wolframLSPHost": "127.0.0.1",
+	"wolframLSPPort": 6123,
+	"wolframEnginePath": "",
+	"wolframLintRules": "{}"
+}
