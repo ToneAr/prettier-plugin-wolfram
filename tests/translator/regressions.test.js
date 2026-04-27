@@ -89,6 +89,34 @@ describe("translator regressions", () => {
 		).toBe('"processing"');
 	});
 
+	it("keeps prefix and postfix same-subject definitions contiguous", async () => {
+		const source =
+			"Options @ f = {}\n\n" +
+			"f // Options = {}\n\n" +
+			"Attributes @ f = {}\n\n" +
+			"f // Attributes = {}\n\n" +
+			"f @ x_ := x\n\n" +
+			"x_ // f := x\n\n" +
+			"g @ x_ := x";
+
+		const result = await prettier.format(source, {
+			parser: "wolfram",
+			plugins: [plugin],
+			printWidth: 80,
+			tabWidth: 2,
+		});
+
+		expect(result).toBe(
+			"Options @ f = {}\n" +
+				"f // Options = {}\n" +
+				"Attributes @ f = {}\n" +
+				"f // Attributes = {}\n" +
+				"f @ x_ := x\n" +
+				"x_ // f := x\n\n" +
+				"g @ x_ := x",
+		);
+	}, 15000);
+
 	it("formats long string literals as multiline StringJoin expressions", async () => {
 		const source =
 			'longName = "a very long string that should wrap nicely across multiple lines"';

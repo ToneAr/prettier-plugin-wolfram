@@ -23,6 +23,20 @@ function call(head, args = []) {
 	};
 }
 
+function binary(op, lhs, rhs) {
+	return {
+		type: "BinaryNode",
+		op,
+		children: [
+			lhs,
+			op === "BinaryAt"
+				? token("Token`At", "@")
+				: token("Token`SlashSlash", "//"),
+			rhs,
+		],
+	};
+}
+
 function definition(op, lhs, value, source) {
 	return {
 		type: "BinaryNode",
@@ -394,24 +408,78 @@ describe("printContainer", () => {
 				),
 				definition(
 					"Set",
+					binary("BinaryAt", sym("Options"), sym("f")),
+					"Options @ f = {}",
+					[
+						[7, 1],
+						[7, 17],
+					],
+				),
+				definition(
+					"Set",
+					binary("BinarySlashSlash", sym("f"), sym("Options")),
+					"f // Options = {}",
+					[
+						[10, 1],
+						[10, 18],
+					],
+				),
+				definition(
+					"Set",
 					call("Attributes", [sym("f")]),
 					"Attributes[f] = {HoldAll}",
 					[
-						[7, 1],
-						[7, 26],
+						[13, 1],
+						[13, 26],
+					],
+				),
+				definition(
+					"Set",
+					binary("BinaryAt", sym("Attributes"), sym("f")),
+					"Attributes @ f = {}",
+					[
+						[16, 1],
+						[16, 20],
+					],
+				),
+				definition(
+					"Set",
+					binary("BinarySlashSlash", sym("f"), sym("Attributes")),
+					"f // Attributes = {}",
+					[
+						[19, 1],
+						[19, 21],
 					],
 				),
 				definition("SetDelayed", call("f", [sym("x")]), "f[x_] := x", [
-					[10, 1],
-					[10, 11],
+					[22, 1],
+					[22, 11],
 				]),
+				definition(
+					"SetDelayed",
+					binary("BinaryAt", sym("f"), sym("x")),
+					"f @ x_ := x",
+					[
+						[25, 1],
+						[25, 12],
+					],
+				),
+				definition(
+					"SetDelayed",
+					binary("BinarySlashSlash", sym("x"), sym("f")),
+					"x_ // f := x",
+					[
+						[28, 1],
+						[28, 13],
+					],
+				),
 				definition("SetDelayed", call("f", [sym("y")]), "f[y_] := y", [
-					[13, 1],
-					[13, 11],
+					[31, 1],
+					[31, 11],
 				]),
 				definition("SetDelayed", call("g", [sym("x")]), "g[x_] := x", [
-					[14, 1],
-					[14, 11],
+					[32, 1],
+					[32, 11],
 				]),
 			],
 		};
@@ -422,8 +490,14 @@ describe("printContainer", () => {
 		expect(out).toBe(
 			"SetAttributes[f, HoldAll]\n" +
 				"Options[f] = {opt -> Automatic}\n" +
+				"Options @ f = {}\n" +
+				"f // Options = {}\n" +
 				"Attributes[f] = {HoldAll}\n" +
+				"Attributes @ f = {}\n" +
+				"f // Attributes = {}\n" +
 				"f[x_] := x\n" +
+				"f @ x_ := x\n" +
+				"x_ // f := x\n" +
 				"f[y_] := y\n\n" +
 				"g[x_] := x",
 		);

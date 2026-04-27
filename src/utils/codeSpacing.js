@@ -151,6 +151,28 @@ function definitionTargetNamesFromCall(node, allowedHeads) {
 	return subjectNamesFromExpression(callArgumentNodes(node)[0]);
 }
 
+function definitionTargetNamesFromShorthand(node, allowedHeads) {
+	if (node?.type !== "BinaryNode") return new Set();
+
+	const [lhs, rhs] = semanticChildren(node);
+	if (node.op === "BinaryAt" && allowedHeads.has(symbolName(lhs))) {
+		return subjectNamesFromExpression(rhs);
+	}
+
+	if (node.op === "BinarySlashSlash" && allowedHeads.has(symbolName(rhs))) {
+		return subjectNamesFromExpression(lhs);
+	}
+
+	return new Set();
+}
+
+function definitionTargetNames(node, allowedHeads) {
+	const callNames = definitionTargetNamesFromCall(node, allowedHeads);
+	if (callNames.size > 0) return callNames;
+
+	return definitionTargetNamesFromShorthand(node, allowedHeads);
+}
+
 function functionNameFromCallHead(node) {
 	const name = symbolName(node);
 	if (name) return name;
@@ -173,11 +195,24 @@ function functionDefinitionSubjectNamesFromLhs(
 	const bareName = symbolName(node);
 	if (allowBareSymbol && bareName) return new Set([bareName]);
 
-	const targetNames = definitionTargetNamesFromCall(
+	const targetNames = definitionTargetNames(
 		node,
 		SAME_DEFINITION_TARGET_HEADS,
 	);
 	if (targetNames.size > 0) return targetNames;
+
+	if (node?.type === "BinaryNode") {
+		const [lhs, rhs] = semanticChildren(node);
+		if (node.op === "BinaryAt") {
+			const name = functionNameFromCallHead(lhs);
+			return name ? new Set([name]) : new Set();
+		}
+
+		if (node.op === "BinarySlashSlash") {
+			const name = functionNameFromCallHead(rhs);
+			return name ? new Set([name]) : new Set();
+		}
+	}
 
 	if (node?.type === "CallNode") {
 		const name = functionNameFromCallHead(node.head);
@@ -199,7 +234,7 @@ function binaryLhs(node) {
 
 function definitionSubjectNames(node) {
 	const statement = unwrapSingleStatementNode(node);
-	const attributeNames = definitionTargetNamesFromCall(
+	const attributeNames = definitionTargetNames(
 		statement,
 		ATTRIBUTE_SETTER_HEADS,
 	);

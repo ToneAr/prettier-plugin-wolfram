@@ -25,6 +25,20 @@ function call(head, args = []) {
 	};
 }
 
+function binary(op, lhs, rhs) {
+	return {
+		type: "BinaryNode",
+		op,
+		children: [
+			lhs,
+			op === "BinaryAt"
+				? token("Token`At", "@")
+				: token("Token`SlashSlash", "//"),
+			rhs,
+		],
+	};
+}
+
 function definition(op, lhs, source) {
 	return {
 		type: "BinaryNode",
@@ -456,27 +470,75 @@ describe("newlines-between-definitions", () => {
 					[3, 1],
 					[3, 32],
 				]),
+				definition(
+					"Set",
+					binary("BinaryAt", sym("Options"), sym("f")),
+					[
+						[5, 1],
+						[5, 17],
+					],
+				),
+				definition(
+					"Set",
+					binary("BinarySlashSlash", sym("f"), sym("Options")),
+					[
+						[7, 1],
+						[7, 18],
+					],
+				),
 				definition("Set", call("Attributes", [sym("f")]), [
-					[5, 1],
-					[5, 26],
-				]),
-				definition("SetDelayed", call("f", [sym("x")]), [
-					[7, 1],
-					[7, 11],
-				]),
-				definition("SetDelayed", call("f", [sym("y")]), [
 					[9, 1],
-					[9, 11],
+					[9, 26],
+				]),
+				definition(
+					"Set",
+					binary("BinaryAt", sym("Attributes"), sym("f")),
+					[
+						[11, 1],
+						[11, 20],
+					],
+				),
+				definition(
+					"Set",
+					binary("BinarySlashSlash", sym("f"), sym("Attributes")),
+					[
+						[13, 1],
+						[13, 21],
+					],
+				),
+				definition("SetDelayed", call("f", [sym("x")]), [
+					[15, 1],
+					[15, 11],
+				]),
+				definition(
+					"SetDelayed",
+					binary("BinaryAt", sym("f"), sym("x")),
+					[
+						[17, 1],
+						[17, 12],
+					],
+				),
+				definition(
+					"SetDelayed",
+					binary("BinarySlashSlash", sym("x"), sym("f")),
+					[
+						[19, 1],
+						[19, 13],
+					],
+				),
+				definition("SetDelayed", call("f", [sym("y")]), [
+					[21, 1],
+					[21, 11],
 				]),
 				definition("SetDelayed", call("g", [sym("x")]), [
-					[11, 1],
-					[11, 11],
+					[23, 1],
+					[23, 11],
 				]),
 			],
 		};
 
 		newlinesRule.visit(node, ctx);
-		expect(ctx.reports).toHaveLength(4);
+		expect(ctx.reports).toHaveLength(10);
 		for (const report of ctx.reports) {
 			expect(report.message).toMatch(/Expected 0 blank lines/);
 		}
