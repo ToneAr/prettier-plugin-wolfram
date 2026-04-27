@@ -39,6 +39,18 @@ function binary(op, lhs, rhs) {
 	};
 }
 
+function messageName(symbol, name) {
+	return {
+		type: "InfixNode",
+		op: "MessageName",
+		children: [
+			sym(symbol),
+			token("Token`ColonColon", "::"),
+			{ type: "LeafNode", kind: "String", value: name },
+		],
+	};
+}
+
 function definition(op, lhs, source) {
 	return {
 		type: "BinaryNode",
@@ -506,39 +518,47 @@ describe("newlines-between-definitions", () => {
 						[13, 21],
 					],
 				),
-				definition("SetDelayed", call("f", [sym("x")]), [
+				definition("Set", messageName("f", "usage"), [
 					[15, 1],
-					[15, 11],
+					[15, 19],
+				]),
+				definition("Set", messageName("f", "bad"), [
+					[17, 1],
+					[17, 15],
+				]),
+				definition("SetDelayed", call("f", [sym("x")]), [
+					[19, 1],
+					[19, 11],
 				]),
 				definition(
 					"SetDelayed",
 					binary("BinaryAt", sym("f"), sym("x")),
 					[
-						[17, 1],
-						[17, 12],
+						[21, 1],
+						[21, 12],
 					],
 				),
 				definition(
 					"SetDelayed",
 					binary("BinarySlashSlash", sym("x"), sym("f")),
 					[
-						[19, 1],
-						[19, 13],
+						[23, 1],
+						[23, 13],
 					],
 				),
 				definition("SetDelayed", call("f", [sym("y")]), [
-					[21, 1],
-					[21, 11],
+					[25, 1],
+					[25, 11],
 				]),
 				definition("SetDelayed", call("g", [sym("x")]), [
-					[23, 1],
-					[23, 11],
+					[27, 1],
+					[27, 11],
 				]),
 			],
 		};
 
 		newlinesRule.visit(node, ctx);
-		expect(ctx.reports).toHaveLength(10);
+		expect(ctx.reports).toHaveLength(12);
 		for (const report of ctx.reports) {
 			expect(report.message).toMatch(/Expected 0 blank lines/);
 		}

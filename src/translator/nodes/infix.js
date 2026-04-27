@@ -112,6 +112,18 @@ function operands(node) {
 	});
 }
 
+function printMessageNameOperand(node, print) {
+	if (
+		node?.type === "LeafNode" &&
+		node.kind === "String" &&
+		!String(node.value ?? "").startsWith('"')
+	) {
+		return String(node.value ?? "");
+	}
+
+	return print(node);
+}
+
 export function printInfix(node, options, print) {
 	if (node.op === "CompoundExpression") {
 		const semanticChildren = node.children.filter((c) => !isTrivia(c));
@@ -155,17 +167,25 @@ export function printInfix(node, options, print) {
 		}
 
 		for (const entry of entries) {
-			entry.trailingCommentDoc = joinDocsWithSpace(entry.trailingCommentDocs);
+			entry.trailingCommentDoc = joinDocsWithSpace(
+				entry.trailingCommentDocs,
+			);
 		}
 
 		const suffixForEntry = (entry) => (entry.hasSemicolon ? ";" : "");
-		const trailingEntries = entries.filter((entry) => entry.trailingCommentDoc);
+		const trailingEntries = entries.filter(
+			(entry) => entry.trailingCommentDoc,
+		);
 		const alignTrailingComments =
 			(options.wolframDocumentationCommentColumn ?? 0) > 0 ||
 			trailingEntries.length > 1;
 		const trailingColumn =
 			alignTrailingComments && trailingEntries.length > 0
-				? documentationCommentColumn(trailingEntries, options, suffixForEntry)
+				? documentationCommentColumn(
+						trailingEntries,
+						options,
+						suffixForEntry,
+					)
 				: null;
 
 		const docs = [];
@@ -185,7 +205,12 @@ export function printInfix(node, options, print) {
 			}
 
 			if (trailingColumn == null) {
-				docs.push([entry.doc, suffixForEntry(entry), " ", entry.trailingCommentDoc]);
+				docs.push([
+					entry.doc,
+					suffixForEntry(entry),
+					" ",
+					entry.trailingCommentDoc,
+				]);
 				continue;
 			}
 
@@ -239,6 +264,20 @@ export function printInfix(node, options, print) {
 
 	if (hasImmediateComment(node)) {
 		return printOriginalSource(node, options);
+	}
+
+	if (node.op === "MessageName") {
+		const parts = operands(node);
+		return group(
+			join(
+				["::"],
+				parts.map((part, index) =>
+					index === 0
+						? print(part)
+						: printMessageNameOperand(part, print),
+				),
+			),
+		);
 	}
 
 	if (node.op === "InfixInequality") {

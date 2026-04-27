@@ -37,6 +37,18 @@ function binary(op, lhs, rhs) {
 	};
 }
 
+function messageName(symbol, name) {
+	return {
+		type: "InfixNode",
+		op: "MessageName",
+		children: [
+			sym(symbol),
+			token("Token`ColonColon", "::"),
+			{ type: "LeafNode", kind: "String", value: name },
+		],
+	};
+}
+
 function definition(op, lhs, value, source) {
 	return {
 		type: "BinaryNode",
@@ -451,17 +463,30 @@ describe("printContainer", () => {
 						[19, 21],
 					],
 				),
+				definition(
+					"Set",
+					messageName("f", "usage"),
+					'f::usage = "use f"',
+					[
+						[22, 1],
+						[22, 19],
+					],
+				),
+				definition("Set", messageName("f", "bad"), 'f::bad = "bad"', [
+					[25, 1],
+					[25, 15],
+				]),
 				definition("SetDelayed", call("f", [sym("x")]), "f[x_] := x", [
-					[22, 1],
-					[22, 11],
+					[28, 1],
+					[28, 11],
 				]),
 				definition(
 					"SetDelayed",
 					binary("BinaryAt", sym("f"), sym("x")),
 					"f @ x_ := x",
 					[
-						[25, 1],
-						[25, 12],
+						[31, 1],
+						[31, 12],
 					],
 				),
 				definition(
@@ -469,17 +494,17 @@ describe("printContainer", () => {
 					binary("BinarySlashSlash", sym("x"), sym("f")),
 					"x_ // f := x",
 					[
-						[28, 1],
-						[28, 13],
+						[34, 1],
+						[34, 13],
 					],
 				),
 				definition("SetDelayed", call("f", [sym("y")]), "f[y_] := y", [
-					[31, 1],
-					[31, 11],
+					[37, 1],
+					[37, 11],
 				]),
 				definition("SetDelayed", call("g", [sym("x")]), "g[x_] := x", [
-					[32, 1],
-					[32, 11],
+					[38, 1],
+					[38, 11],
 				]),
 			],
 		};
@@ -495,6 +520,8 @@ describe("printContainer", () => {
 				"Attributes[f] = {HoldAll}\n" +
 				"Attributes @ f = {}\n" +
 				"f // Attributes = {}\n" +
+				'f::usage = "use f"\n' +
+				'f::bad = "bad"\n' +
 				"f[x_] := x\n" +
 				"f @ x_ := x\n" +
 				"x_ // f := x\n" +

@@ -195,6 +195,10 @@ function functionDefinitionSubjectNamesFromLhs(
 	const bareName = symbolName(node);
 	if (allowBareSymbol && bareName) return new Set([bareName]);
 
+	if (node?.type === "InfixNode" && node.op === "MessageName") {
+		return subjectNamesFromExpression(firstSemanticChild(node));
+	}
+
 	const targetNames = definitionTargetNames(
 		node,
 		SAME_DEFINITION_TARGET_HEADS,

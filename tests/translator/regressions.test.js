@@ -95,6 +95,8 @@ describe("translator regressions", () => {
 			"f // Options = {}\n\n" +
 			"Attributes @ f = {}\n\n" +
 			"f // Attributes = {}\n\n" +
+			'f::usage = "use f"\n\n' +
+			'f::bad = "bad"\n\n' +
 			"f @ x_ := x\n\n" +
 			"x_ // f := x\n\n" +
 			"g @ x_ := x";
@@ -111,6 +113,8 @@ describe("translator regressions", () => {
 				"f // Options = {}\n" +
 				"Attributes @ f = {}\n" +
 				"f // Attributes = {}\n" +
+				'f::usage = "use f"\n' +
+				'f::bad = "bad"\n' +
 				"f @ x_ := x\n" +
 				"x_ // f := x\n\n" +
 				"g @ x_ := x",
@@ -869,7 +873,7 @@ scrapeCustomerStoryData[]:=
 				{ type: "LeafNode", kind: "String", value: "usage" },
 			],
 		};
-		expect(fmt(printInfix(node, opts, leafPrint))).toBe('f::"usage"');
+		expect(fmt(printInfix(node, opts, leafPrint))).toBe("f::usage");
 	});
 
 	it("prints PatternTest without spaces", () => {
