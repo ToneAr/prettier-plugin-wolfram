@@ -49,6 +49,23 @@ const pluginPackages = [
 const CHANGE_DIAGNOSTIC_DELAY_MS = 500;
 const DEFAULT_CST_REQUEST_TIMEOUT_MS = 180000;
 
+function firstNonEmptyPath(...values) {
+	for (const value of values) {
+		if (typeof value !== "string") continue;
+		if (value.trim()) return value;
+	}
+	return "";
+}
+
+function configuredKernelPath() {
+	return firstNonEmptyPath(
+		vscode.workspace
+			.getConfiguration("wolframPrettier")
+			.get("wolframEnginePath"),
+		vscode.workspace.getConfiguration("wolfram").get("systemKernel"),
+	);
+}
+
 function configuredCSTRequestTimeoutMs() {
 	const configured = vscode.workspace
 		.getConfiguration("wolframPrettier")
@@ -63,6 +80,7 @@ function configuredCSTRequestTimeoutMs() {
 function mergeExtensionFormatterOptions(resolvedConfig = {}) {
 	return {
 		wolframCSTRequestTimeoutMs: configuredCSTRequestTimeoutMs(),
+		wolframEnginePath: configuredKernelPath(),
 		...resolvedConfig,
 	};
 }
@@ -490,9 +508,7 @@ async function collectDiagnostics(document, collection, generation) {
 
 /** @param {vscode.ExtensionContext} context */
 function activate(context) {
-	const wolframEnginePath = vscode.workspace
-		.getConfiguration("wolframPrettier")
-		.get("wolframEnginePath");
+	const wolframEnginePath = configuredKernelPath();
 	if (wolframEnginePath) {
 		process.env.WOLFRAM_ENGINE_PATH = wolframEnginePath;
 	}

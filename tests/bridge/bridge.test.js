@@ -137,6 +137,43 @@ describe("KernelBridge", () => {
 		bridge.close();
 	});
 
+	it("passes wolfram.systemKernel to the spawned helper", async () => {
+		connectionPlan = ["error", "connect"];
+		const kernelPath = path.join(tempDir, "WolframKernel");
+		const { KernelBridge } = await loadBridge();
+		const bridge = new KernelBridge();
+
+		await bridge.getCST("f[x]", {
+			"wolfram.systemKernel": kernelPath,
+		});
+
+		expect(spawn).toHaveBeenCalledTimes(1);
+		expect(spawn.mock.calls[0][2].env.WOLFRAM_ENGINE_PATH).toBe(
+			kernelPath,
+		);
+
+		bridge.close();
+	});
+
+	it("prefers wolframEnginePath over wolfram.systemKernel", async () => {
+		connectionPlan = ["error", "connect"];
+		const enginePath = path.join(tempDir, "EngineKernel");
+		const systemKernel = path.join(tempDir, "SystemKernel");
+		const { KernelBridge } = await loadBridge();
+		const bridge = new KernelBridge();
+
+		await bridge.getCST("f[x]", {
+			wolframEnginePath: enginePath,
+			"wolfram.systemKernel": systemKernel,
+		});
+
+		expect(spawn.mock.calls[0][2].env.WOLFRAM_ENGINE_PATH).toBe(
+			enginePath,
+		);
+
+		bridge.close();
+	});
+
 	it("reuses an already running socket without spawning", async () => {
 		connectionPlan = ["connect"];
 		const { KernelBridge } = await loadBridge();

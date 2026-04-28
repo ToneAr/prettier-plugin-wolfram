@@ -187,14 +187,17 @@ function findKernelExecutable(enginePath) {
 		{
 			linux: [
 				"/usr/local/Wolfram/Mathematica",
+				"/usr/local/Wolfram/Wolfram",
 				"/usr/local/Wolfram/WolframEngine",
 			],
 			darwin: [
 				"/Applications/Mathematica.app/Contents",
+				"/Applications/Wolfram.app/Contents",
 				"/Applications/Wolfram Engine.app/Contents",
 			],
 			win32: [
 				"C:\\Program Files\\Wolfram Research\\Mathematica",
+				"C:\\Program Files\\Wolfram Research\\Wolfram",
 				"C:\\Program Files\\Wolfram Research\\Wolfram Engine",
 			],
 		}[process.platform] ?? [];

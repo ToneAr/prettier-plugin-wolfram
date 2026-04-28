@@ -1,6 +1,6 @@
 {
 	"name": "@wrel/prettier-plugin-wolfram",
-	"version": "0.5.10",
+	"version": "0.5.11",
 	"description": "Prettier plugin for Wolfram Language using Wolfram CodeParser",
 	"license": "MIT",
 	"repository": {

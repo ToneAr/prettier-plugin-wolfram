@@ -119,12 +119,14 @@ This extension contributes these VS Code settings:
 | `wolframPrettier.diagnosticSeverity`  | `"information"` | Severity used for formatter-backed diagnostics. Allowed values are `information`, `warning`, `hint`, and `error`.                                           |
 | `wolframPrettier.cstRequestTimeoutMs` | `180000`        | Milliseconds to wait for a WolframKernel CST parse request before timing out and allowing the kernel session to restart. Minimum effective value is `1000`. |
 
-Use `wolframPrettier.wolframEnginePath` for editor-only setup. Use the Prettier
+Use `wolframPrettier.wolframEnginePath` for editor-only setup. If that setting
+is empty, the extension also honors `wolfram.systemKernel`. Use the Prettier
 option `wolframEnginePath` when the same path should also apply to CLI
 formatting.
 
-After changing `wolframPrettier.wolframEnginePath`, reload the VS Code window so
-the extension can restart with the updated environment.
+After changing `wolframPrettier.wolframEnginePath` or `wolfram.systemKernel`,
+reload the VS Code window so the extension can restart with the updated
+environment.
 
 `wolframPrettier.cstRequestTimeoutMs` supplies the editor default for formatter
 requests. A `wolframCSTRequestTimeoutMs` value in the resolved Prettier config
@@ -258,8 +260,8 @@ To format another custom extension, add a VS Code file association:
 
 `WolframKernel not found`:
 Set `wolframPrettier.wolframEnginePath`, set `wolframEnginePath` in Prettier
-config, set `WOLFRAM_ENGINE_PATH`, or make sure `WolframKernel` is available on
-`PATH`.
+config, set `wolfram.systemKernel`, set `WOLFRAM_ENGINE_PATH`, or make sure
+`WolframKernel` is available on `PATH`.
 
 `Node.js not found in PATH`:
 Install Node.js and make it available on `PATH`, or set `WOLFRAM_NODE_PATH` to

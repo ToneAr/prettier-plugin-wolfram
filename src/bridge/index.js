@@ -56,6 +56,14 @@ function formatTimeout(timeoutMs) {
 	return Number.isInteger(seconds) ? `${seconds}s` : `${timeoutMs}ms`;
 }
 
+function firstNonEmptyPath(...values) {
+	for (const value of values) {
+		if (typeof value !== "string") continue;
+		if (value.trim()) return value;
+	}
+	return "";
+}
+
 // ─── connection helpers ───────────────────────────────────────────────────────
 
 function connectOnce(sockPath, timeoutMs = 1500) {
@@ -171,8 +179,10 @@ function spawnServer(enginePath) {
 	const nodeBin = findNodeBin();
 	const env = {
 		...process.env,
-		WOLFRAM_ENGINE_PATH:
-			enginePath || process.env.WOLFRAM_ENGINE_PATH || "",
+		WOLFRAM_ENGINE_PATH: firstNonEmptyPath(
+			enginePath,
+			process.env.WOLFRAM_ENGINE_PATH,
+		),
 		WL_KERNEL_SOCKET: SOCKET_PATH,
 		WL_KERNEL_LOCK: LOCK_PATH,
 	};
@@ -300,10 +310,12 @@ export class KernelBridge {
 	}
 
 	async getCST(sourceText, prettierOptions = {}) {
-		const enginePath =
-			prettierOptions.wolframEnginePath ??
-			this.#options.wolframEnginePath ??
-			"";
+		const enginePath = firstNonEmptyPath(
+			prettierOptions.wolframEnginePath,
+			prettierOptions["wolfram.systemKernel"],
+			this.#options.wolframEnginePath,
+			this.#options["wolfram.systemKernel"],
+		);
 		const tabWidth =
 			prettierOptions.tabWidth ?? this.#options.tabWidth ?? 2;
 		const timeoutMs = normalizeCSTRequestTimeoutMs(
