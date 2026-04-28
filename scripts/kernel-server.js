@@ -5,7 +5,7 @@
  * Long-lived helper process spawned by src/bridge/index.js.
  * Runs in plain Node.js (not Electron) so native WSTP loading and the
  * wolframscript fallback stay outside the VS Code/Electron host.
- * Owns a single WstpClient and serves CST requests to all connecting
+ * Owns WstpClient instances and serves CST requests to all connecting
  * processes over a Unix domain socket (Linux/macOS) or named pipe (Windows).
  *
  * Signals written to stdout (one line each):
@@ -25,7 +25,7 @@ import os from "os";
 import path from "path";
 
 const IS_WIN = process.platform === "win32";
-const KERNEL_SOCKET_BASENAME = "prettier-wl-kernel-v6";
+const KERNEL_SOCKET_BASENAME = "prettier-wl-kernel-v7";
 
 const SOCKET_PATH =
 	process.env.WL_KERNEL_SOCKET ??
@@ -37,10 +37,35 @@ const LOCK_PATH =
 	process.env.WL_KERNEL_LOCK ??
 	path.join(os.tmpdir(), `${KERNEL_SOCKET_BASENAME}.lock`);
 
+function firstNonEmptyPath(...values) {
+	for (const value of values) {
+		if (typeof value !== "string") continue;
+		if (value.trim()) return value;
+	}
+	return "";
+}
+
 // ─── socket server ────────────────────────────────────────────────────────────
 
-const wstp = new WstpClient(process.env.WOLFRAM_ENGINE_PATH || "");
+const clients = new Map();
 const server = net.createServer(handleClient);
+
+function clientForEnginePath(enginePath = "") {
+	const key = firstNonEmptyPath(enginePath, process.env.WOLFRAM_ENGINE_PATH);
+	let client = clients.get(key);
+	if (!client) {
+		client = new WstpClient(key);
+		clients.set(key, client);
+	}
+	return client;
+}
+
+function closeClients() {
+	for (const client of clients.values()) {
+		client.close();
+	}
+	clients.clear();
+}
 
 if (!IS_WIN) {
 	try {
@@ -53,7 +78,7 @@ server.once("error", (err) => {
 		// Another server won the race — this instance is redundant.
 		process.stdout.write("KERNEL_TAKEN\n");
 		process.stdout.end();
-		wstp.close();
+		closeClients();
 		process.exit(0);
 	}
 	process.stderr.write(`kernel-server: ${err.message}\n`);
@@ -93,9 +118,13 @@ async function serveRequest(conn, line) {
 		return;
 	}
 	try {
-		const result = await wstp.getCST(req.source, req.tabWidth ?? 2, {
-			timeoutMs: req.timeoutMs,
-		});
+		const result = await clientForEnginePath(req.enginePath).getCST(
+			req.source,
+			req.tabWidth ?? 2,
+			{
+				timeoutMs: req.timeoutMs,
+			},
+		);
 		conn.write(JSON.stringify({ id: req.id, result }) + "\n");
 	} catch (err) {
 		conn.write(JSON.stringify({ id: req.id, error: err.message }) + "\n");
@@ -106,7 +135,7 @@ async function serveRequest(conn, line) {
 
 function cleanup() {
 	server.close();
-	wstp.close();
+	closeClients();
 	if (!IS_WIN) {
 		try {
 			fs.unlinkSync(SOCKET_PATH);

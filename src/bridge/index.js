@@ -18,7 +18,7 @@ import { fileURLToPath } from "url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const IS_WIN = process.platform === "win32";
-const KERNEL_SOCKET_BASENAME = "prettier-wl-kernel-v6";
+const KERNEL_SOCKET_BASENAME = "prettier-wl-kernel-v7";
 const DEFAULT_CST_REQUEST_TIMEOUT_MS = 180000;
 const MIN_CST_REQUEST_TIMEOUT_MS = 1000;
 const CLIENT_TIMEOUT_GRACE_MS = 5000;
@@ -342,6 +342,7 @@ export class KernelBridge {
 					source: sourceText,
 					tabWidth,
 					timeoutMs,
+					enginePath,
 				}) + "\n",
 			);
 		});
