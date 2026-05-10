@@ -1,6 +1,6 @@
 {
 	"name": "@wrel/prettier-plugin-wolfram",
-	"version": "0.5.12",
+	"version": "0.5.19",
 	"description": "Prettier plugin for Wolfram Language using Wolfram CodeParser",
 	"license": "MIT",
 	"repository": {
@@ -43,6 +43,7 @@
 		"bump:version": "node scripts/bump-version.mjs",
 		"package:vscode": "node scripts/package-vscode-extension.mjs",
 		"package:vscode:standalone": "node scripts/package-vscode-extension.mjs",
+		"publish:vscode:standalone": "node scripts/package-vscode-extension.mjs --publish",
 		"package:vscode:pre-release": "node scripts/package-vscode-extension.mjs --pre-release",
 		"publish:vscode:pre-release": "node scripts/package-vscode-extension.mjs --pre-release --publish",
 		"debug:bridge": "node scripts/debug-bridge.js",
@@ -52,6 +53,9 @@
 	"workspaces": [
 		"vscode-extension"
 	],
+	"engines": {
+		"vscode": "^1.105.0"
+	},
 	"publishConfig": {
 		"registry": "http://localhost:4873"
 	}

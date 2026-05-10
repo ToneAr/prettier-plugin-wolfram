@@ -389,6 +389,25 @@ describe("translator regressions", () => {
 		}
 	}, 15000);
 
+	it("indents broken block-structure variable-list closures", async () => {
+		const cases = ["Module", "With", "Block", "DynamicModule"];
+
+		for (const head of cases) {
+			const result = await prettier.format(`${head}[{a = 10}, a]`, {
+				parser: "wolfram",
+				plugins: [plugin],
+				printWidth: 80,
+				tabWidth: 2,
+				useTabs: true,
+				wolframModuleVarsBreakThreshold: 0,
+			});
+
+			expect(result, head).toBe(
+				`${head}[{\n` + "\t\ta = 10\n" + "\t},\n" + "\ta\n" + "]",
+			);
+		}
+	}, 15000);
+
 	it("respects the condition-first formatting option", async () => {
 		const source = "If[x > 0, thenValue, elseValue]";
 		const baseOptions = {

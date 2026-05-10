@@ -289,8 +289,14 @@ function diagnosticRangeForFinding(document, ast, finding) {
 	);
 }
 
-function diagnosticRangeForHunk(document, ast, hunk) {
-	return diagnosticRanges.diagnosticRangeForHunk(vscode, document, ast, hunk);
+function diagnosticRangesForHunk(document, ast, hunk, options) {
+	return diagnosticRanges.diagnosticRangesForHunk(
+		vscode,
+		document,
+		ast,
+		hunk,
+		options,
+	);
 }
 
 async function formatWithPrettier(document, range) {
@@ -478,18 +484,33 @@ async function collectDiagnostics(document, collection, generation) {
 			});
 
 		const diffDiagnostics = diffLineHunks(original, formatted)
-			.map((hunk) => {
-				const range = diagnosticRangeForHunk(document, ast, hunk);
-				if (ruleDiagnostics.some((d) => rangesOverlap(d.range, range)))
-					return null;
-				const diagnostic = new vscode.Diagnostic(
-					range,
-					classifyFormattingHunk(hunk, ctx.resolvedConfig.printWidth),
-					diagnosticSeverity,
+			.flatMap((hunk) => {
+				const message = classifyFormattingHunk(
+					hunk,
+					ctx.resolvedConfig.printWidth,
 				);
-				diagnostic.source = "prettier-wolfram:format";
-				diagnostic.code = "format-diff";
-				return diagnostic;
+				return diagnosticRangesForHunk(
+					document,
+					ast,
+					hunk,
+					ctx.resolvedConfig,
+				).map((range) => {
+					if (
+						ruleDiagnostics.some((d) =>
+							rangesOverlap(d.range, range),
+						)
+					) {
+						return null;
+					}
+					const diagnostic = new vscode.Diagnostic(
+						range,
+						message,
+						diagnosticSeverity,
+					);
+					diagnostic.source = "prettier-wolfram:format";
+					diagnostic.code = "format-diff";
+					return diagnostic;
+				});
 			})
 			.filter(Boolean);
 

@@ -92,20 +92,20 @@ function lowerBasename(filePath) {
 	return basename(filePath).toLowerCase();
 }
 
-function executableNames(kind) {
-	const suffix = process.platform === "win32" ? ".exe" : "";
+function executableNames(kind, platform = process.platform) {
+	const suffix = platform === "win32" ? ".exe" : "";
 	if (kind === "kernel") return [`WolframKernel${suffix}`];
 	return [`wolframscript${suffix}`];
 }
 
-function matchesExecutable(filePath, kind) {
-	return executableNames(kind)
+function matchesExecutable(filePath, kind, platform = process.platform) {
+	return executableNames(kind, platform)
 		.map((name) => name.toLowerCase())
 		.includes(lowerBasename(filePath));
 }
 
-function findExecutableUnder(rootPath, kind) {
-	for (const name of executableNames(kind)) {
+function findExecutableUnder(rootPath, kind, platform = process.platform) {
+	for (const name of executableNames(kind, platform)) {
 		const candidates = [
 			join(rootPath, "Executables", name),
 			join(rootPath, "MacOS", name),
@@ -130,14 +130,14 @@ function parentDirectories(filePath, depth = 3) {
 	return roots;
 }
 
-function findExecutableOnPath(kind) {
+function findExecutableOnPath(kind, platform = process.platform) {
 	const pathEntries = (process.env.PATH ?? "").split(
-		process.platform === "win32" ? ";" : ":",
+		platform === "win32" ? ";" : ":",
 	);
 
 	for (const entry of pathEntries) {
 		if (!entry) continue;
-		const executable = findExecutableUnder(entry, kind);
+		const executable = findExecutableUnder(entry, kind, platform);
 		if (executable) return executable;
 	}
 
@@ -153,30 +153,33 @@ function resolveEngineRoot(base) {
 	return base;
 }
 
-function findKernelExecutable(enginePath) {
+function findKernelExecutable(enginePath, platform = process.platform) {
 	if (enginePath) {
 		if (!existsSync(enginePath)) {
 			throw new Error(`wolframEnginePath does not exist: ${enginePath}`);
 		}
 
-		if (existsSync(enginePath) && matchesExecutable(enginePath, "kernel")) {
+		if (
+			existsSync(enginePath) &&
+			matchesExecutable(enginePath, "kernel", platform)
+		) {
 			return enginePath;
 		}
 
-		if (matchesExecutable(enginePath, "script")) {
+		if (matchesExecutable(enginePath, "script", platform)) {
 			for (const root of parentDirectories(enginePath)) {
-				const nearby = findExecutableUnder(root, "kernel");
+				const nearby = findExecutableUnder(root, "kernel", platform);
 				if (nearby) return nearby;
 			}
 
-			const fromPath = findExecutableOnPath("kernel");
+			const fromPath = findExecutableOnPath("kernel", platform);
 			if (fromPath) return fromPath;
 
 			throw new Error(`WolframKernel not found near ${enginePath}`);
 		}
 
 		const direct = existsSync(enginePath)
-			? findExecutableUnder(enginePath, "kernel")
+			? findExecutableUnder(enginePath, "kernel", platform)
 			: null;
 		if (direct) return direct;
 
@@ -200,16 +203,16 @@ function findKernelExecutable(enginePath) {
 				"C:\\Program Files\\Wolfram Research\\Wolfram",
 				"C:\\Program Files\\Wolfram Research\\Wolfram Engine",
 			],
-		}[process.platform] ?? [];
+		}[platform] ?? [];
 
 	for (const base of bases) {
 		const root = resolveEngineRoot(base);
 		if (!root) continue;
-		const exe = findExecutableUnder(root, "kernel");
+		const exe = findExecutableUnder(root, "kernel", platform);
 		if (exe) return exe;
 	}
 
-	const fromPath = findExecutableOnPath("kernel");
+	const fromPath = findExecutableOnPath("kernel", platform);
 	if (fromPath) return fromPath;
 
 	throw new Error(
@@ -217,30 +220,51 @@ function findKernelExecutable(enginePath) {
 	);
 }
 
-function defaultWolframScriptCommand() {
-	return process.platform === "win32" ? "wolframscript.exe" : "wolframscript";
+function defaultWolframScriptCommand(platform = process.platform) {
+	return platform === "win32" ? "wolframscript.exe" : "wolframscript";
 }
 
-function resolveWolframScriptInvocation(enginePath = "") {
+function resolveWolframScriptInvocation(
+	enginePath = "",
+	platform = process.platform,
+) {
 	if (enginePath) {
 		if (!existsSync(enginePath)) {
 			throw new Error(`wolframEnginePath does not exist: ${enginePath}`);
 		}
 
-		if (matchesExecutable(enginePath, "script")) {
+		if (matchesExecutable(enginePath, "script", platform)) {
 			return { command: enginePath, args: [] };
 		}
 
-		const bundledScript = findExecutableUnder(enginePath, "script");
+		const bundledScript = findExecutableUnder(
+			enginePath,
+			"script",
+			platform,
+		);
 		if (bundledScript) return { command: bundledScript, args: [] };
 
 		return {
-			command: defaultWolframScriptCommand(),
-			args: ["-local", findKernelExecutable(enginePath)],
+			command: defaultWolframScriptCommand(platform),
+			args: ["-local", findKernelExecutable(enginePath, platform)],
 		};
 	}
 
-	return { command: defaultWolframScriptCommand(), args: [] };
+	return { command: defaultWolframScriptCommand(platform), args: [] };
+}
+
+function resolveKernelSessionInvocation(
+	enginePath = "",
+	platform = process.platform,
+) {
+	if (platform === "win32") {
+		return resolveWolframScriptInvocation(enginePath, platform);
+	}
+
+	return {
+		command: findKernelExecutable(enginePath, platform),
+		args: ["-noinit", "-noprompt"],
+	};
 }
 
 function resolveNativeAddonPath() {
@@ -266,6 +290,12 @@ function extractMarkedResult(
 
 function normalizeSpawnError(error) {
 	if (error?.code === "ENOENT") {
+		if (process.platform === "win32") {
+			return new Error(
+				"wolframscript.exe not found. Install Wolfram Engine or set wolframEnginePath to a Wolfram install that includes it.",
+			);
+		}
+
 		return new Error(
 			"WolframKernel not found. Install Wolfram Engine or set wolframEnginePath to a Wolfram install that includes it.",
 		);
@@ -307,6 +337,7 @@ export const __test__ = {
 	kernelResultMarkers,
 	normalizeCSTRequestTimeoutMs,
 	resolveNativeAddonPath,
+	resolveKernelSessionInvocation,
 	resolveWolframScriptInvocation,
 	toWolframString,
 };
@@ -393,7 +424,8 @@ export class WstpClient {
 	async #startBackend(generation) {
 		this.#assertNotClosed(generation);
 
-		const nativeAddonPath = resolveNativeAddonPath();
+		const nativeAddonPath =
+			process.platform === "win32" ? null : resolveNativeAddonPath();
 		if (nativeAddonPath) {
 			try {
 				const { WSTPKernel } = require(nativeAddonPath);
@@ -626,8 +658,8 @@ export class WstpClient {
 			});
 		}
 
-		const kernelPath = findKernelExecutable(this.#enginePath);
-		const proc = spawn(kernelPath, ["-noinit", "-noprompt"], {
+		const invocation = resolveKernelSessionInvocation(this.#enginePath);
+		const proc = spawn(invocation.command, invocation.args, {
 			stdio: ["pipe", "pipe", "pipe"],
 		});
 		this.#scriptProcess = proc;

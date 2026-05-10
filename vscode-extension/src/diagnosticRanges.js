@@ -64,6 +64,180 @@ function diffLineHunks(original, formatted) {
 	return hunks;
 }
 
+function lineChangeSpan(oldLine, newLine) {
+	let prefix = 0;
+	while (
+		prefix < oldLine.length &&
+		prefix < newLine.length &&
+		oldLine[prefix] === newLine[prefix]
+	) {
+		prefix++;
+	}
+
+	let suffix = 0;
+	while (
+		suffix < oldLine.length - prefix &&
+		suffix < newLine.length - prefix &&
+		oldLine[oldLine.length - 1 - suffix] ===
+			newLine[newLine.length - 1 - suffix]
+	) {
+		suffix++;
+	}
+
+	return {
+		oldStart: prefix,
+		oldEnd: oldLine.length - suffix,
+		newStart: prefix,
+		newEnd: newLine.length - suffix,
+	};
+}
+
+function normalizeTabWidth(tabWidth) {
+	const numeric = Number(tabWidth);
+	if (!Number.isFinite(numeric) || numeric <= 0) return 2;
+	return Math.max(1, Math.floor(numeric));
+}
+
+function tabAdvance(column, tabWidth) {
+	const remainder = column % tabWidth;
+	return remainder === 0 ? tabWidth : tabWidth - remainder;
+}
+
+function leadingHorizontalWhitespaceEnd(line) {
+	const match = /[^ \t]/.exec(line);
+	return match ? match.index : line.length;
+}
+
+function indentationSegments(indent, tabWidth) {
+	const segments = [];
+	let column = 0;
+	for (let index = 0; index < indent.length; index++) {
+		const char = indent[index];
+		const startColumn = column;
+		column += char === "\t" ? tabAdvance(column, tabWidth) : 1;
+		segments.push({ char, index, startColumn, endColumn: column });
+	}
+
+	return segments;
+}
+
+function sameIndentationSegment(a, b) {
+	return (
+		a?.char === b?.char &&
+		a?.startColumn === b?.startColumn &&
+		a?.endColumn === b?.endColumn
+	);
+}
+
+function indentationChangeSpan(oldIndent, newIndent, tabWidth) {
+	const oldSegments = indentationSegments(oldIndent, tabWidth);
+	const newSegments = indentationSegments(newIndent, tabWidth);
+
+	let prefix = 0;
+	while (
+		prefix < oldSegments.length &&
+		prefix < newSegments.length &&
+		sameIndentationSegment(oldSegments[prefix], newSegments[prefix])
+	) {
+		prefix++;
+	}
+
+	let suffix = 0;
+	while (
+		suffix < oldSegments.length - prefix &&
+		suffix < newSegments.length - prefix &&
+		sameIndentationSegment(
+			oldSegments[oldSegments.length - 1 - suffix],
+			newSegments[newSegments.length - 1 - suffix],
+		)
+	) {
+		suffix++;
+	}
+
+	const firstChanged = oldSegments[prefix];
+	const lastChanged = oldSegments[oldSegments.length - 1 - suffix];
+
+	return {
+		oldStart: firstChanged?.index ?? oldIndent.length,
+		oldEnd: lastChanged ? lastChanged.index + 1 : oldIndent.length,
+	};
+}
+
+function leadingIndentationChangeSpan(oldLine, newLine, tabWidth) {
+	if (oldLine === newLine) return null;
+
+	const oldIndentEnd = leadingHorizontalWhitespaceEnd(oldLine);
+	const newIndentEnd = leadingHorizontalWhitespaceEnd(newLine);
+	if (oldLine.slice(oldIndentEnd) !== newLine.slice(newIndentEnd)) {
+		return null;
+	}
+
+	return indentationChangeSpan(
+		oldLine.slice(0, oldIndentEnd),
+		newLine.slice(0, newIndentEnd),
+		tabWidth,
+	);
+}
+
+function rangeForLineSpan(vscodeApi, document, line, startChar, endChar) {
+	const maxLine = Math.max(0, document.lineCount - 1);
+	const safeLine = clamp(line, 0, maxLine);
+	const lineLength = document.lineAt(safeLine).text.length;
+	let safeStartChar = clamp(startChar, 0, lineLength);
+	let safeEndChar = clamp(endChar, safeStartChar, lineLength);
+
+	if (safeStartChar === safeEndChar) {
+		if (safeStartChar < lineLength) {
+			safeEndChar = safeStartChar + 1;
+		} else if (lineLength > 0) {
+			safeStartChar = lineLength - 1;
+			safeEndChar = lineLength;
+		} else {
+			safeEndChar = safeStartChar + 1;
+		}
+	}
+
+	return new vscodeApi.Range(
+		new vscodeApi.Position(safeLine, safeStartChar),
+		new vscodeApi.Position(safeLine, safeEndChar),
+	);
+}
+
+function indentationRangesForHunk(vscodeApi, document, hunk, options = {}) {
+	const aLen = hunk.aEnd - hunk.aStart;
+	const bLen = hunk.bEnd - hunk.bStart;
+	if (aLen === 0 || aLen !== bLen) return [];
+
+	const tabWidth = normalizeTabWidth(options.tabWidth);
+	const ranges = [];
+	for (let offset = 0; offset < aLen; offset++) {
+		const oldLine = hunk.a[hunk.aStart + offset] ?? "";
+		const newLine = hunk.b[hunk.bStart + offset] ?? "";
+		if (oldLine === newLine) continue;
+
+		const span = leadingIndentationChangeSpan(
+			oldLine,
+			newLine,
+			tabWidth,
+		);
+		if (!span) {
+			return [];
+		}
+
+		ranges.push(
+			rangeForLineSpan(
+				vscodeApi,
+				document,
+				hunk.aStart + offset,
+				span.oldStart,
+				span.oldEnd,
+			),
+		);
+	}
+
+	return ranges;
+}
+
 function rangeForHunk(vscodeApi, document, hunk) {
 	const aLen = hunk.aEnd - hunk.aStart;
 	const bLen = hunk.bEnd - hunk.bStart;
@@ -307,7 +481,7 @@ function diagnosticRangeForFinding(vscodeApi, document, ast, finding) {
 	return anchorRangeToSemanticNode(vscodeApi, document, ast, baseRange);
 }
 
-function diagnosticRangeForHunk(vscodeApi, document, ast, hunk) {
+function anchoredRangeForHunk(vscodeApi, document, ast, hunk) {
 	return anchorRangeToSemanticNode(
 		vscodeApi,
 		document,
@@ -316,10 +490,35 @@ function diagnosticRangeForHunk(vscodeApi, document, ast, hunk) {
 	);
 }
 
+function diagnosticRangeForHunk(vscodeApi, document, ast, hunk, options = {}) {
+	const indentationRanges = indentationRangesForHunk(
+		vscodeApi,
+		document,
+		hunk,
+		options,
+	);
+	if (indentationRanges.length > 0) return indentationRanges[0];
+
+	return anchoredRangeForHunk(vscodeApi, document, ast, hunk);
+}
+
+function diagnosticRangesForHunk(vscodeApi, document, ast, hunk, options = {}) {
+	const indentationRanges = indentationRangesForHunk(
+		vscodeApi,
+		document,
+		hunk,
+		options,
+	);
+	if (indentationRanges.length > 0) return indentationRanges;
+
+	return [anchoredRangeForHunk(vscodeApi, document, ast, hunk)];
+}
+
 module.exports = {
 	diffLineHunks,
 	diagnosticRangeForFinding,
 	diagnosticRangeForHunk,
+	diagnosticRangesForHunk,
 	ensureVisibleRange,
 	findBestDiagnosticNode,
 	isSemanticDiagnosticNode,

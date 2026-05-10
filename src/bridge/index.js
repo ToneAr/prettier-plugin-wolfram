@@ -4,8 +4,9 @@
 // The first process that can't connect spawns kernel-server.js under the
 // system Node.js binary (not Electron), so native WSTP loading and the
 // wolframscript fallback both run outside the VS Code/Electron host.
-// All subsequent processes (other VS Code windows, CLI runs, etc.) connect to
-// the same socket and share the single running WL kernel.
+// Subsequent active processes (other VS Code windows, CLI runs, etc.) connect
+// to the same socket and share the single running WL kernel. The helper exits
+// shortly after the last connected client disconnects.
 
 import { spawn, execSync } from "child_process";
 import net from "net";
@@ -18,7 +19,7 @@ import { fileURLToPath } from "url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const IS_WIN = process.platform === "win32";
-const KERNEL_SOCKET_BASENAME = "prettier-wl-kernel-v7";
+const KERNEL_SOCKET_BASENAME = "prettier-wl-kernel-v8";
 const DEFAULT_CST_REQUEST_TIMEOUT_MS = 180000;
 const MIN_CST_REQUEST_TIMEOUT_MS = 1000;
 const CLIENT_TIMEOUT_GRACE_MS = 5000;

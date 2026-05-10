@@ -6,6 +6,8 @@ import path from "path";
 
 const kernelName =
 	process.platform === "win32" ? "WolframKernel.exe" : "WolframKernel";
+const expectedSessionCommand =
+	process.platform === "win32" ? "wolframscript.exe" : kernelName;
 const fakeCst = {
 	type: "ContainerNode",
 	kind: "File",
@@ -137,8 +139,10 @@ describe("WstpClient lifecycle", () => {
 
 		expect(spawn).toHaveBeenCalledTimes(1);
 		expect(spawn).toHaveBeenCalledWith(
-			kernelPath,
-			["-noinit", "-noprompt"],
+			process.platform === "win32" ? expectedSessionCommand : kernelPath,
+			process.platform === "win32"
+				? ["-local", kernelPath]
+				: ["-noinit", "-noprompt"],
 			expect.objectContaining({ stdio: ["pipe", "pipe", "pipe"] }),
 		);
 		expect(spawned[0].kill).toHaveBeenCalledTimes(1);

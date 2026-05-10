@@ -69,6 +69,30 @@ function makeDocument(text) {
 	};
 }
 
+function makeWholeFileAst(text) {
+	const lines = text.split("\n");
+	const source = [
+		[1, 1],
+		[lines.length, (lines.at(-1)?.length ?? 0) + 1],
+	];
+
+	return {
+		type: "ContainerNode",
+		source,
+		locStart: 0,
+		locEnd: text.length,
+		children: [
+			{
+				type: "CallNode",
+				source,
+				locStart: 0,
+				locEnd: text.length,
+				children: [],
+			},
+		],
+	};
+}
+
 describe("diagnostic range anchoring", () => {
 	it("anchors whitespace rule findings to the enclosing semantic expression", () => {
 		const document = makeDocument("a +b");
@@ -262,6 +286,89 @@ describe("diagnostic range anchoring", () => {
 		expect(range.start.character).toBe(2);
 		expect(range.end.line).toBe(0);
 		expect(range.end.character).toBe(5);
+	});
+
+	it("keeps formatter indentation diffs on changed leading whitespace", () => {
+		const original = "Module[{\n    x\n}, x]";
+		const formatted = "Module[{\n  x\n}, x]";
+		const document = makeDocument(original);
+		const ast = makeWholeFileAst(original);
+
+		const hunk = helpers.diffLineHunks(original, formatted)[0];
+		const range = helpers.diagnosticRangeForHunk(
+			vscodeApi,
+			document,
+			ast,
+			hunk,
+		);
+
+		expect(range.start.line).toBe(1);
+		expect(range.start.character).toBe(2);
+		expect(range.end.line).toBe(1);
+		expect(range.end.character).toBe(4);
+	});
+
+	it("returns one formatter indentation range per changed line", () => {
+		const original = "Module[{\n    x,\n    y\n}, x + y]";
+		const formatted = "Module[{\n  x,\n  y\n}, x + y]";
+		const document = makeDocument(original);
+		const ast = makeWholeFileAst(original);
+
+		const hunk = helpers.diffLineHunks(original, formatted)[0];
+		const ranges = helpers.diagnosticRangesForHunk(
+			vscodeApi,
+			document,
+			ast,
+			hunk,
+		);
+
+		expect(
+			ranges.map((range) => [
+				range.start.line,
+				range.start.character,
+				range.end.line,
+				range.end.character,
+			]),
+		).toEqual([
+			[1, 2, 1, 4],
+			[2, 2, 2, 4],
+		]);
+	});
+
+	it("uses tabWidth when narrowing formatter indentation ranges", () => {
+		const original = "Module[{\n\t x\n}, x]";
+		const formatted = "Module[{\n   x\n}, x]";
+		const document = makeDocument(original);
+		const ast = makeWholeFileAst(original);
+		const hunk = helpers.diffLineHunks(original, formatted)[0];
+
+		const tabWidthTwoRange = helpers.diagnosticRangeForHunk(
+			vscodeApi,
+			document,
+			ast,
+			hunk,
+			{ tabWidth: 2 },
+		);
+		const tabWidthFourRange = helpers.diagnosticRangeForHunk(
+			vscodeApi,
+			document,
+			ast,
+			hunk,
+			{ tabWidth: 4 },
+		);
+
+		expect([
+			tabWidthTwoRange.start.line,
+			tabWidthTwoRange.start.character,
+			tabWidthTwoRange.end.line,
+			tabWidthTwoRange.end.character,
+		]).toEqual([1, 0, 1, 1]);
+		expect([
+			tabWidthFourRange.start.line,
+			tabWidthFourRange.start.character,
+			tabWidthFourRange.end.line,
+			tabWidthFourRange.end.character,
+		]).toEqual([1, 0, 1, 2]);
 	});
 
 	it("expands whitespace-only ranges to the visible line span", () => {

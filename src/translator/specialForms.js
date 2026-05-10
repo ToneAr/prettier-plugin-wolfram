@@ -537,7 +537,12 @@ function formatVarListPath(path, options, print, callNode, varListNode) {
 	const entryDocs = entries.map((entry) => path.call(print, ...entry.path));
 
 	return group(
-		["{", indent([softline, join([",", line], entryDocs)]), softline, "}"],
+		indent([
+			"{",
+			indent([softline, join([",", line], entryDocs)]),
+			softline,
+			"}",
+		]),
 		{ shouldBreak },
 	);
 }

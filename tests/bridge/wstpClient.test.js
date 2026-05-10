@@ -73,6 +73,33 @@ describe("wstpClient executable resolution", () => {
 		});
 	});
 
+	it("uses wolframscript for a Windows kernel session", async () => {
+		const kernelPath = path.join(tempDir, "WolframKernel.exe");
+		touch(kernelPath);
+		const { resolveKernelSessionInvocation } = await loadTestHelpers();
+
+		expect(resolveKernelSessionInvocation(kernelPath, "win32")).toEqual({
+			command: "wolframscript.exe",
+			args: ["-local", kernelPath],
+		});
+	});
+
+	it("uses bundled wolframscript for a Windows engine directory", async () => {
+		const engineRoot = path.join(tempDir, "WolframEngine");
+		const scriptPath = path.join(
+			engineRoot,
+			"Executables",
+			"wolframscript.exe",
+		);
+		touch(scriptPath);
+		const { resolveKernelSessionInvocation } = await loadTestHelpers();
+
+		expect(resolveKernelSessionInvocation(engineRoot, "win32")).toEqual({
+			command: scriptPath,
+			args: [],
+		});
+	});
+
 	it("fails fast for a missing configured path", async () => {
 		const { resolveWolframScriptInvocation } = await loadTestHelpers();
 

@@ -2,11 +2,12 @@
 /**
  * scripts/kernel-server.js
  *
- * Long-lived helper process spawned by src/bridge/index.js.
+ * Helper process spawned by src/bridge/index.js.
  * Runs in plain Node.js (not Electron) so native WSTP loading and the
  * wolframscript fallback stay outside the VS Code/Electron host.
- * Owns WstpClient instances and serves CST requests to all connecting
- * processes over a Unix domain socket (Linux/macOS) or named pipe (Windows).
+ * Owns WstpClient instances, serves CST requests to connecting processes over
+ * a Unix domain socket (Linux/macOS) or named pipe (Windows), and exits after
+ * the last connected client disconnects.
  *
  * Signals written to stdout (one line each):
  *   KERNEL_READY   – socket is bound and ready to accept requests
@@ -16,6 +17,8 @@
  *   WOLFRAM_ENGINE_PATH   – passed to WstpClient for kernel auto-detection
  *   WL_KERNEL_SOCKET      – override default socket path (testing)
  *   WL_KERNEL_LOCK        – override default lock path (testing)
+ *   WL_KERNEL_IDLE_TIMEOUT_MS – milliseconds to stay alive after the last
+ *                               connected client disconnects
  */
 
 import { WstpClient } from "../src/bridge/wstpClient.js";
@@ -25,7 +28,8 @@ import os from "os";
 import path from "path";
 
 const IS_WIN = process.platform === "win32";
-const KERNEL_SOCKET_BASENAME = "prettier-wl-kernel-v7";
+const KERNEL_SOCKET_BASENAME = "prettier-wl-kernel-v8";
+const DEFAULT_IDLE_SHUTDOWN_MS = 1000;
 
 const SOCKET_PATH =
 	process.env.WL_KERNEL_SOCKET ??
@@ -37,6 +41,10 @@ const LOCK_PATH =
 	process.env.WL_KERNEL_LOCK ??
 	path.join(os.tmpdir(), `${KERNEL_SOCKET_BASENAME}.lock`);
 
+const IDLE_SHUTDOWN_MS = normalizeIdleShutdownMs(
+	process.env.WL_KERNEL_IDLE_TIMEOUT_MS,
+);
+
 function firstNonEmptyPath(...values) {
 	for (const value of values) {
 		if (typeof value !== "string") continue;
@@ -45,10 +53,19 @@ function firstNonEmptyPath(...values) {
 	return "";
 }
 
+function normalizeIdleShutdownMs(value) {
+	const numeric = Number(value);
+	if (!Number.isFinite(numeric)) return DEFAULT_IDLE_SHUTDOWN_MS;
+	return Math.max(0, Math.floor(numeric));
+}
+
 // ─── socket server ────────────────────────────────────────────────────────────
 
 const clients = new Map();
+const connections = new Set();
 const server = net.createServer(handleClient);
+let idleShutdownTimer = null;
+let shuttingDown = false;
 
 function clientForEnginePath(enginePath = "") {
 	const key = firstNonEmptyPath(enginePath, process.env.WOLFRAM_ENGINE_PATH);
@@ -65,6 +82,18 @@ function closeClients() {
 		client.close();
 	}
 	clients.clear();
+}
+
+function clearIdleShutdown() {
+	if (!idleShutdownTimer) return;
+	clearTimeout(idleShutdownTimer);
+	idleShutdownTimer = null;
+}
+
+function scheduleIdleShutdown() {
+	if (shuttingDown || connections.size > 0 || idleShutdownTimer) return;
+	idleShutdownTimer = setTimeout(cleanup, IDLE_SHUTDOWN_MS);
+	idleShutdownTimer.unref?.();
 }
 
 if (!IS_WIN) {
@@ -97,6 +126,8 @@ server.listen(SOCKET_PATH, () => {
 });
 
 function handleClient(conn) {
+	clearIdleShutdown();
+	connections.add(conn);
 	let buf = "";
 	conn.on("data", (chunk) => {
 		buf += chunk.toString();
@@ -106,6 +137,10 @@ function handleClient(conn) {
 			buf = buf.slice(nl + 1);
 			if (line) serveRequest(conn, line);
 		}
+	});
+	conn.on("close", () => {
+		connections.delete(conn);
+		scheduleIdleShutdown();
 	});
 	conn.on("error", () => {});
 }
@@ -134,6 +169,13 @@ async function serveRequest(conn, line) {
 // ─── cleanup ──────────────────────────────────────────────────────────────────
 
 function cleanup() {
+	if (shuttingDown) return;
+	shuttingDown = true;
+	clearIdleShutdown();
+	for (const conn of connections) {
+		conn.destroy();
+	}
+	connections.clear();
 	server.close();
 	closeClients();
 	if (!IS_WIN) {

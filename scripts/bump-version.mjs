@@ -4,10 +4,13 @@ import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, "..");
-const packagePaths = [
-	resolve(repoRoot, "package.json"),
-	resolve(repoRoot, "vscode-extension", "package.json"),
-];
+const rootPackagePath = resolve(repoRoot, "package.json");
+const vscodeExtensionPackagePath = resolve(
+	repoRoot,
+	"vscode-extension",
+	"package.json",
+);
+const packagePaths = [rootPackagePath, vscodeExtensionPackagePath];
 const versionPattern = /^v?(\d+)\.(\d+)\.(\d+)$/;
 const bumpTypes = new Set(["major", "minor", "patch"]);
 
@@ -59,6 +62,7 @@ const packages = packagePaths.map((packagePath) => ({
 	json: readPackage(packagePath),
 }));
 const currentVersion = packages[0].json.version;
+const pluginPackageName = packages[0].json.name;
 const requested = args[0] ?? "patch";
 const nextVersion = bumpTypes.has(requested)
 	? incrementVersion(currentVersion, requested)
@@ -66,6 +70,10 @@ const nextVersion = bumpTypes.has(requested)
 
 for (const packageInfo of packages) {
 	packageInfo.json.version = nextVersion;
+	if (packageInfo.path === vscodeExtensionPackagePath) {
+		packageInfo.json.dependencies ??= {};
+		packageInfo.json.dependencies[pluginPackageName] = `^${nextVersion}`;
+	}
 	writePackage(packageInfo.path, packageInfo.json);
 }
 

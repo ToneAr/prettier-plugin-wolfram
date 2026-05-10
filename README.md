@@ -233,8 +233,9 @@ Rule levels are `off`, `warn`, and `error`.
 No manual startup is required for normal usage. On the first parse request, the
 plugin auto-starts `scripts/kernel-server.js` and connects to it over a Unix
 domain socket on Linux/macOS or a named pipe on Windows. The helper owns one
-Wolfram kernel and serves later CLI and VS Code requests from the same local
-process.
+Wolfram kernel and serves active CLI and VS Code requests from the same local
+process. After the last connected client disconnects, the helper exits
+automatically so one-off formatting runs do not leave a background process.
 
 Kernel discovery checks explicit configuration first, then common Wolfram
 install locations and `WolframKernel` available on `PATH`. You can also set
