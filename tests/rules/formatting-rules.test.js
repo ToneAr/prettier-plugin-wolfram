@@ -564,6 +564,34 @@ describe("newlines-between-definitions", () => {
 		}
 	});
 
+	it("requires the configured blank lines between same-name definitions", () => {
+		const ctx = makeContext({
+			wolframNewlinesBetweenDefinitions: 0,
+			wolframNewlinesBetweenSameNameDefinitions: 1,
+		});
+		const node = {
+			type: "ContainerNode",
+			children: [
+				definition("Set", messageName("f", "usage"), [
+					[1, 1],
+					[1, 19],
+				]),
+				definition("SetDelayed", call("f", [sym("x")]), [
+					[2, 1],
+					[2, 11],
+				]),
+				definition("SetDelayed", call("g", [sym("x")]), [
+					[3, 1],
+					[3, 11],
+				]),
+			],
+		};
+
+		newlinesRule.visit(node, ctx);
+		expect(ctx.reports).toHaveLength(1);
+		expect(ctx.reports[0].message).toMatch(/Expected 1 blank line/);
+	});
+
 	it("treats semicolon-terminated top-level definitions as adjacent definitions", () => {
 		const ctx = makeContext();
 		const node = {

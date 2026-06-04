@@ -51,6 +51,116 @@ describe("printCall", () => {
 		expect(result.formatted).toBe("f[x, y]");
 	});
 
+	it("formats Part double brackets as a single argument group", () => {
+		const callNode = {
+			type: "CallNode",
+			head: { type: "LeafNode", kind: "Symbol", value: "expr" },
+			children: [
+				{ type: "LeafNode", kind: "Token`OpenSquare", value: "[" },
+				{
+					type: "GroupNode",
+					kind: "GroupSquare",
+					children: [
+						{
+							type: "LeafNode",
+							kind: "Token`OpenSquare",
+							value: "[",
+						},
+						{ type: "LeafNode", kind: "Integer", value: "1" },
+						{
+							type: "LeafNode",
+							kind: "Token`CloseSquare",
+							value: "]",
+						},
+					],
+				},
+				{ type: "LeafNode", kind: "Token`CloseSquare", value: "]" },
+			],
+		};
+
+		const print = (path, _options, _print) => {
+			const node = path.getValue();
+			if (node.type === "LeafNode") return String(node.value);
+			if (node.type === "CallNode")
+				return printCall(path, opts, print, node);
+			return "";
+		};
+
+		const doc = printCall(makePath(callNode), opts, print, callNode);
+		const result = prettier.doc.printer.printDocToString(doc, {
+			printWidth: 80,
+			tabWidth: 2,
+			useTabs: false,
+		});
+
+		expect(result.formatted).toBe("expr[[1]]");
+	});
+
+	it("keeps Part double brackets grouped when broken", () => {
+		const callNode = {
+			type: "CallNode",
+			head: { type: "LeafNode", kind: "Symbol", value: "expr" },
+			children: [
+				{ type: "LeafNode", kind: "Token`OpenSquare", value: "[" },
+				{
+					type: "GroupNode",
+					kind: "GroupSquare",
+					children: [
+						{
+							type: "LeafNode",
+							kind: "Token`OpenSquare",
+							value: "[",
+						},
+						{
+							type: "InfixNode",
+							op: "Comma",
+							children: [
+								{
+									type: "LeafNode",
+									kind: "Integer",
+									value: "1",
+								},
+								{
+									type: "LeafNode",
+									kind: "Token`Comma",
+									value: ",",
+								},
+								{
+									type: "LeafNode",
+									kind: "Integer",
+									value: "2",
+								},
+							],
+						},
+						{
+							type: "LeafNode",
+							kind: "Token`CloseSquare",
+							value: "]",
+						},
+					],
+				},
+				{ type: "LeafNode", kind: "Token`CloseSquare", value: "]" },
+			],
+		};
+
+		const print = (path, _options, _print) => {
+			const node = path.getValue();
+			if (node.type === "LeafNode") return String(node.value);
+			if (node.type === "CallNode")
+				return printCall(path, opts, print, node);
+			return "";
+		};
+
+		const doc = printCall(makePath(callNode), opts, print, callNode);
+		const result = prettier.doc.printer.printDocToString(doc, {
+			printWidth: 8,
+			tabWidth: 2,
+			useTabs: false,
+		});
+
+		expect(result.formatted).toBe("expr[[\n  1,\n  2\n]]");
+	});
+
 	it("preserves comments after the last wrapped argument", () => {
 		const callNode = {
 			type: "CallNode",
@@ -118,5 +228,76 @@ describe("printCall", () => {
 		});
 
 		expect(result.formatted).toContain("(* keep me *)");
+	});
+
+	it("keeps source-line comments separate from following call arguments", () => {
+		const callNode = {
+			type: "CallNode",
+			head: { type: "LeafNode", kind: "Symbol", value: "f" },
+			children: [
+				{ type: "LeafNode", kind: "Token`OpenSquare", value: "[" },
+				{
+					type: "InfixNode",
+					op: "Comma",
+					children: [
+						{
+							type: "LeafNode",
+							kind: "Symbol",
+							value: "a",
+							source: [
+								[1, 3],
+								[1, 4],
+							],
+						},
+						{
+							type: "LeafNode",
+							kind: "Token`Comma",
+							value: ",",
+							source: [
+								[1, 4],
+								[1, 5],
+							],
+						},
+						{
+							type: "LeafNode",
+							kind: "Token`Comment",
+							value: "(* comment *)",
+							source: [
+								[2, 3],
+								[2, 16],
+							],
+						},
+						{
+							type: "LeafNode",
+							kind: "Symbol",
+							value: "b",
+							source: [
+								[3, 3],
+								[3, 4],
+							],
+						},
+					],
+				},
+				{ type: "LeafNode", kind: "Token`CloseSquare", value: "]" },
+			],
+		};
+
+		const print = (path, _options, _print) => {
+			const node = path.getValue();
+			if (node.type === "LeafNode") return String(node.value);
+			if (node.type === "CallNode")
+				return printCall(path, opts, print, node);
+			return "";
+		};
+
+		const path = makePath(callNode);
+		const doc = printCall(path, opts, print, callNode);
+		const result = prettier.doc.printer.printDocToString(doc, {
+			printWidth: 80,
+			tabWidth: 2,
+			useTabs: false,
+		});
+
+		expect(result.formatted).toBe("f[\n  a,\n  (* comment *)\n  b\n]");
 	});
 });

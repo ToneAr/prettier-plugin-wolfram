@@ -1,6 +1,8 @@
 // src/rules/no-general-infix-function.js
+import { normalizeWolframOptions } from "../options.js";
 
 function preservedTildeFunctions(options) {
+	options = normalizeWolframOptions(options);
 	return new Set(
 		String(options?.wolframPreserveTildeInfixFunctions ?? "Join")
 			.split(",")

@@ -1,3 +1,5 @@
+import { normalizeWolframOptions } from "../options.js";
+
 const TIGHT_INFIX_OPERATORS = new Set(["MessageName"]);
 
 const TIGHT_BINARY_OPERATORS = new Set(["PatternTest", "Span"]);
@@ -34,6 +36,7 @@ export function wantsSpacesAroundOperator(
 	operatorToken = null,
 ) {
 	if (prefersNoSpacesAroundOperator(node, operatorToken)) return false;
+	options = normalizeWolframOptions(options);
 	return options?.wolframSpaceAroundOperators ?? true;
 }
 

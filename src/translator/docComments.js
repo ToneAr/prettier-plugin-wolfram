@@ -1,4 +1,5 @@
 import { doc } from "prettier";
+import { normalizeWolframOptions } from "../options.js";
 
 export function joinDocsWithSpace(docs) {
 	const nonEmptyDocs = docs.filter(
@@ -28,6 +29,7 @@ export function documentationCommentColumn(
 	options,
 	suffixForEntry = () => "",
 ) {
+	options = normalizeWolframOptions(options);
 	const manual = options.wolframDocumentationCommentColumn ?? 0;
 	if (manual > 0) return manual;
 	const padding = Math.max(

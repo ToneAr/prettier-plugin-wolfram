@@ -1,6 +1,6 @@
 {
 	"[wolfram]": {
-		"editor.defaultFormatter": "Tone.wolfram-prettier-vscode",
+		"editor.defaultFormatter": "Tone.prettier-vscode-wolfram",
 		"editor.formatOnSave": true,
 		"editor.formatOnSaveMode": "file"
 	},

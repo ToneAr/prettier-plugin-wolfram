@@ -11,6 +11,11 @@ import {
 	blankLinesForCodeGap,
 	observedBlankLinesBetween,
 } from "../../utils/codeSpacing.js";
+import {
+	nodeEndLine,
+	nodeStartLine,
+	sourceLineGap,
+} from "../sourceLines.js";
 
 function isTrivia(node) {
 	return (
@@ -23,46 +28,6 @@ function isTrivia(node) {
 
 function isComment(node) {
 	return node.type === "LeafNode" && node.kind === "Token`Comment";
-}
-
-function lineNumberAtOffset(text, offset) {
-	if (typeof text !== "string" || typeof offset !== "number" || offset < 0) {
-		return null;
-	}
-
-	const limit = Math.min(offset, text.length);
-	let line = 1;
-	let searchFrom = 0;
-
-	while (searchFrom < limit) {
-		const newlineOffset = text.indexOf("\n", searchFrom);
-		if (newlineOffset === -1 || newlineOffset >= limit) break;
-		line++;
-		searchFrom = newlineOffset + 1;
-	}
-
-	return line;
-}
-
-function nodeStartLine(node, options) {
-	const sourceStartLine = node?.source?.[0]?.[0];
-	if (Number.isFinite(sourceStartLine)) return sourceStartLine;
-	return lineNumberAtOffset(options?.originalText, node?.locStart);
-}
-
-function nodeEndLine(node, options) {
-	const sourceEndLine = node?.source?.[1]?.[0];
-	if (Number.isFinite(sourceEndLine)) return sourceEndLine;
-
-	if (typeof node?.locEnd === "number") {
-		const lastIncludedOffset =
-			typeof node?.locStart === "number" && node.locEnd > node.locStart
-				? node.locEnd - 1
-				: node.locEnd;
-		return lineNumberAtOffset(options?.originalText, lastIncludedOffset);
-	}
-
-	return nodeStartLine(node, options);
 }
 
 function trailingDocumentationCommentColumns(entries, options) {
@@ -86,7 +51,7 @@ function trailingDocumentationCommentColumns(entries, options) {
 
 		if (
 			!entry.trailingCommentDoc ||
-			entry.leadingCommentDocs.length > 0 ||
+			entry.leadingComments.length > 0 ||
 			observedBlankLines > 0
 		) {
 			flushBlock();
@@ -103,6 +68,26 @@ function trailingDocumentationCommentColumns(entries, options) {
 	return columns;
 }
 
+function containerCommentSeparator(leftNode, rightNode, options) {
+	if (!rightNode) return "";
+	return sourceLineGap(leftNode, rightNode, options) === 0
+		? " "
+		: hardline;
+}
+
+function appendLeadingComments(docs, comments, nextNode, options) {
+	for (let i = 0; i < comments.length; i++) {
+		const comment = comments[i];
+		const followingNode = comments[i + 1]?.node ?? nextNode;
+		docs.push(comment.doc);
+		if (followingNode) {
+			docs.push(
+				containerCommentSeparator(comment.node, followingNode, options),
+			);
+		}
+	}
+}
+
 /** Print a ContainerNode[File, ...] with declaration-aware top-level spacing. */
 export function printContainer(node, options, print) {
 	const children = node.children.filter((c) => !isTrivia(c));
@@ -110,7 +95,7 @@ export function printContainer(node, options, print) {
 	if (children.length === 0) return "";
 
 	const entries = [];
-	let leadingCommentDocs = [];
+	let leadingComments = [];
 	let leadingCommentStartLine = null;
 	let leadingCommentEndLine = null;
 
@@ -134,7 +119,7 @@ export function printContainer(node, options, print) {
 		}
 
 		if (isComment(child)) {
-			leadingCommentDocs.push(print(child));
+			leadingComments.push({ node: child, doc: print(child) });
 			leadingCommentStartLine ??= nodeStartLine(child, options);
 			leadingCommentEndLine =
 				nodeEndLine(child, options) ?? leadingCommentEndLine;
@@ -147,7 +132,7 @@ export function printContainer(node, options, print) {
 		entries.push({
 			node: child,
 			doc: print(child),
-			leadingCommentDocs,
+			leadingComments,
 			trailingCommentDocs: [],
 			startLine: leadingCommentStartLine ?? childStartLine ?? 0,
 			endLine: Math.max(
@@ -155,7 +140,7 @@ export function printContainer(node, options, print) {
 				leadingCommentEndLine ?? childEndLine,
 			),
 		});
-		leadingCommentDocs = [];
+		leadingComments = [];
 		leadingCommentStartLine = null;
 		leadingCommentEndLine = null;
 	}
@@ -187,11 +172,13 @@ export function printContainer(node, options, print) {
 			docs.push(hardline, ...Array(blankLines).fill(hardline));
 		}
 
-		if (entry.leadingCommentDocs.length > 0) {
-			for (let i = 0; i < entry.leadingCommentDocs.length; i++) {
-				docs.push(entry.leadingCommentDocs[i]);
-				docs.push(hardline);
-			}
+		if (entry.leadingComments.length > 0) {
+			appendLeadingComments(
+				docs,
+				entry.leadingComments,
+				entry.node,
+				options,
+			);
 		}
 
 		const column =
@@ -201,12 +188,9 @@ export function printContainer(node, options, print) {
 		previousNode = entry;
 	}
 
-	if (leadingCommentDocs.length > 0) {
+	if (leadingComments.length > 0) {
 		if (docs.length > 0) docs.push(hardline);
-		for (let i = 0; i < leadingCommentDocs.length; i++) {
-			docs.push(leadingCommentDocs[i]);
-			if (i < leadingCommentDocs.length - 1) docs.push(hardline);
-		}
+		appendLeadingComments(docs, leadingComments, null, options);
 	}
 
 	return docs;

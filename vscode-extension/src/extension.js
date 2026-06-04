@@ -78,10 +78,31 @@ function configuredCSTRequestTimeoutMs() {
 }
 
 function mergeExtensionFormatterOptions(resolvedConfig = {}) {
+	const resolvedWolfram =
+		resolvedConfig.wolfram &&
+		typeof resolvedConfig.wolfram === "object" &&
+		!Array.isArray(resolvedConfig.wolfram)
+			? resolvedConfig.wolfram
+			: {};
+	const wolfram = { ...resolvedWolfram };
+
+	if (
+		!Object.prototype.hasOwnProperty.call(wolfram, "cstRequestTimeoutMs") &&
+		resolvedConfig.wolframCSTRequestTimeoutMs === undefined
+	) {
+		wolfram.cstRequestTimeoutMs = configuredCSTRequestTimeoutMs();
+	}
+
+	if (
+		!Object.prototype.hasOwnProperty.call(wolfram, "enginePath") &&
+		resolvedConfig.wolframEnginePath === undefined
+	) {
+		wolfram.enginePath = configuredKernelPath();
+	}
+
 	return {
-		wolframCSTRequestTimeoutMs: configuredCSTRequestTimeoutMs(),
-		wolframEnginePath: configuredKernelPath(),
 		...resolvedConfig,
+		wolfram,
 	};
 }
 
@@ -534,7 +555,11 @@ function activate(context) {
 		process.env.WOLFRAM_ENGINE_PATH = wolframEnginePath;
 	}
 
-	const selector = { language: "wolfram", scheme: "file" };
+	const selector = [
+		{ language: "wolfram", scheme: "file" },
+		{ language: "wolframscript", scheme: "file" },
+		{ language: "wolfram-notebook", scheme: "file" },
+	];
 	const diagnostics =
 		vscode.languages.createDiagnosticCollection("prettier-wolfram");
 

@@ -73,6 +73,23 @@ describe("printLeaf", () => {
 		);
 	});
 
+	it("keeps oversized words together when splitting strings", () => {
+		const node = {
+			type: "LeafNode",
+			kind: "String",
+			value: '"prefix supercalifragilisticexpialidociousSuffix tail"',
+		};
+
+		const result = fmt(printLeaf(node, { ...opts, printWidth: 30 }), 30);
+		expect(result).toBe(
+			"StringJoin[\n" +
+				'  "prefix ",\n' +
+				'  "supercalifragilisticexpialidociousSuffix ",\n' +
+				'  "tail"\n' +
+				"]",
+		);
+	});
+
 	it("splits quoted strings with Wolfram escapes without doubling them", () => {
 		const node = {
 			type: "LeafNode",

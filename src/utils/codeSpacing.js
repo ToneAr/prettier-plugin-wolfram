@@ -1,13 +1,18 @@
+import { normalizeWolframOptions } from "../options.js";
+
 const DEFAULT_MAX_BLANK_LINES_BETWEEN_CODE = 1;
 const DEFAULT_BLANK_LINES_BETWEEN_DEFINITIONS = 1;
+const DEFAULT_BLANK_LINES_BETWEEN_SAME_NAME_DEFINITIONS = 0;
 
-const DECLARATION_OPS = new Set([
-	"Set",
+const SET_DECLARATION_OPS = new Set(["Set", "TagSet", "UpSet"]);
+const SET_DELAYED_DECLARATION_OPS = new Set([
 	"SetDelayed",
-	"TagSet",
 	"TagSetDelayed",
-	"UpSet",
 	"UpSetDelayed",
+]);
+const DECLARATION_OPS = new Set([
+	...SET_DECLARATION_OPS,
+	...SET_DELAYED_DECLARATION_OPS,
 ]);
 
 const TRIVIA_KINDS = new Set([
@@ -31,6 +36,7 @@ export function nonNegativeIntegerOption(value, fallback) {
 }
 
 export function maxBlankLinesBetweenCode(options = {}) {
+	options = normalizeWolframOptions(options);
 	return nonNegativeIntegerOption(
 		options.wolframMaxBlankLinesBetweenCode,
 		DEFAULT_MAX_BLANK_LINES_BETWEEN_CODE,
@@ -38,9 +44,47 @@ export function maxBlankLinesBetweenCode(options = {}) {
 }
 
 export function blankLinesBetweenDefinitions(options = {}) {
+	options = normalizeWolframOptions(options);
 	return nonNegativeIntegerOption(
 		options.wolframNewlinesBetweenDefinitions,
 		DEFAULT_BLANK_LINES_BETWEEN_DEFINITIONS,
+	);
+}
+
+function optionalBlankLinesOption(value, fallback) {
+	if (value == null) return fallback;
+	return nonNegativeIntegerOption(value, fallback);
+}
+
+export function blankLinesBetweenSetDefinitions(options = {}) {
+	options = normalizeWolframOptions(options);
+	return optionalBlankLinesOption(
+		options.wolframNewlinesBetweenSetDefinitions,
+		blankLinesBetweenDefinitions(options),
+	);
+}
+
+export function blankLinesBetweenSetDelayedDefinitions(options = {}) {
+	options = normalizeWolframOptions(options);
+	return optionalBlankLinesOption(
+		options.wolframNewlinesBetweenSetDelayedDefinitions,
+		blankLinesBetweenDefinitions(options),
+	);
+}
+
+export function blankLinesBetweenSetAndSetDelayedDefinitions(options = {}) {
+	options = normalizeWolframOptions(options);
+	return optionalBlankLinesOption(
+		options.wolframNewlinesBetweenSetAndSetDelayedDefinitions,
+		blankLinesBetweenDefinitions(options),
+	);
+}
+
+export function blankLinesBetweenSameNameDefinitions(options = {}) {
+	options = normalizeWolframOptions(options);
+	return nonNegativeIntegerOption(
+		options.wolframNewlinesBetweenSameNameDefinitions,
+		DEFAULT_BLANK_LINES_BETWEEN_SAME_NAME_DEFINITIONS,
 	);
 }
 
@@ -90,6 +134,70 @@ export function isDeclarationNode(node) {
 	const statement = unwrapSingleStatementNode(node);
 	return (
 		statement?.type === "BinaryNode" && DECLARATION_OPS.has(statement.op)
+	);
+}
+
+function declarationSpacingKind(node) {
+	const statement = unwrapSingleStatementNode(node);
+	if (statement?.type !== "BinaryNode") return null;
+	if (SET_DECLARATION_OPS.has(statement.op)) return "set";
+	if (SET_DELAYED_DECLARATION_OPS.has(statement.op)) return "setDelayed";
+	return null;
+}
+
+function blankLinesBetweenDeclarationKinds(
+	prevKind,
+	nextKind,
+	options,
+	{ requireSpecificOption = false } = {},
+) {
+	if (prevKind === "set" && nextKind === "set") {
+		if (
+			requireSpecificOption &&
+			options.wolframNewlinesBetweenSetDefinitions == null
+		) {
+			return null;
+		}
+		return blankLinesBetweenSetDefinitions(options);
+	}
+
+	if (prevKind === "setDelayed" && nextKind === "setDelayed") {
+		if (
+			requireSpecificOption &&
+			options.wolframNewlinesBetweenSetDelayedDefinitions == null
+		) {
+			return null;
+		}
+		return blankLinesBetweenSetDelayedDefinitions(options);
+	}
+
+	if (
+		(prevKind === "set" && nextKind === "setDelayed") ||
+		(prevKind === "setDelayed" && nextKind === "set")
+	) {
+		if (
+			requireSpecificOption &&
+			options.wolframNewlinesBetweenSetAndSetDelayedDefinitions == null
+		) {
+			return null;
+		}
+		return blankLinesBetweenSetAndSetDelayedDefinitions(options);
+	}
+
+	return null;
+}
+
+function blankLinesBetweenDeclarationNodes(
+	prevNode,
+	nextNode,
+	options,
+	requireSpecificOption = false,
+) {
+	return blankLinesBetweenDeclarationKinds(
+		declarationSpacingKind(prevNode),
+		declarationSpacingKind(nextNode),
+		options,
+		{ requireSpecificOption },
 	);
 }
 
@@ -283,15 +391,19 @@ export function blankLinesForCodeGap(
 	options = {},
 	{ topLevel = false } = {},
 ) {
+	options = normalizeWolframOptions(options);
 	const mode = options.wolframTopLevelSpacingMode ?? "declarations";
 	if (topLevel && mode === "none") return 0;
 
 	if (hasSharedDefinitionSubject(prevNode, nextNode)) {
-		return 0;
+		return blankLinesBetweenSameNameDefinitions(options);
 	}
 
 	if (isDeclarationNode(prevNode) && isDeclarationNode(nextNode)) {
-		return blankLinesBetweenDefinitions(options);
+		return (
+			blankLinesBetweenDeclarationNodes(prevNode, nextNode, options) ??
+			blankLinesBetweenDefinitions(options)
+		);
 	}
 
 	const maxBlankLines = maxBlankLinesBetweenCode(options);

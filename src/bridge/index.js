@@ -15,6 +15,7 @@ import path from "path";
 import os from "os";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
+import { normalizeWolframOptions } from "../options.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -307,10 +308,11 @@ export class KernelBridge {
 	#options;
 
 	constructor(options = {}) {
-		this.#options = options;
+		this.#options = normalizeWolframOptions(options);
 	}
 
 	async getCST(sourceText, prettierOptions = {}) {
+		prettierOptions = normalizeWolframOptions(prettierOptions);
 		const enginePath = firstNonEmptyPath(
 			prettierOptions.wolframEnginePath,
 			prettierOptions["wolfram.systemKernel"],

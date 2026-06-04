@@ -2,6 +2,7 @@ import { doc } from "prettier";
 import { renderFlatDoc } from "./docComments.js";
 import { isComment, isTrivia } from "./nodes/leaf.js";
 import { wantsSpacesAroundOperator } from "../utils/operatorSpacing.js";
+import { normalizeWolframOptions } from "../options.js";
 
 const { ifBreak } = doc.builders;
 
@@ -92,6 +93,7 @@ function alignmentCandidate(path, options, print, entry) {
 }
 
 export function withAlignedRuleValues(entries, path, options, print) {
+	options = normalizeWolframOptions(options);
 	if (!options.wolframAlignRuleValues) return entries;
 
 	const candidates = entries

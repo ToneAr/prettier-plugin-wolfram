@@ -101,6 +101,10 @@ function printSpan(node, print) {
 }
 
 function isMultilineStringJoin(node) {
+	if (node?.type === "InfixNode" && node.op === "StringJoin") {
+		return true;
+	}
+
 	if (
 		node?.type !== "CallNode" ||
 		node.head?.type !== "LeafNode" ||
@@ -127,6 +131,14 @@ function isMultilineStringLeaf(node, printedDoc) {
 		node.kind === "String" &&
 		willBreak(printedDoc)
 	);
+}
+
+/** A right-hand side that delimits itself with brackets (a call like f[...] or
+ *  a group like {...}, <|...|>, (...)) already dedents its own closing token,
+ *  so its broken layout is correct as-is. Other values (infix chains, etc.)
+ *  need their continuation lines indented one level under the operator. */
+function rhsManagesOwnIndent(node) {
+	return node?.type === "CallNode" || node?.type === "GroupNode";
 }
 
 export function printBinary(node, options, print) {
@@ -185,7 +197,8 @@ export function printBinary(node, options, print) {
 			return group([lhsDoc, `${gap}${opStr}`, indent([line, rhsDoc])]);
 		}
 
-		return group([lhsDoc, `${gap}${opStr}`, `${gap}`, rhsDoc]);
+		const value = rhsManagesOwnIndent(rhs) ? rhsDoc : indent(rhsDoc);
+		return group([lhsDoc, `${gap}${opStr}${gap}`, value]);
 	}
 
 	return group([lhsDoc, `${gap}${opStr}`, indent([line, rhsDoc])]);

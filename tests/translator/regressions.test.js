@@ -89,6 +89,17 @@ describe("translator regressions", () => {
 		).toBe('"processing"');
 	});
 
+	it("keeps Part double brackets grouped when broken", async () => {
+		const result = await prettier.format("expr[[1, 2]]", {
+			parser: "wolfram",
+			plugins: [plugin],
+			printWidth: 8,
+			tabWidth: 2,
+		});
+
+		expect(result).toBe("expr[[\n  1,\n  2\n]]");
+	}, 15000);
+
 	it("keeps prefix and postfix same-subject definitions contiguous", async () => {
 		const source =
 			"Options @ f = {}\n\n" +
@@ -119,6 +130,31 @@ describe("translator regressions", () => {
 				"x_ // f := x\n\n" +
 				"g @ x_ := x",
 		);
+	}, 15000);
+
+	it("honors the trailing newline formatter option", async () => {
+		const baseOptions = {
+			parser: "wolfram",
+			plugins: [plugin],
+			printWidth: 80,
+			tabWidth: 2,
+		};
+
+		await expect(prettier.format("x=1\n", baseOptions)).resolves.toBe(
+			"x = 1",
+		);
+		await expect(
+			prettier.format("x=1", {
+				...baseOptions,
+				wolfram: { trailingNewline: true },
+			}),
+		).resolves.toBe("x = 1\n");
+		await expect(
+			prettier.format("x=1", {
+				...baseOptions,
+				wolframTrailingNewline: true,
+			}),
+		).resolves.toBe("x = 1\n");
 	}, 15000);
 
 	it("formats long string literals as multiline StringJoin expressions", async () => {
@@ -168,6 +204,125 @@ describe("translator regressions", () => {
 		expect(twice.split("StringJoin[").length - 1).toBe(1);
 	}, 15000);
 
+	it("collapses short infix StringJoin expressions through string handling", async () => {
+		const source = 'StringJoin["alpha"] <> " beta" <> " gamma"';
+		const once = await prettier.format(source, {
+			parser: "wolfram",
+			plugins: [plugin],
+			printWidth: 80,
+		});
+		const twice = await prettier.format(once, {
+			parser: "wolfram",
+			plugins: [plugin],
+			printWidth: 80,
+		});
+
+		expect(once).toBe('"alpha beta gamma"');
+		expect(twice).toBe(once);
+	}, 15000);
+
+	it("flattens long infix StringJoin expressions into one stable wrapper", async () => {
+		const source =
+			'"a very long string that should wrap nicely across multiple lines" <> " and another long tail that will also wrap"';
+		const once = await prettier.format(source, {
+			parser: "wolfram",
+			plugins: [plugin],
+			printWidth: 30,
+		});
+		const twice = await prettier.format(once, {
+			parser: "wolfram",
+			plugins: [plugin],
+			printWidth: 30,
+		});
+
+		expect(once).toBe(
+			"StringJoin[\n" +
+				'  "a very long string that ",\n' +
+				'  "should wrap nicely ",\n' +
+				'  "across multiple lines ",\n' +
+				'  "and another long tail ",\n' +
+				'  "that will also wrap"\n' +
+				"]",
+		);
+		expect(twice).toBe(once);
+		expect(once.split("StringJoin[").length - 1).toBe(1);
+	}, 15000);
+
+	it("keeps wrapped infix StringJoin stable on compact binary right-hand sides", async () => {
+		const source =
+			'x -> "a very long string that should wrap nicely" <> " across lines"';
+		const once = await prettier.format(source, {
+			parser: "wolfram",
+			plugins: [plugin],
+			printWidth: 30,
+		});
+		const twice = await prettier.format(once, {
+			parser: "wolfram",
+			plugins: [plugin],
+			printWidth: 30,
+		});
+
+		expect(once).toContain("x ->\n  StringJoin[");
+		expect(longestLine(once)).toBeLessThanOrEqual(30);
+		expect(twice).toBe(once);
+	}, 15000);
+
+	it("collapses all-string StringJoin calls that fit on one line", async () => {
+		const source =
+			'StringJoin["alpha", " beta", StringJoin[" gamma"]]';
+		const once = await prettier.format(source, {
+			parser: "wolfram",
+			plugins: [plugin],
+			printWidth: 80,
+		});
+		const twice = await prettier.format(once, {
+			parser: "wolfram",
+			plugins: [plugin],
+			printWidth: 80,
+		});
+
+		expect(once).toBe('"alpha beta gamma"');
+		expect(twice).toBe(once);
+		expect(once).not.toContain("StringJoin");
+	}, 15000);
+
+	it("keeps all-string StringJoin calls when the joined literal would exceed one line", async () => {
+		const source =
+			'StringJoin["1234567890", "1234567890", "1234567890"]';
+		const result = await prettier.format(source, {
+			parser: "wolfram",
+			plugins: [plugin],
+			printWidth: 20,
+		});
+
+		expect(result).toBe(
+			"StringJoin[\n" +
+				'  "123456789012345",\n' +
+				'  "678901234567890"\n' +
+				"]",
+		);
+	}, 15000);
+
+	it("keeps comma-separated StringJoin literals wrapped when a trailing comma would overflow", async () => {
+		const source = 'f[StringJoin["1234567890123456"], y]';
+		const result = await prettier.format(source, {
+			parser: "wolfram",
+			plugins: [plugin],
+			printWidth: 20,
+		});
+
+		expect(longestLine(result)).toBeLessThanOrEqual(20);
+		expect(result).toBe(
+			"f[\n" +
+				"  StringJoin[\n" +
+				'    "1234567890123",\n' +
+				'    "456"\n' +
+				"  ],\n" +
+				"  y\n" +
+				"]",
+		);
+	}, 15000);
+
 	it("flattens nested StringJoin calls into one StringJoin", async () => {
 		const source =
 			'StringJoin[StringJoin["a very long string that should wrap nicely across multiple lines"], "tail"]';
@@ -204,13 +359,12 @@ describe("translator regressions", () => {
 		expect(once).toBe(
 			"rawXML =\n" +
 				"  Import[\n" +
-				"    StringJoin[\n" +
-				'      "https://www.wolfram.com/events/technology-conference/innovator-award/"\n' +
-				"    ],\n" +
+				'    "https://www.wolfram.com/events/technology-conference/innovator-award/",\n' +
 				'    "XMLObject"\n' +
 				"  ]",
 		);
 		expect(twice).toBe(once);
+		expect(once).not.toContain("StringJoin");
 		expect(once).not.toContain('"v"');
 		expect(once).not.toContain('"a"');
 	}, 15000);
@@ -227,12 +381,16 @@ describe("translator regressions", () => {
 		});
 
 		expect(longestLine(result)).toBeLessThanOrEqual(80);
-		expect(result).toContain(
-			'            "https://www.wolfram.com/events/technology-conference/innovator-aw",',
+		expect(result).toBe(
+			"rawXML =\n" +
+				"    Import[\n" +
+				'        "https://www.wolfram.com/events/technology-conference/innovator-award/",\n' +
+				'        "XMLObject"\n' +
+				"    ]",
 		);
 	}, 15000);
 
-	it("does not over-count wrapper depth when wrapping tab-indented joined strings", async () => {
+	it("keeps tab-indented joined links intact when wrapping strings", async () => {
 		const source =
 			'rawXML = Dataset[{<|"x" -> Import[StringJoin["https://www.wolfram.com/events/technology-conference/inno", "v", "a", "tor-award/"], "XMLObject"], "sections" -> sections|>}]';
 		const result = await prettier.format(source, {
@@ -243,13 +401,15 @@ describe("translator regressions", () => {
 			useTabs: true,
 		});
 
-		expect(longestDisplayLine(result, 4)).toBeLessThanOrEqual(80);
 		expect(result).toContain(
+			'"https://www.wolfram.com/events/technology-conference/innovator-award/"',
+		);
+		expect(result).not.toContain(
 			'"https://www.wolfram.com/events/technology-conference/",',
 		);
 	}, 15000);
 
-	it("fills earlier unbroken joined string chunks before later chunks", async () => {
+	it("keeps joined links together when they exceed a chunk width", async () => {
 		const source =
 			'StringJoin["https://www.wolfram.com/events/technology-conference/inno", "v", "a", "tor-award/"]';
 		const result = await prettier.format(source, {
@@ -260,8 +420,7 @@ describe("translator regressions", () => {
 
 		expect(result).toBe(
 			"StringJoin[\n" +
-				'  "https://www.wolfram.com/events/technology-conference/in",\n' +
-				'  "novator-award/"\n' +
+				'  "https://www.wolfram.com/events/technology-conference/innovator-award/"\n' +
 				"]",
 		);
 	}, 15000);
@@ -399,7 +558,9 @@ describe("translator regressions", () => {
 				printWidth: 80,
 				tabWidth: 2,
 				useTabs: true,
-				wolframModuleVarsBreakThreshold: 0,
+				wolfram: {
+					moduleVarsBreakThreshold: 0,
+				},
 			});
 
 			expect(result, head).toBe(
@@ -424,10 +585,54 @@ describe("translator regressions", () => {
 		await expect(
 			prettier.format(source, {
 				...baseOptions,
-				wolframConditionFirstFunctions: "",
+				wolfram: {
+					conditionFirstFunctions: "",
+				},
 			}),
 		).resolves.toBe(
 			"If[\n" + "  x > 0,\n" + "  thenValue,\n" + "  elseValue\n" + "]",
+		);
+	}, 15000);
+
+	it("keeps condition-first forms structured when a branch preserves compound source lines", async () => {
+		const source = "If[readyQ, before[];\nafter[], fallback[]]";
+		const result = await prettier.format(source, {
+			parser: "wolfram",
+			plugins: [plugin],
+			printWidth: 80,
+			tabWidth: 2,
+		});
+
+		expect(result).toBe(
+			"If[readyQ,\n" +
+				"  before[];\n" +
+				"  after[],\n" +
+				"  fallback[]\n" +
+				"]",
+		);
+	}, 15000);
+
+	it("keeps Switch case layout when case values preserve compound source lines", async () => {
+		const source =
+			'Switch[msg, Null, close[];\nReturn[], "Ping", pong[], _, messages["PushBack", msg];\nhandle[msg]]';
+		const result = await prettier.format(source, {
+			parser: "wolfram",
+			plugins: [plugin],
+			printWidth: 80,
+			tabWidth: 2,
+		});
+
+		expect(result).toBe(
+			"Switch[msg,\n" +
+				"  Null,\n" +
+				"    close[];\n" +
+				"    Return[],\n" +
+				'  "Ping",\n' +
+				"    pong[],\n" +
+				"  _,\n" +
+				'    messages["PushBack", msg];\n' +
+				"    handle[msg]\n" +
+				"]",
 		);
 	}, 15000);
 
@@ -441,6 +646,45 @@ describe("translator regressions", () => {
 		expect(result).toBe(source);
 		expect(result).not.toContain("CallNode[");
 		expect(result).not.toContain("GroupMissingCloserNode[");
+	}, 15000);
+
+	it("preserves executable shebang lines while formatting the script body", async () => {
+		const source =
+			"#!/usr/bin/env wolframscript\n" + "Print[  1+2  ]";
+		const once = await prettier.format(source, {
+			filepath: "/tmp/script.wls",
+			parser: "wolfram",
+			plugins: [plugin],
+			printWidth: 80,
+			tabWidth: 2,
+		});
+		const twice = await prettier.format(once, {
+			filepath: "/tmp/script.wls",
+			parser: "wolfram",
+			plugins: [plugin],
+			printWidth: 80,
+			tabWidth: 2,
+		});
+
+		expect(once).toBe(
+			"#!/usr/bin/env wolframscript\n" + "Print[1 + 2]",
+		);
+		expect(twice).toBe(once);
+	}, 15000);
+
+	it("preserves shebang lines even when Wolfram formatting lacks filepath context", async () => {
+		const source =
+			"#!/usr/bin/env wolframscript\n" + "Print[  1+2  ]";
+		const result = await prettier.format(source, {
+			parser: "wolfram",
+			plugins: [plugin],
+			printWidth: 80,
+			tabWidth: 2,
+		});
+
+		expect(result).toBe(
+			"#!/usr/bin/env wolframscript\n" + "Print[1 + 2]",
+		);
 	}, 15000);
 
 	it("preserves comments in operator expressions", async () => {
@@ -954,6 +1198,255 @@ scrapeCustomerStoryData[]:=
 		expect(fmt(printInfix(node, opts, leafPrint))).toBe("a; b");
 	});
 
+	it("keeps default all-or-nothing wrapping for unbroken compound expressions", () => {
+		const node = {
+			type: "InfixNode",
+			op: "CompoundExpression",
+			children: [
+				{ type: "LeafNode", kind: "Symbol", value: "a" },
+				{ type: "LeafNode", kind: "Token`Semi", value: ";" },
+				{ type: "LeafNode", kind: "Symbol", value: "b" },
+				{ type: "LeafNode", kind: "Token`Semi", value: ";" },
+				{ type: "LeafNode", kind: "Symbol", value: "c" },
+			],
+		};
+
+		expect(fmt(printInfix(node, opts, leafPrint), 1)).toBe("a;\nb;\nc");
+	});
+
+	it("preserves individual source line breaks between compound expression parts", () => {
+		const node = {
+			type: "InfixNode",
+			op: "CompoundExpression",
+			children: [
+				{
+					type: "LeafNode",
+					kind: "Symbol",
+					value: "a",
+					source: [
+						[1, 1],
+						[1, 2],
+					],
+				},
+				{
+					type: "LeafNode",
+					kind: "Token`Semi",
+					value: ";",
+					source: [
+						[1, 2],
+						[1, 3],
+					],
+				},
+				{
+					type: "LeafNode",
+					kind: "Token`Newline",
+					value: "\n",
+				},
+				{
+					type: "LeafNode",
+					kind: "Symbol",
+					value: "b",
+					source: [
+						[2, 1],
+						[2, 2],
+					],
+				},
+				{
+					type: "LeafNode",
+					kind: "Token`Semi",
+					value: ";",
+					source: [
+						[2, 2],
+						[2, 3],
+					],
+				},
+				{
+					type: "LeafNode",
+					kind: "Token`Whitespace",
+					value: " ",
+				},
+				{
+					type: "LeafNode",
+					kind: "Symbol",
+					value: "c",
+					source: [
+						[2, 4],
+						[2, 5],
+					],
+				},
+			],
+		};
+
+		expect(fmt(printInfix(node, opts, leafPrint))).toBe("a;\nb; c");
+	});
+
+	it("allows a later compound expression part to start on its own line", () => {
+		const node = {
+			type: "InfixNode",
+			op: "CompoundExpression",
+			children: [
+				{
+					type: "LeafNode",
+					kind: "Symbol",
+					value: "a",
+					source: [
+						[1, 1],
+						[1, 2],
+					],
+				},
+				{
+					type: "LeafNode",
+					kind: "Token`Semi",
+					value: ";",
+					source: [
+						[1, 2],
+						[1, 3],
+					],
+				},
+				{
+					type: "LeafNode",
+					kind: "Token`Whitespace",
+					value: " ",
+				},
+				{
+					type: "LeafNode",
+					kind: "Symbol",
+					value: "b",
+					source: [
+						[1, 4],
+						[1, 5],
+					],
+				},
+				{
+					type: "LeafNode",
+					kind: "Token`Semi",
+					value: ";",
+					source: [
+						[1, 5],
+						[1, 6],
+					],
+				},
+				{
+					type: "LeafNode",
+					kind: "Token`Newline",
+					value: "\n",
+				},
+				{
+					type: "LeafNode",
+					kind: "Symbol",
+					value: "c",
+					source: [
+						[2, 1],
+						[2, 2],
+					],
+				},
+			],
+		};
+
+		expect(fmt(printInfix(node, opts, leafPrint))).toBe("a; b;\nc");
+	});
+
+	it("keeps standalone compound comments on their own source lines", () => {
+		const node = {
+			type: "InfixNode",
+			op: "CompoundExpression",
+			children: [
+				{
+					type: "LeafNode",
+					kind: "Symbol",
+					value: "a",
+					source: [
+						[1, 1],
+						[1, 2],
+					],
+				},
+				{
+					type: "LeafNode",
+					kind: "Token`Semi",
+					value: ";",
+					source: [
+						[1, 2],
+						[1, 3],
+					],
+				},
+				{ type: "LeafNode", kind: "Token`Newline", value: "\n" },
+				{
+					type: "LeafNode",
+					kind: "Token`Comment",
+					value: "(* standalone *)",
+					source: [
+						[2, 1],
+						[2, 17],
+					],
+				},
+				{ type: "LeafNode", kind: "Token`Newline", value: "\n" },
+				{
+					type: "LeafNode",
+					kind: "Symbol",
+					value: "b",
+					source: [
+						[3, 1],
+						[3, 2],
+					],
+				},
+			],
+		};
+
+		expect(fmt(printInfix(node, opts, leafPrint))).toBe(
+			"a;\n(* standalone *)\nb",
+		);
+	});
+
+	it("keeps same-line compound comments as prefix comments", () => {
+		const node = {
+			type: "InfixNode",
+			op: "CompoundExpression",
+			children: [
+				{
+					type: "LeafNode",
+					kind: "Symbol",
+					value: "a",
+					source: [
+						[1, 1],
+						[1, 2],
+					],
+				},
+				{
+					type: "LeafNode",
+					kind: "Token`Semi",
+					value: ";",
+					source: [
+						[1, 2],
+						[1, 3],
+					],
+				},
+				{ type: "LeafNode", kind: "Token`Newline", value: "\n" },
+				{
+					type: "LeafNode",
+					kind: "Token`Comment",
+					value: "(* prefix *)",
+					source: [
+						[2, 1],
+						[2, 13],
+					],
+				},
+				{
+					type: "LeafNode",
+					kind: "Symbol",
+					value: "b",
+					source: [
+						[2, 14],
+						[2, 15],
+					],
+				},
+			],
+		};
+
+		expect(fmt(printInfix(node, opts, leafPrint))).toBe(
+			"a;\n(* prefix *) b",
+		);
+	});
+
 	it("preserves terminal semicolons in infix compound expressions", () => {
 		const node = {
 			type: "InfixNode",
@@ -1251,6 +1744,71 @@ scrapeCustomerStoryData[]:=
 		);
 	});
 
+	it("keeps source-line comments separate inside wrapped lists", () => {
+		const node = {
+			type: "GroupNode",
+			kind: "List",
+			children: [
+				{ type: "LeafNode", kind: "Token`OpenCurly", value: "{" },
+				{
+					type: "InfixNode",
+					op: "Comma",
+					children: [
+						{
+							type: "LeafNode",
+							kind: "Symbol",
+							value: "a",
+							source: [
+								[1, 2],
+								[1, 3],
+							],
+						},
+						{
+							type: "LeafNode",
+							kind: "Token`Comma",
+							value: ",",
+							source: [
+								[1, 3],
+								[1, 4],
+							],
+						},
+						{
+							type: "LeafNode",
+							kind: "Token`Comment",
+							value: "(* comment *)",
+							source: [
+								[2, 3],
+								[2, 16],
+							],
+						},
+						{
+							type: "LeafNode",
+							kind: "Symbol",
+							value: "b",
+							source: [
+								[3, 3],
+								[3, 4],
+							],
+						},
+					],
+				},
+				{ type: "LeafNode", kind: "Token`CloseCurly", value: "}" },
+			],
+		};
+		const print = (path) => {
+			const n = path.getValue();
+			if (n.type === "LeafNode") return printLeaf(n, opts);
+			if (n.type === "GroupNode") return printGroup(path, opts, print, n);
+			if (n.type === "InfixNode")
+				return printInfix(n, opts, (child) => printLeaf(child, opts));
+			return "";
+		};
+
+		expect(fmt(printGroup(makePath(node, print), opts, print, node))).toBe(
+			"{\n  a,\n  (* comment *)\n  b\n}",
+		);
+	});
+
 	it("prints association contents with <| |> delimiters", () => {
 		const node = {
 			type: "GroupNode",
@@ -1418,6 +1976,50 @@ scrapeCustomerStoryData[]:=
 			),
 		).toBe("<||>");
 	});
+
+	it("indents a broken Rule value's continuation under its key", async () => {
+		const source =
+			"<|\"key\" -> aaaaa + bbbbb + ccccc + ddddd + eeeee + fffff + ggggg|>";
+		const result = await prettier.format(source, {
+			parser: "wolfram",
+			plugins: [plugin],
+			printWidth: 40,
+			tabWidth: 4,
+			useTabs: false,
+		});
+
+		expect(result).toBe(
+			"<|\n" +
+				"    \"key\" -> aaaaa +\n" +
+				"        bbbbb +\n" +
+				"        ccccc +\n" +
+				"        ddddd +\n" +
+				"        eeeee +\n" +
+				"        fffff +\n" +
+				"        ggggg\n" +
+				"|>",
+		);
+	}, 15000);
+
+	it("keeps a bracketed Rule value's closing token aligned with its key", async () => {
+		const source = "<|\"This\" -> f[someVeryLongArgumentName, another]|>";
+		const result = await prettier.format(source, {
+			parser: "wolfram",
+			plugins: [plugin],
+			printWidth: 40,
+			tabWidth: 4,
+			useTabs: false,
+		});
+
+		expect(result).toBe(
+			"<|\n" +
+				"    \"This\" -> f[\n" +
+				"        someVeryLongArgumentName,\n" +
+				"        another\n" +
+				"    ]\n" +
+				"|>",
+		);
+	}, 15000);
 
 	it("prints shorthand binary operators", () => {
 		const cases = [

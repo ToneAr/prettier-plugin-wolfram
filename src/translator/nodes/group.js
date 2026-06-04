@@ -3,7 +3,9 @@ import { doc } from "prettier";
 const { builders } = doc;
 import { isComment, isTrivia } from "./leaf.js";
 import { alignedRuleDoc, withAlignedRuleValues } from "../ruleAlignment.js";
-const { group, indent, softline, line } = builders;
+import { sourceLineGap } from "../sourceLines.js";
+import { normalizeWolframOptions } from "../../options.js";
+const { group, indent, softline, line, hardline } = builders;
 
 const GROUP_DELIMITERS = {
 	GroupSquare: ["[", "]"],
@@ -31,6 +33,32 @@ function isBracketToken(node) {
 
 function isCommaToken(node) {
 	return node.type === "LeafNode" && node.kind === "Token`Comma";
+}
+
+function nextContentEntry(entries, startIndex) {
+	for (let i = startIndex + 1; i < entries.length; i++) {
+		if (!isCommaToken(entries[i].node)) return entries[i];
+	}
+	return null;
+}
+
+function previousContentEntry(entries, startIndex) {
+	for (let i = startIndex - 1; i >= 0; i--) {
+		if (!isCommaToken(entries[i].node)) return entries[i];
+	}
+	return null;
+}
+
+function hasCommentBoundary(leftEntry, rightEntry) {
+	return isComment(leftEntry?.node) || isComment(rightEntry?.node);
+}
+
+function commentBoundary(leftEntry, rightEntry, options, fallback = line) {
+	if (!leftEntry || !rightEntry) return fallback;
+	const gap = sourceLineGap(leftEntry.node, rightEntry.node, options);
+	if (gap === 0) return " ";
+	if (gap > 0) return hardline;
+	return fallback;
 }
 
 function sequenceEntries(path, print, node) {
@@ -67,6 +95,7 @@ function sequenceEntries(path, print, node) {
 }
 
 export function printGroup(path, options, print, node) {
+	options = normalizeWolframOptions(options);
 	const [open, close] = GROUP_DELIMITERS[node.kind] ?? ["{", "}"];
 	const entries = withAlignedRuleValues(
 		sequenceEntries(path, print, node),
@@ -84,16 +113,34 @@ export function printGroup(path, options, print, node) {
 		: null;
 	let previousKind = null;
 
-	for (const entry of entries) {
+	for (let i = 0; i < entries.length; i++) {
+		const entry = entries[i];
 		if (isCommaToken(entry.node)) {
 			if (previousKind === null || previousKind === "comma") continue;
-			docs.push(",", commaGap);
+			const previousEntry = previousContentEntry(entries, i);
+			const followingEntry = nextContentEntry(entries, i);
+			const separator =
+				followingEntry &&
+				hasCommentBoundary(previousEntry, followingEntry)
+					? commentBoundary(
+							previousEntry,
+							followingEntry,
+							options,
+							commaGap,
+						)
+					: commaGap;
+			docs.push(",", separator);
 			previousKind = "comma";
 			continue;
 		}
 
 		if (previousKind !== null && previousKind !== "comma") {
-			docs.push(line);
+			const previousEntry = previousContentEntry(entries, i);
+			docs.push(
+				hasCommentBoundary(previousEntry, entry)
+					? commentBoundary(previousEntry, entry, options, line)
+					: line,
+			);
 		}
 
 		docs.push(alignedRuleDoc(entry, alignmentGroupId));

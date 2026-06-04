@@ -107,7 +107,7 @@ describe("wstpClient executable resolution", () => {
 			resolveWolframScriptInvocation(
 				path.join(tempDir, "missing-engine"),
 			),
-		).toThrow(/wolframEnginePath does not exist/);
+		).toThrow(/wolfram\.enginePath does not exist/);
 	});
 
 	it("extracts marker-wrapped JSON from noisy wolframscript output", async () => {

@@ -123,7 +123,9 @@ describe("KernelBridge", () => {
 
 		await bridge.getCST("f[x]", {
 			tabWidth: 4,
-			wolframCSTRequestTimeoutMs: 45000,
+			wolfram: {
+				cstRequestTimeoutMs: 45000,
+			},
 		});
 
 		expect(writtenRequests).toEqual([
@@ -160,7 +162,7 @@ describe("KernelBridge", () => {
 		bridge.close();
 	});
 
-	it("prefers wolframEnginePath over wolfram.systemKernel", async () => {
+	it("prefers wolfram.enginePath over wolfram.systemKernel", async () => {
 		connectionPlan = ["error", "connect"];
 		const enginePath = path.join(tempDir, "EngineKernel");
 		const systemKernel = path.join(tempDir, "SystemKernel");
@@ -168,7 +170,9 @@ describe("KernelBridge", () => {
 		const bridge = new KernelBridge();
 
 		await bridge.getCST("f[x]", {
-			wolframEnginePath: enginePath,
+			wolfram: {
+				enginePath,
+			},
 			"wolfram.systemKernel": systemKernel,
 		});
 

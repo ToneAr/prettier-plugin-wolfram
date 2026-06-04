@@ -1,4 +1,5 @@
 // src/translator/index.js
+import { doc } from "prettier";
 import { printLeaf } from "./nodes/leaf.js";
 import { printContainer } from "./nodes/container.js";
 import { printCall } from "./nodes/call.js";
@@ -12,6 +13,13 @@ import { printTernary } from "./nodes/ternary.js";
 import { getSpecialPrinter } from "./specialForms.js";
 import { printOriginalSource } from "./sourcePreservation.js";
 
+const { hardline } = doc.builders;
+
+function withTrailingNewline(docNode, options) {
+	if (!options?.wolframTrailingNewline || docNode === "") return docNode;
+	return [docNode, hardline];
+}
+
 /**
  * prettier's print function — called as path.call(print, ...) by prettier core.
  * `path` is a FastPath; `path.getValue()` returns the current node.
@@ -21,14 +29,21 @@ export function printNode(path, options, print) {
 	if (!node) return "";
 
 	switch (node.type) {
-		case "ContainerNode":
-			return printContainer(node, options, (child) => {
+		case "ContainerNode": {
+			const body = printContainer(node, options, (child) => {
 				return path.call(
 					print,
 					"children",
 					node.children.indexOf(child),
 				);
 			});
+			const fileDoc = node.wlsShebang
+				? body === ""
+					? node.wlsShebang
+					: [node.wlsShebang, hardline, body]
+				: body;
+			return withTrailingNewline(fileDoc, options);
+		}
 
 		case "LeafNode":
 			return printLeaf(node, options, { path });
@@ -39,10 +54,13 @@ export function printNode(path, options, print) {
 			return printCall(path, options, print, node);
 		}
 
-		case "InfixNode":
+		case "InfixNode": {
+			const special = getSpecialPrinter(node, options);
+			if (special) return special(path, options, print, node);
 			return printInfix(node, options, (child) =>
 				path.call(print, "children", node.children.indexOf(child)),
 			);
+		}
 
 		case "BinaryNode":
 			return printBinary(node, options, (child) =>

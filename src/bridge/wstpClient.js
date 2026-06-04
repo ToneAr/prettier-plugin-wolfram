@@ -4,6 +4,7 @@ import { createRequire } from "module";
 import { basename, dirname, join } from "path";
 import { fileURLToPath } from "url";
 import { existsSync, readFileSync, readdirSync } from "fs";
+import { normalizeWolframOptions } from "../options.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
@@ -156,7 +157,7 @@ function resolveEngineRoot(base) {
 function findKernelExecutable(enginePath, platform = process.platform) {
 	if (enginePath) {
 		if (!existsSync(enginePath)) {
-			throw new Error(`wolframEnginePath does not exist: ${enginePath}`);
+			throw new Error(`wolfram.enginePath does not exist: ${enginePath}`);
 		}
 
 		if (
@@ -216,7 +217,7 @@ function findKernelExecutable(enginePath, platform = process.platform) {
 	if (fromPath) return fromPath;
 
 	throw new Error(
-		"WolframKernel not found. Set wolframEnginePath option or WOLFRAM_ENGINE_PATH env var.",
+		"WolframKernel not found. Set wolfram.enginePath option or WOLFRAM_ENGINE_PATH env var.",
 	);
 }
 
@@ -230,7 +231,7 @@ function resolveWolframScriptInvocation(
 ) {
 	if (enginePath) {
 		if (!existsSync(enginePath)) {
-			throw new Error(`wolframEnginePath does not exist: ${enginePath}`);
+			throw new Error(`wolfram.enginePath does not exist: ${enginePath}`);
 		}
 
 		if (matchesExecutable(enginePath, "script", platform)) {
@@ -292,12 +293,12 @@ function normalizeSpawnError(error) {
 	if (error?.code === "ENOENT") {
 		if (process.platform === "win32") {
 			return new Error(
-				"wolframscript.exe not found. Install Wolfram Engine or set wolframEnginePath to a Wolfram install that includes it.",
+				"wolframscript.exe not found. Install Wolfram Engine or set wolfram.enginePath to a Wolfram install that includes it.",
 			);
 		}
 
 		return new Error(
-			"WolframKernel not found. Install Wolfram Engine or set wolframEnginePath to a Wolfram install that includes it.",
+			"WolframKernel not found. Install Wolfram Engine or set wolfram.enginePath to a Wolfram install that includes it.",
 		);
 	}
 	return error instanceof Error ? error : new Error(String(error));
@@ -813,6 +814,9 @@ export class WstpClient {
 	}
 
 	async getCST(sourceText, tabWidth = 2, options = {}) {
+		if (options && typeof options === "object") {
+			options = normalizeWolframOptions(options);
+		}
 		const generation = this.#generation;
 		this.#assertNotClosed(generation);
 		await this.#ensureStarted(generation);

@@ -1,15 +1,15 @@
 {
 	"name": "prettier-vscode-wolfram",
-	"displayName": "Prettier - Code formatter (Wolfram Language) [Preview]",
+	"displayName": "Prettier - Code formatter (Wolfram Language)",
 	"description": "Formats Wolfram Language files and surfaces formatter-backed diagnostics using bundled Prettier.",
-	"version": "0.5.19",
+	"version": "0.6.3",
 	"license": "MIT",
 	"publisher": "Tone",
 	"icon": "assets/icon.png",
 	"preview": true,
 	"repository": {
 		"type": "git",
-		"url": "git://github.com/ToneAr/prettier-wolfram.git"
+		"url": "git://github.com/ToneAr/prettier-plugin-wolfram.git"
 	},
 	"engines": {
 		"vscode": "^1.75.0"
@@ -18,7 +18,9 @@
 		"Formatters"
 	],
 	"activationEvents": [
-		"onLanguage:wolfram"
+		"onLanguage:wolfram",
+		"onLanguage:wolframscript",
+		"onLanguage:wolfram-notebook"
 	],
 	"main": "./src/extension.js",
 	"scripts": {
@@ -28,7 +30,7 @@
 	},
 	"dependencies": {
 		"prettier": "^3.4.0",
-		"@wrel/prettier-plugin-wolfram": "^0.5.19"
+		"@wrel/prettier-plugin-wolfram": "^0.6.3"
 	},
 	"contributes": {
 		"configuration": {
@@ -82,7 +84,8 @@
 					".m",
 					".mt",
 					".nb",
-					".cdf"
+					".cdf",
+					".vsnb"
 				]
 			}
 		]

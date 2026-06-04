@@ -12,7 +12,13 @@ import {
 	hasImmediateComment,
 	printOriginalSource,
 } from "../sourcePreservation.js";
-const { group, indent, line, join } = builders;
+import {
+	nodeEndLine,
+	nodeStartLine,
+	sourceLineGap,
+} from "../sourceLines.js";
+import { normalizeWolframOptions } from "../../options.js";
+const { group, indent, line, hardline, join, fill } = builders;
 
 // Map WL op names to their display strings
 const OP_DISPLAY = {
@@ -31,46 +37,6 @@ const OP_DISPLAY = {
 	Dot: ".",
 	Alternatives: "|",
 };
-
-function lineNumberAtOffset(text, offset) {
-	if (typeof text !== "string" || typeof offset !== "number" || offset < 0) {
-		return null;
-	}
-
-	const limit = Math.min(offset, text.length);
-	let line = 1;
-	let searchFrom = 0;
-
-	while (searchFrom < limit) {
-		const newlineOffset = text.indexOf("\n", searchFrom);
-		if (newlineOffset === -1 || newlineOffset >= limit) break;
-		line++;
-		searchFrom = newlineOffset + 1;
-	}
-
-	return line;
-}
-
-function nodeStartLine(node, options) {
-	const sourceStartLine = node?.source?.[0]?.[0];
-	if (Number.isFinite(sourceStartLine)) return sourceStartLine;
-	return lineNumberAtOffset(options?.originalText, node?.locStart);
-}
-
-function nodeEndLine(node, options) {
-	const sourceEndLine = node?.source?.[1]?.[0];
-	if (Number.isFinite(sourceEndLine)) return sourceEndLine;
-
-	if (typeof node?.locEnd === "number") {
-		const lastIncludedOffset =
-			typeof node?.locStart === "number" && node.locEnd > node.locStart
-				? node.locEnd - 1
-				: node.locEnd;
-		return lineNumberAtOffset(options?.originalText, lastIncludedOffset);
-	}
-
-	return nodeStartLine(node, options);
-}
 
 function isSemanticTokenLeaf(node) {
 	return (
@@ -94,6 +60,34 @@ function isSemicolonToken(node) {
 		node?.type === "LeafNode" &&
 		(node.kind === "Token`Semi" || node.kind === "Token`Semicolon")
 	);
+}
+
+function isNewlineTrivia(node) {
+	return (
+		node?.type === "LeafNode" &&
+		(node.kind === "Token`Newline" ||
+			node.kind === "Newline" ||
+			(typeof node.value === "string" && node.value.includes("\n")))
+	);
+}
+
+function commentBoundary(leftNode, rightNode, options, fallback = line) {
+	if (!rightNode) return "";
+	const gap = sourceLineGap(leftNode, rightNode, options);
+	if (gap === 0) return " ";
+	if (gap > 0) return hardline;
+	return fallback;
+}
+
+function hasCommentBoundary(leftNode, rightNode) {
+	return isComment(leftNode) || isComment(rightNode);
+}
+
+function nextContentNode(entries, startIndex) {
+	for (let i = startIndex + 1; i < entries.length; i++) {
+		if (!isCommaToken(entries[i])) return entries[i];
+	}
+	return null;
 }
 
 /** Extract semantic operands from InfixNode children (skip trivia + operator tokens). */
@@ -125,20 +119,28 @@ function printMessageNameOperand(node, print) {
 }
 
 export function printInfix(node, options, print) {
+	options = normalizeWolframOptions(options);
 	if (node.op === "CompoundExpression") {
-		const semanticChildren = node.children.filter((c) => !isTrivia(c));
 		const entries = [];
-		let leadingCommentDocs = [];
+		let leadingComments = [];
 		let previousEntry = null;
+		let pendingLineBreakBeforeNextEntry = false;
 
-		for (const child of semanticChildren) {
+		for (const child of node.children) {
+			if (isTrivia(child)) {
+				if (previousEntry && isNewlineTrivia(child)) {
+					pendingLineBreakBeforeNextEntry = true;
+				}
+				continue;
+			}
+
 			if (isSemicolonToken(child)) {
 				if (previousEntry) previousEntry.hasSemicolon = true;
 				continue;
 			}
 
 			if (isComment(child)) {
-				const previousLine = nodeEndLine(previousEntry?.node, options);
+				const previousLine = previousEntry?.endLine;
 				const commentLine = nodeStartLine(child, options);
 				if (
 					previousEntry?.hasSemicolon &&
@@ -147,23 +149,35 @@ export function printInfix(node, options, print) {
 						previousLine === commentLine)
 				) {
 					previousEntry.trailingCommentDocs.push(print(child));
+					previousEntry.endLine =
+						nodeEndLine(child, options) ?? previousEntry.endLine;
 					continue;
 				}
 
-				leadingCommentDocs.push(print(child));
+				leadingComments.push({ node: child, doc: print(child) });
 				continue;
 			}
 
+			const startLine = nodeStartLine(child, options);
+			const previousEndLine = previousEntry?.endLine;
 			const entry = {
 				node: child,
 				doc: print(child),
-				leadingCommentDocs,
+				leadingComments,
 				trailingCommentDocs: [],
 				hasSemicolon: false,
+				breakBefore:
+					entries.length > 0 &&
+					(pendingLineBreakBeforeNextEntry ||
+						(previousEndLine &&
+							startLine &&
+							startLine > previousEndLine)),
+				endLine: nodeEndLine(child, options) ?? startLine,
 			};
 			entries.push(entry);
 			previousEntry = entry;
-			leadingCommentDocs = [];
+			leadingComments = [];
+			pendingLineBreakBeforeNextEntry = false;
 		}
 
 		for (const entry of entries) {
@@ -189,13 +203,29 @@ export function printInfix(node, options, print) {
 				: null;
 
 		const docs = [];
+		let hasHardSeparator = false;
 
 		for (const entry of entries) {
-			if (docs.length > 0) docs.push(line);
+			if (docs.length > 0) {
+				const separator = entry.breakBefore ? hardline : line;
+				if (entry.breakBefore) hasHardSeparator = true;
+				docs.push(separator);
+			}
 
-			if (entry.leadingCommentDocs.length > 0) {
-				for (const commentDoc of entry.leadingCommentDocs) {
-					docs.push(commentDoc, line);
+			if (entry.leadingComments.length > 0) {
+				for (let i = 0; i < entry.leadingComments.length; i++) {
+					const comment = entry.leadingComments[i];
+					const followingNode =
+						entry.leadingComments[i + 1]?.node ?? entry.node;
+					docs.push(
+						comment.doc,
+						commentBoundary(
+							comment.node,
+							followingNode,
+							options,
+							line,
+						),
+					);
 				}
 			}
 
@@ -224,15 +254,32 @@ export function printInfix(node, options, print) {
 			);
 		}
 
-		if (leadingCommentDocs.length > 0) {
-			if (docs.length > 0) docs.push(line);
-			for (let i = 0; i < leadingCommentDocs.length; i++) {
-				docs.push(leadingCommentDocs[i]);
-				if (i < leadingCommentDocs.length - 1) docs.push(line);
+		if (leadingComments.length > 0) {
+			if (docs.length > 0) {
+				const separator = pendingLineBreakBeforeNextEntry
+					? hardline
+					: line;
+				if (pendingLineBreakBeforeNextEntry) hasHardSeparator = true;
+				docs.push(separator);
+			}
+			for (let i = 0; i < leadingComments.length; i++) {
+				const comment = leadingComments[i];
+				const followingNode = leadingComments[i + 1]?.node;
+				docs.push(comment.doc);
+				if (followingNode) {
+					docs.push(
+						commentBoundary(
+							comment.node,
+							followingNode,
+							options,
+							line,
+						),
+					);
+				}
 			}
 		}
 
-		return group(docs);
+		return hasHardSeparator ? fill(docs) : group(docs);
 	}
 
 	if (node.op === "Comma") {
@@ -241,22 +288,40 @@ export function printInfix(node, options, print) {
 			? line
 			: doc.builders.softline;
 		let previousKind = null;
+		let previousNode = null;
+		const entries = node.children.filter((child) => !isTrivia(child));
 
-		for (const child of node.children) {
-			if (isTrivia(child)) continue;
+		for (let i = 0; i < entries.length; i++) {
+			const child = entries[i];
 			if (isCommaToken(child)) {
 				if (previousKind === null || previousKind === "comma") continue;
-				docs.push(",", commaGap);
+				const followingEntry = nextContentNode(entries, i);
+				const separator =
+					followingEntry &&
+					hasCommentBoundary(previousNode, followingEntry)
+						? commentBoundary(
+								previousNode,
+								followingEntry,
+								options,
+								commaGap,
+							)
+						: commaGap;
+				docs.push(",", separator);
 				previousKind = "comma";
 				continue;
 			}
 
 			if (previousKind !== null && previousKind !== "comma") {
-				docs.push(line);
+				docs.push(
+					hasCommentBoundary(previousNode, child)
+						? commentBoundary(previousNode, child, options, line)
+						: line,
+				);
 			}
 
 			docs.push(print(child));
 			previousKind = isComment(child) ? "comment" : "item";
+			previousNode = child;
 		}
 
 		return group(docs);

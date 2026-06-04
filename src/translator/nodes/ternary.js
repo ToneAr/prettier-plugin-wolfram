@@ -6,9 +6,11 @@ import {
 	hasImmediateComment,
 	printOriginalSource,
 } from "../sourcePreservation.js";
+import { normalizeWolframOptions } from "../../options.js";
 const { group, indent, line, softline } = builders;
 
 function preservedTildeFunctions(options) {
+	options = normalizeWolframOptions(options);
 	return new Set(
 		String(options.wolframPreserveTildeInfixFunctions ?? "")
 			.split(",")
@@ -26,6 +28,7 @@ function isSpanToken(node) {
 }
 
 function tildeGap(token, options) {
+	options = normalizeWolframOptions(options);
 	if (options.wolframSpaceAroundOperators ?? true) {
 		return [` ${token}`, line];
 	}

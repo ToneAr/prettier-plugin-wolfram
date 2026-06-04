@@ -104,6 +104,38 @@ describe("printContainer", () => {
 		expect(out).toBe("a = 1\n\n(* docs *)\nb := 2");
 	});
 
+	it("keeps same-line leading comments as prefix comments", () => {
+		const node = {
+			type: "ContainerNode",
+			kind: "String",
+			children: [
+				{
+					type: "LeafNode",
+					kind: "Token`Comment",
+					value: "(* prefix *)",
+					source: [
+						[1, 1],
+						[1, 13],
+					],
+				},
+				{
+					type: "BinaryNode",
+					op: "Set",
+					value: "a = 1",
+					source: [
+						[1, 14],
+						[1, 19],
+					],
+				},
+			],
+		};
+
+		const print = (child) => String(child.value ?? "");
+		const out = fmt(printContainer(node, {}, print));
+
+		expect(out).toBe("(* prefix *) a = 1");
+	});
+
 	it("aligns trailing documentation comments in a contiguous block", () => {
 		const node = {
 			type: "ContainerNode",
@@ -527,6 +559,48 @@ describe("printContainer", () => {
 				"x_ // f := x\n" +
 				"f[y_] := y\n\n" +
 				"g[x_] := x",
+			);
+	});
+
+	it("uses configured blank lines between same-name definitions", () => {
+		const node = {
+			type: "ContainerNode",
+			kind: "String",
+			children: [
+				definition(
+					"Set",
+					messageName("f", "usage"),
+					'f::usage = "use f"',
+					[
+						[1, 1],
+						[1, 19],
+					],
+				),
+				definition("SetDelayed", call("f", [sym("x")]), "f[x_] := x", [
+					[2, 1],
+					[2, 11],
+				]),
+				definition("SetDelayed", call("g", [sym("x")]), "g[x_] := x", [
+					[3, 1],
+					[3, 11],
+				]),
+			],
+		};
+
+		const print = (child) => String(child.value ?? "");
+		const out = fmt(
+			printContainer(
+				node,
+				{
+					wolframNewlinesBetweenDefinitions: 0,
+					wolframNewlinesBetweenSameNameDefinitions: 2,
+				},
+				print,
+			),
+		);
+
+		expect(out).toBe(
+			'f::usage = "use f"\n\n\n' + "f[x_] := x\n" + "g[x_] := x",
 		);
 	});
 

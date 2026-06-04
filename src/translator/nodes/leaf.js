@@ -92,7 +92,9 @@ function binarySemanticChildren(node) {
 	);
 }
 
-function isStringJoinCallNode(node) {
+function isStringJoinNode(node) {
+	if (node?.type === "InfixNode" && node.op === "StringJoin") return true;
+
 	return (
 		node?.type === "CallNode" &&
 		node.head?.type === "LeafNode" &&
@@ -106,7 +108,7 @@ function isDirectMultilineStringRhs(node, child) {
 	return (
 		semantic[1] === child &&
 		((child?.type === "LeafNode" && child.kind === "String") ||
-			isStringJoinCallNode(child))
+			isStringJoinNode(child))
 	);
 }
 
@@ -323,11 +325,19 @@ function tokenizeStringUnits(units) {
 	return tokens;
 }
 
+function shouldKeepOversizedTokenTogether(token) {
+	// Prefer an over-width chunk to slicing through a word or URL-like token.
+	return /\p{L}/u.test(token.text);
+}
+
 function splitOversizedTokens(tokens, maxChunkLength) {
 	const normalized = [];
 
 	for (const token of tokens) {
-		if (token.length <= maxChunkLength) {
+		if (
+			token.length <= maxChunkLength ||
+			shouldKeepOversizedTokenTogether(token)
+		) {
 			normalized.push(token);
 			continue;
 		}
@@ -389,11 +399,10 @@ function splitStringContent(content, maxChunkLength, preserveEscapes = false) {
 	const units = stringTextUnits(content, preserveEscapes);
 	if (content.length <= maxChunkLength) return [content];
 
-	const tokens = splitOversizedTokens(
-		tokenizeStringUnits(units),
+	return greedyTokenWrap(
+		splitOversizedTokens(tokenizeStringUnits(units), maxChunkLength),
 		maxChunkLength,
 	);
-	return greedyTokenWrap(tokens, maxChunkLength);
 }
 
 function multilineStringJoin(chunks) {
@@ -538,6 +547,35 @@ export function stringLiteralRunDocs(nodes, options, context = {}) {
 
 	flushRun();
 	return docs;
+}
+
+export function singleLineStringLiteralRunDoc(nodes, options, context = {}) {
+	const indentDepth =
+		context.indentDepth ?? stringLineIndentDepth(context.path);
+	const widthOffset = Math.max(0, context.widthOffset ?? 0);
+	const run = [];
+
+	for (const node of nodes) {
+		const data = stringLiteralData(node);
+		if (!data) return null;
+		if (run.length > 0 && !canJoinStringLiteralData(run.at(-1), data)) {
+			return null;
+		}
+		run.push(data);
+	}
+
+	if (run.length === 0) return null;
+
+	const info = combineStringLiteralData(run);
+	if (/[\r\n]/u.test(info.literal)) return null;
+	if (
+		info.literal.length >
+		inlineStringLiteralWidth(options, indentDepth) - widthOffset
+	) {
+		return null;
+	}
+
+	return info.literal;
 }
 
 /** Returns the text representation of a leaf node, or '' for trivia. */

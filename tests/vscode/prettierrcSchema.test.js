@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "fs";
 import path from "path";
-import { options as optionDefinitions } from "../../src/options.js";
+import { wolframOptions } from "../../src/options.js";
 
 const schema = JSON.parse(
 	readFileSync(
@@ -37,20 +37,35 @@ describe("VS Code .prettierrc schema", () => {
 	});
 
 	it("documents every Wolfram Prettier option", () => {
-		for (const [name, option] of Object.entries(optionDefinitions)) {
-			expect(schema.properties[name]).toMatchObject({
+		expect(schema.properties.wolfram).toMatchObject({
+			type: "object",
+			default: {},
+		});
+
+		for (const [name, option] of Object.entries(wolframOptions)) {
+			expect(schema.properties.wolfram.properties[name]).toMatchObject({
 				type: schemaTypeForOptionType[option.type],
-				default: option.default,
 			});
-			expect(schema.properties[name].markdownDescription).toBeTruthy();
+			if (option.default !== undefined) {
+				expect(schema.properties.wolfram.properties[name].default).toBe(
+					option.default,
+				);
+			} else {
+				expect(
+					schema.properties.wolfram.properties[name],
+				).not.toHaveProperty("default");
+			}
+			expect(
+				schema.properties.wolfram.properties[name]
+					.markdownDescription,
+			).toBeTruthy();
+			expect(schema.properties[option.legacyName]).toBeUndefined();
 		}
 	});
 
 	it("provides value completions for top-level spacing mode", () => {
-		expect(schema.properties.wolframTopLevelSpacingMode.enum).toEqual([
-			"declarations",
-			"all",
-			"none",
-		]);
+		expect(
+			schema.properties.wolfram.properties.topLevelSpacingMode.enum,
+		).toEqual(["declarations", "all", "none"]);
 	});
 });

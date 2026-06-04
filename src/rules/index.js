@@ -2,6 +2,7 @@
 import { readdirSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
+import { normalizeWolframOptions } from "../options.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -23,13 +24,14 @@ async function loadRules() {
 export async function runRules(rootNode, lintRuleOverrides = {}, options = {}) {
 	const rules = await loadRules();
 	const diagnostics = [];
+	const normalizedOptions = normalizeWolframOptions(options);
 
 	for (const rule of rules) {
 		const level = lintRuleOverrides[rule.name] ?? rule.defaultLevel;
 		if (level === "off") continue;
 
 		const context = {
-			options,
+			options: normalizedOptions,
 			report({ node, message }) {
 				diagnostics.push({
 					rule: rule.name,

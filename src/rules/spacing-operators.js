@@ -9,7 +9,7 @@ function isDirectComment(child) {
 export default {
 	name: "spacing-operators",
 	description:
-		"Operator spacing inconsistent with wolframSpaceAroundOperators option",
+		"Operator spacing inconsistent with wolfram.spaceAroundOperators option",
 	defaultLevel: "warn",
 	fixableByFormatter: true,
 

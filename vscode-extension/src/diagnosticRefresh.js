@@ -10,9 +10,11 @@ function currentGeneration(refreshGenerations, uriKey) {
 	return refreshGenerations.get(uriKey) ?? 0;
 }
 
+const WOLFRAM_LANGUAGE_IDS = new Set(["wolfram", "wolframscript", "wolfram-notebook"]);
+
 function isWolframFileDocument(document) {
 	return (
-		document?.languageId === "wolfram" && document?.uri?.scheme === "file"
+		WOLFRAM_LANGUAGE_IDS.has(document?.languageId) && document?.uri?.scheme === "file"
 	);
 }
 

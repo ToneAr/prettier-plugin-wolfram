@@ -3,17 +3,19 @@
 	"useTabs": true,
 	"printWidth": 80,
 	"tabWidth": 4,
-	"wolframDocumentationCommentColumn": 100,
-	"wolframDocumentationCommentPadding": 2,
-	"wolframNewlinesBetweenDefinitions": 2,
-	"wolframTopLevelSpacingMode": "declarations",
-	"wolframSpaceAfterComma": true,
-	"wolframSpaceAroundOperators": true,
-	"wolframModuleVarsBreakThreshold": 40,
-	"wolframConditionFirstFunctions": "If,Switch",
-	"wolframBlockStructureFunctions": "Module,With,Block,DynamicModule",
-	"wolframCaseStructureFunctions": "Which",
-	"wolframPreserveTildeInfixFunctions": "Join",
-	"wolframEnginePath": "",
-	"wolframLintRules": "{}"
+	"wolfram": {
+		"documentationCommentColumn": 100,
+		"documentationCommentPadding": 2,
+		"newlinesBetweenDefinitions": 2,
+		"topLevelSpacingMode": "declarations",
+		"spaceAfterComma": true,
+		"spaceAroundOperators": true,
+		"moduleVarsBreakThreshold": 40,
+		"conditionFirstFunctions": "If,Switch",
+		"blockStructureFunctions": "Module,With,Block,DynamicModule",
+		"caseStructureFunctions": "Which",
+		"preserveTildeInfixFunctions": "Join",
+		"enginePath": "",
+		"lintRules": "{}"
+	}
 }

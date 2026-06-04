@@ -3,6 +3,7 @@ import { doc } from "prettier";
 const { builders } = doc;
 import {
 	isTrivia,
+	singleLineStringLiteralRunDoc,
 	stringLineIndentDepth,
 	stringLiteralRunDocs,
 } from "./nodes/leaf.js";
@@ -12,8 +13,10 @@ import {
 	printCall,
 	printedArgs,
 } from "./nodes/call.js";
+import { normalizeWolframOptions } from "../options.js";
 const { conditionalGroup, group, indent, hardline, line, softline, join } =
 	builders;
+const { willBreak } = doc.utils;
 
 const DEFAULT_CONDITION_FIRST_FUNCTIONS = "If,Switch";
 const DEFAULT_BLOCK_STRUCTURE_FUNCTIONS = "Module,With,Block,DynamicModule";
@@ -29,6 +32,7 @@ const BLANK_OPS = new Set(["Blank", "BlankSequence", "BlankNullSequence"]);
 
 // Build Sets from comma-separated option strings
 export function buildDispatchSets(options = {}) {
+	options = normalizeWolframOptions(options);
 	const toOptionString = (name, fallback) => {
 		const value = options[name];
 		return value == null ? fallback : String(value);
@@ -79,10 +83,54 @@ function isStringJoinCall(node) {
 	return node?.type === "CallNode" && getHeadName(node) === "StringJoin";
 }
 
+function isStringJoinInfix(node) {
+	return node?.type === "InfixNode" && node.op === "StringJoin";
+}
+
+function isStringJoinForm(node) {
+	return isStringJoinCall(node) || isStringJoinInfix(node);
+}
+
+function isCommaToken(node) {
+	return node?.type === "LeafNode" && node.kind === "Token`Comma";
+}
+
+function isStringJoinOperatorToken(node) {
+	return node?.type === "LeafNode" && node.kind === "Token`LessGreater";
+}
+
+function stringJoinPathEntries(node) {
+	if (isStringJoinCall(node)) return argPathEntries(node);
+
+	return (node.children ?? []).reduce((entries, child, index) => {
+		if (isTrivia(child) || isStringJoinOperatorToken(child)) return entries;
+		entries.push({ node: child, path: ["children", index] });
+		return entries;
+	}, []);
+}
+
+function hasFollowingCommaSibling(path) {
+	let child = path?.getValue?.();
+
+	for (const ancestor of path?.ancestors ?? []) {
+		if (ancestor?.type === "InfixNode" && ancestor.op === "Comma") {
+			const index = ancestor.children?.indexOf(child) ?? -1;
+			if (index !== -1) {
+				return ancestor.children
+					.slice(index + 1)
+					.some((node) => !isTrivia(node) && !isCommaToken(node));
+			}
+		}
+		child = ancestor;
+	}
+
+	return false;
+}
+
 function flattenStringJoinParts(path, print, node, basePath = []) {
 	const parts = [];
 
-	for (const entry of argPathEntries(node)) {
+	for (const entry of stringJoinPathEntries(node)) {
 		if (
 			entry.node?.type === "LeafNode" &&
 			entry.node.kind === "Token`Comma"
@@ -91,7 +139,7 @@ function flattenStringJoinParts(path, print, node, basePath = []) {
 		}
 
 		const entryPath = [...basePath, ...entry.path];
-		if (isStringJoinCall(entry.node)) {
+		if (isStringJoinForm(entry.node)) {
 			parts.push(
 				...flattenStringJoinParts(path, print, entry.node, entryPath),
 			);
@@ -141,11 +189,24 @@ function stringJoinPartDocs(parts, options, indentDepth) {
 function printStringJoin(path, options, print, node) {
 	if (containsComment(node)) return printCall(path, options, print, node);
 
-	const head = path.call(print, "head");
+	const head = isStringJoinCall(node) ? path.call(print, "head") : "StringJoin";
+	const parts = flattenStringJoinParts(path, print, node);
+	const indentDepth = stringLineIndentDepth(path);
+	const allStringNodes = parts.every((part) => part.type === "string")
+		? parts.map((part) => part.node)
+		: null;
+	const singleLineLiteral = allStringNodes
+		? singleLineStringLiteralRunDoc(allStringNodes, options, {
+				indentDepth,
+				widthOffset: hasFollowingCommaSibling(path) ? 1 : 0,
+			})
+		: null;
+	if (singleLineLiteral) return singleLineLiteral;
+
 	const argDocs = stringJoinPartDocs(
-		flattenStringJoinParts(path, print, node),
+		parts,
 		options,
-		stringLineIndentDepth(path),
+		indentDepth,
 	);
 	if (argDocs.length === 0) return [head, "[]"];
 
@@ -172,39 +233,46 @@ function printConditionFirst(path, options, print, node) {
 		return group([head, "[", indent([softline, cond]), softline, "]"]);
 	}
 
-	return conditionalGroup([
-		[head, "[", join([", "], [cond, ...rest]), "]"],
-		[
-			head,
-			"[",
+	const brokenWithHeadCondition = [
+		head,
+		"[",
+		cond,
+		",",
+		indent(
+			rest.flatMap((r, i) => [
+				hardline,
+				r,
+				i < rest.length - 1 ? "," : "",
+			]),
+		),
+		hardline,
+		"]",
+	];
+	const fullyBroken = [
+		head,
+		"[",
+		indent([
+			hardline,
 			cond,
 			",",
-			indent(
-				rest.flatMap((r, i) => [
-					hardline,
-					r,
-					i < rest.length - 1 ? "," : "",
-				]),
-			),
-			hardline,
-			"]",
-		],
-		[
-			head,
-			"[",
-			indent([
+			...rest.flatMap((r, i) => [
 				hardline,
-				cond,
-				",",
-				...rest.flatMap((r, i) => [
-					hardline,
-					r,
-					i < rest.length - 1 ? "," : "",
-				]),
+				r,
+				i < rest.length - 1 ? "," : "",
 			]),
-			hardline,
-			"]",
-		],
+		]),
+		hardline,
+		"]",
+	];
+
+	if (args.some((arg) => willBreak(arg))) {
+		return brokenWithHeadCondition;
+	}
+
+	return conditionalGroup([
+		[head, "[", join([", "], [cond, ...rest]), "]"],
+		brokenWithHeadCondition,
+		fullyBroken,
 	]);
 }
 
@@ -283,17 +351,23 @@ function printSwitchStructure(path, options, print, node) {
 		trailing ? [",", hardline, trailing] : "",
 	];
 
+	const brokenSwitch = [
+		head,
+		"[",
+		expr,
+		",",
+		indent([hardline, ...brokenTail]),
+		hardline,
+		"]",
+	];
+
+	if (args.some((arg) => willBreak(arg))) {
+		return brokenSwitch;
+	}
+
 	return conditionalGroup([
 		[head, "[", join([", "], args), "]"],
-		[
-			head,
-			"[",
-			expr,
-			",",
-			indent([hardline, ...brokenTail]),
-			hardline,
-			"]",
-		],
+		brokenSwitch,
 	]);
 }
 
@@ -518,6 +592,7 @@ function inlineNodeText(node) {
 }
 
 function moduleVarsBreakThreshold(options) {
+	options = normalizeWolframOptions(options);
 	const threshold = Number(options.wolframModuleVarsBreakThreshold ?? 40);
 	if (!Number.isFinite(threshold)) return 40;
 	return Math.max(0, threshold);
@@ -571,8 +646,12 @@ function printCaseStructure(path, options, print, node) {
 	]);
 }
 
-/** Returns the specialized printer for a CallNode, or null if none applies. */
+/** Returns the specialized printer for a supported node, or null if none applies. */
 export function getSpecialPrinter(node, options) {
+	if (isStringJoinInfix(node)) {
+		return containsComment(node) ? null : printStringJoin;
+	}
+
 	const name = getHeadName(node);
 	if (!name) return null;
 	if (name === "StringJoin") return printStringJoin;

@@ -12,10 +12,10 @@ Block[{$RecursionLimit = 100}, someRecursiveFunction[data]]
 Module[{result}, result = With[{scale = 2}, Block[{x = 3}, scale * x]]; result]
 (* Many variables — should trigger break *)
 Module[{
-	aVeryLongVariableName = 0,
-	anotherLongName = 1,
-	yetAnotherOne = 2,
-	andOneMore = 3
-},
+		aVeryLongVariableName = 0,
+		anotherLongName = 1,
+		yetAnotherOne = 2,
+		andOneMore = 3
+	},
 	aVeryLongVariableName + anotherLongName + yetAnotherOne + andOneMore
 ]

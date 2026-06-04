@@ -88,7 +88,7 @@ describe("VS Code config helpers", () => {
 			expect(second).toMatchObject({ useTabs: true, tabWidth: 7 });
 		});
 
-		it("preserves Wolfram formatter options from .prettierrc", async () => {
+		it("preserves nested Wolfram formatter options from .prettierrc", async () => {
 			tempDir = mkdtempSync(
 				path.join(os.tmpdir(), "prettier-wl-config-"),
 			);
@@ -99,16 +99,20 @@ describe("VS Code config helpers", () => {
 			writeFileSync(
 				configPath,
 				JSON.stringify({
-					wolframConditionFirstFunctions: "",
-					wolframSpaceAfterComma: false,
+					wolfram: {
+						conditionFirstFunctions: "",
+						spaceAfterComma: false,
+					},
 				}),
 			);
 
 			await expect(
 				resolveProjectConfig(prettier, filePath),
 			).resolves.toMatchObject({
-				wolframConditionFirstFunctions: "",
-				wolframSpaceAfterComma: false,
+				wolfram: {
+					conditionFirstFunctions: "",
+					spaceAfterComma: false,
+				},
 			});
 		});
 	});

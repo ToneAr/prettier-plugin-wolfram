@@ -1,111 +1,221 @@
 // src/options.js
-export const options = {
-	wolframNewlinesBetweenDefinitions: {
-		type: "int",
+function isPlainObject(value) {
+	return (
+		value !== null &&
+		typeof value === "object" &&
+		!Array.isArray(value)
+	);
+}
+
+function hasOwn(object, key) {
+	return Object.prototype.hasOwnProperty.call(object, key);
+}
+
+function wolframOptionDefinition(definition) {
+	return {
+		type: definition.type,
 		category: "Wolfram",
+		...(hasOwn(definition, "default")
+			? { default: definition.default }
+			: {}),
+		description: definition.description,
+	};
+}
+
+export const wolframOptions = {
+	newlinesBetweenDefinitions: {
+		type: "int",
 		default: 1,
+		minimum: 0,
+		legacyName: "wolframNewlinesBetweenDefinitions",
 		description: "Blank lines inserted between adjacent definitions.",
 	},
-	wolframMaxBlankLinesBetweenCode: {
+	newlinesBetweenSetDefinitions: {
 		type: "int",
-		category: "Wolfram",
+		minimum: 0,
+		legacyName: "wolframNewlinesBetweenSetDefinitions",
+		description:
+			"Blank lines inserted between adjacent Set-family definitions. Inherits newlinesBetweenDefinitions when unset.",
+	},
+	newlinesBetweenSetDelayedDefinitions: {
+		type: "int",
+		minimum: 0,
+		legacyName: "wolframNewlinesBetweenSetDelayedDefinitions",
+		description:
+			"Blank lines inserted between adjacent SetDelayed-family definitions. Inherits newlinesBetweenDefinitions when unset.",
+	},
+	newlinesBetweenSetAndSetDelayedDefinitions: {
+		type: "int",
+		minimum: 0,
+		legacyName: "wolframNewlinesBetweenSetAndSetDelayedDefinitions",
+		description:
+			"Blank lines inserted between mixed Set-family and SetDelayed-family definitions. Inherits newlinesBetweenDefinitions when unset.",
+	},
+	newlinesBetweenSameNameDefinitions: {
+		type: "int",
+		default: 0,
+		minimum: 0,
+		legacyName: "wolframNewlinesBetweenSameNameDefinitions",
+		description:
+			"Blank lines inserted between adjacent definitions that belong to the same symbol.",
+	},
+	maxBlankLinesBetweenCode: {
+		type: "int",
 		default: 1,
+		minimum: 0,
+		legacyName: "wolframMaxBlankLinesBetweenCode",
 		description:
 			"Maximum source blank lines preserved between non-definition code statements.",
 	},
-	wolframSpaceAfterComma: {
+	trailingNewline: {
 		type: "boolean",
-		category: "Wolfram",
+		default: false,
+		legacyName: "wolframTrailingNewline",
+		description:
+			"Emit one trailing newline at the end of non-empty formatted files.",
+	},
+	spaceAfterComma: {
+		type: "boolean",
 		default: true,
+		legacyName: "wolframSpaceAfterComma",
 		description: "Insert space after commas in argument lists.",
 	},
-	wolframSpaceAroundOperators: {
+	spaceAroundOperators: {
 		type: "boolean",
-		category: "Wolfram",
 		default: true,
+		legacyName: "wolframSpaceAroundOperators",
 		description: "Insert spaces around infix operators.",
 	},
-	wolframAlignRuleValues: {
+	alignRuleValues: {
 		type: "boolean",
-		category: "Wolfram",
 		default: false,
+		legacyName: "wolframAlignRuleValues",
 		description:
 			"Align Rule and RuleDelayed values vertically in multiline argument, list, and association layouts.",
 	},
-	wolframDocumentationCommentColumn: {
+	documentationCommentColumn: {
 		type: "int",
-		category: "Wolfram",
 		default: 0,
+		minimum: 0,
+		legacyName: "wolframDocumentationCommentColumn",
 		description:
 			"Column for trailing documentation comments. 0 = auto-compute per contiguous block.",
 	},
-	wolframDocumentationCommentPadding: {
+	documentationCommentPadding: {
 		type: "int",
-		category: "Wolfram",
 		default: 2,
+		minimum: 1,
+		legacyName: "wolframDocumentationCommentPadding",
 		description:
 			"Minimum spaces between code and an aligned trailing documentation comment in auto mode.",
 	},
-	wolframTopLevelSpacingMode: {
+	topLevelSpacingMode: {
 		type: "string",
-		category: "Wolfram",
 		default: "declarations",
+		enum: ["declarations", "all", "none"],
+		markdownEnumDescriptions: [
+			"Apply definition spacing only to adjacent declarations; preserve ordinary code spacing up to maxBlankLinesBetweenCode.",
+			"Apply top-level spacing to all statements.",
+			"Remove top-level blank lines.",
+		],
+		legacyName: "wolframTopLevelSpacingMode",
 		description: "Top-level spacing policy: declarations, all, or none.",
 	},
-	wolframPreserveTildeInfixFunctions: {
+	preserveTildeInfixFunctions: {
 		type: "string",
-		category: "Wolfram",
 		default: "",
+		legacyName: "wolframPreserveTildeInfixFunctions",
 		description:
 			"Comma-separated function names that stay in ~f~ infix form instead of normalizing to f[x, y].",
 	},
-	wolframCSTRequestTimeoutMs: {
+	cstRequestTimeoutMs: {
 		type: "int",
-		category: "Wolfram",
 		default: 180000,
+		minimum: 1000,
+		legacyName: "wolframCSTRequestTimeoutMs",
 		description:
 			"Milliseconds to wait for a WolframKernel CST parse request before restarting the kernel session.",
 	},
-	wolframModuleVarsBreakThreshold: {
+	moduleVarsBreakThreshold: {
 		type: "int",
-		category: "Wolfram",
 		default: 40,
+		minimum: 0,
+		legacyName: "wolframModuleVarsBreakThreshold",
 		description:
 			"Character count at which Module/With/Block var list breaks.",
 	},
-	wolframConditionFirstFunctions: {
+	conditionFirstFunctions: {
 		type: "string",
-		category: "Wolfram",
 		default: "If,Switch",
+		legacyName: "wolframConditionFirstFunctions",
 		description:
 			"Comma-separated symbols whose first arg stays on same line as head.",
 	},
-	wolframBlockStructureFunctions: {
+	blockStructureFunctions: {
 		type: "string",
-		category: "Wolfram",
 		default: "Module,With,Block,DynamicModule",
+		legacyName: "wolframBlockStructureFunctions",
 		description:
 			"Comma-separated symbols using block-structure formatting.",
 	},
-	wolframCaseStructureFunctions: {
+	caseStructureFunctions: {
 		type: "string",
-		category: "Wolfram",
 		default: "Which",
+		legacyName: "wolframCaseStructureFunctions",
 		description:
 			"Comma-separated symbols using alternating condition/body indentation.",
 	},
-	wolframEnginePath: {
+	enginePath: {
 		type: "path",
-		category: "Wolfram",
 		default: "",
+		legacyName: "wolframEnginePath",
 		description:
 			"Path to a Wolfram install or executable. Auto-detected if empty.",
 	},
-	wolframLintRules: {
+	lintRules: {
 		type: "string",
-		category: "Wolfram",
 		default: "{}",
+		legacyName: "wolframLintRules",
 		description:
 			'JSON object of per-rule level overrides, e.g. {"prefer-rule-delayed":"error"}.',
 	},
+};
+
+const legacyWolframOptions = Object.fromEntries(
+	Object.entries(wolframOptions).map(([name, definition]) => [
+		definition.legacyName,
+		{
+			...wolframOptionDefinition(definition),
+			deprecated: `Use wolfram.${name} instead.`,
+			description: `${definition.description} Deprecated: use wolfram.${name}.`,
+		},
+	]),
+);
+
+export function normalizeWolframOptions(inputOptions = {}) {
+	if (!isPlainObject(inputOptions)) return inputOptions ?? {};
+
+	const nestedOptions = isPlainObject(inputOptions.wolfram)
+		? inputOptions.wolfram
+		: {};
+	let normalized = inputOptions;
+
+	for (const [name, definition] of Object.entries(wolframOptions)) {
+		if (!hasOwn(nestedOptions, name)) continue;
+		if (normalized === inputOptions) normalized = { ...inputOptions };
+		normalized[definition.legacyName] = nestedOptions[name];
+	}
+
+	return normalized;
+}
+
+export const options = {
+	wolfram: {
+		type: "string",
+		category: "Wolfram",
+		default: {},
+		description: "Wolfram formatter options object.",
+		exception: (value) => value == null || isPlainObject(value),
+	},
+	...legacyWolframOptions,
 };

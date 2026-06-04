@@ -1,11 +1,11 @@
 {
 	"name": "@wrel/prettier-plugin-wolfram",
-	"version": "0.5.19",
+	"version": "0.6.3",
 	"description": "Prettier plugin for Wolfram Language using Wolfram CodeParser",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git://github.com/ToneAr/prettier-wolfram.git"
+		"url": "git://github.com/ToneAr/prettier-plugin-wolfram.git"
 	},
 	"keywords": [
 		"prettier",

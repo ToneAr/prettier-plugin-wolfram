@@ -21,7 +21,7 @@ function isComma(node) {
 export default {
 	name: "spacing-commas",
 	description:
-		"Comma spacing inconsistent with wolframSpaceAfterComma option",
+		"Comma spacing inconsistent with wolfram.spaceAfterComma option",
 	defaultLevel: "warn",
 	fixableByFormatter: true,
 
