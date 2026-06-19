@@ -136,6 +136,7 @@ are read directly from the captured golden CST, which is the source of truth.
   whitespace leaves). If only filtered, the adapter need not emit whitespace
   leaves at all — a significant simplification. The Phase-0 finding is recorded
   before the adapter contract is frozen.
+  **Phase-0 result:** translator output is independent of whitespace/newline leaves (verified by tests/translator/trivia-independence.test.js); the adapter omits them and CST equality is checked modulo trivia.
 
 ## Runtime integration (`src/parser/index.js`)
 
