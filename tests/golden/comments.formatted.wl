@@ -1,0 +1,5 @@
+(* tests/wl/basic.wl — simple expressions for basic formatting *)
+operation1; (* Do Operation 1 *)
+opersadation2; (* Do Operation 2 *)
+opeasdadsasdration3; (* Do Operation 3 *)
+operation4; (* Do Operation 4 *)

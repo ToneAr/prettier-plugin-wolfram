@@ -1,0 +1,5555 @@
+{
+	"type": "ContainerNode",
+	"kind": "String",
+	"children": [
+		{
+			"type": "LeafNode",
+			"kind": "Token`Comment",
+			"value": "(* tests/wl/basic.wl Ã¢ÂÂ simple expressions for basic formatting *)",
+			"source": [
+				[
+					1,
+					1
+				],
+				[
+					1,
+					68
+				]
+			]
+		},
+		{
+			"type": "LeafNode",
+			"kind": "Token`Newline",
+			"value": "\n",
+			"source": [
+				[
+					1,
+					68
+				],
+				[
+					2,
+					1
+				]
+			]
+		},
+		{
+			"type": "InfixNode",
+			"op": "CompoundExpression",
+			"children": [
+				{
+					"type": "LeafNode",
+					"kind": "Symbol",
+					"value": "operation1",
+					"source": [
+						[
+							2,
+							1
+						],
+						[
+							2,
+							11
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Token`Semi",
+					"value": ";",
+					"source": [
+						[
+							2,
+							11
+						],
+						[
+							2,
+							12
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							12
+						],
+						[
+							2,
+							13
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							13
+						],
+						[
+							2,
+							14
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							14
+						],
+						[
+							2,
+							15
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							15
+						],
+						[
+							2,
+							16
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							16
+						],
+						[
+							2,
+							17
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							17
+						],
+						[
+							2,
+							18
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							18
+						],
+						[
+							2,
+							19
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							19
+						],
+						[
+							2,
+							20
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							20
+						],
+						[
+							2,
+							21
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							21
+						],
+						[
+							2,
+							22
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							22
+						],
+						[
+							2,
+							23
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							23
+						],
+						[
+							2,
+							24
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							24
+						],
+						[
+							2,
+							25
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							25
+						],
+						[
+							2,
+							26
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							26
+						],
+						[
+							2,
+							27
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							27
+						],
+						[
+							2,
+							28
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							28
+						],
+						[
+							2,
+							29
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							29
+						],
+						[
+							2,
+							30
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							30
+						],
+						[
+							2,
+							31
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							31
+						],
+						[
+							2,
+							32
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							32
+						],
+						[
+							2,
+							33
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							33
+						],
+						[
+							2,
+							34
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							34
+						],
+						[
+							2,
+							35
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							35
+						],
+						[
+							2,
+							36
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							36
+						],
+						[
+							2,
+							37
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							37
+						],
+						[
+							2,
+							38
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							38
+						],
+						[
+							2,
+							39
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							39
+						],
+						[
+							2,
+							40
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							40
+						],
+						[
+							2,
+							41
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							41
+						],
+						[
+							2,
+							42
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							42
+						],
+						[
+							2,
+							43
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							43
+						],
+						[
+							2,
+							44
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							44
+						],
+						[
+							2,
+							45
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							45
+						],
+						[
+							2,
+							46
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							46
+						],
+						[
+							2,
+							47
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							47
+						],
+						[
+							2,
+							48
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							48
+						],
+						[
+							2,
+							49
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							49
+						],
+						[
+							2,
+							50
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							50
+						],
+						[
+							2,
+							51
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							51
+						],
+						[
+							2,
+							52
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							52
+						],
+						[
+							2,
+							53
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							53
+						],
+						[
+							2,
+							54
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							54
+						],
+						[
+							2,
+							55
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							55
+						],
+						[
+							2,
+							56
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							56
+						],
+						[
+							2,
+							57
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							57
+						],
+						[
+							2,
+							58
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							58
+						],
+						[
+							2,
+							59
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							59
+						],
+						[
+							2,
+							60
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							60
+						],
+						[
+							2,
+							61
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							61
+						],
+						[
+							2,
+							62
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							62
+						],
+						[
+							2,
+							63
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							63
+						],
+						[
+							2,
+							64
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							64
+						],
+						[
+							2,
+							65
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							65
+						],
+						[
+							2,
+							66
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							66
+						],
+						[
+							2,
+							67
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							67
+						],
+						[
+							2,
+							68
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							68
+						],
+						[
+							2,
+							69
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							69
+						],
+						[
+							2,
+							70
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							70
+						],
+						[
+							2,
+							71
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							71
+						],
+						[
+							2,
+							72
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							72
+						],
+						[
+							2,
+							73
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							73
+						],
+						[
+							2,
+							74
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							74
+						],
+						[
+							2,
+							75
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							75
+						],
+						[
+							2,
+							76
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							76
+						],
+						[
+							2,
+							77
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							77
+						],
+						[
+							2,
+							78
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							78
+						],
+						[
+							2,
+							79
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							79
+						],
+						[
+							2,
+							80
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							80
+						],
+						[
+							2,
+							81
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							81
+						],
+						[
+							2,
+							82
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							82
+						],
+						[
+							2,
+							83
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							83
+						],
+						[
+							2,
+							84
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							84
+						],
+						[
+							2,
+							85
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							85
+						],
+						[
+							2,
+							86
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							86
+						],
+						[
+							2,
+							87
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							87
+						],
+						[
+							2,
+							88
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							88
+						],
+						[
+							2,
+							89
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							89
+						],
+						[
+							2,
+							90
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							90
+						],
+						[
+							2,
+							91
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							91
+						],
+						[
+							2,
+							92
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							92
+						],
+						[
+							2,
+							93
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							93
+						],
+						[
+							2,
+							94
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							94
+						],
+						[
+							2,
+							95
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							95
+						],
+						[
+							2,
+							96
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							96
+						],
+						[
+							2,
+							97
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							97
+						],
+						[
+							2,
+							98
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							98
+						],
+						[
+							2,
+							99
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							99
+						],
+						[
+							2,
+							100
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							100
+						],
+						[
+							2,
+							101
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Token`Comment",
+					"value": "(* Do Operation 1 *)",
+					"source": [
+						[
+							2,
+							101
+						],
+						[
+							2,
+							121
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Token`Fake`ImplicitNull",
+					"value": "",
+					"source": [
+						[
+							2,
+							121
+						],
+						[
+							2,
+							121
+						]
+					]
+				}
+			],
+			"source": [
+				[
+					2,
+					1
+				],
+				[
+					2,
+					121
+				]
+			]
+		},
+		{
+			"type": "LeafNode",
+			"kind": "Token`Newline",
+			"value": "\n",
+			"source": [
+				[
+					2,
+					121
+				],
+				[
+					3,
+					1
+				]
+			]
+		},
+		{
+			"type": "InfixNode",
+			"op": "CompoundExpression",
+			"children": [
+				{
+					"type": "LeafNode",
+					"kind": "Symbol",
+					"value": "opersadation2",
+					"source": [
+						[
+							3,
+							1
+						],
+						[
+							3,
+							14
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Token`Semi",
+					"value": ";",
+					"source": [
+						[
+							3,
+							14
+						],
+						[
+							3,
+							15
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							15
+						],
+						[
+							3,
+							16
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							16
+						],
+						[
+							3,
+							17
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							17
+						],
+						[
+							3,
+							18
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							18
+						],
+						[
+							3,
+							19
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							19
+						],
+						[
+							3,
+							20
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							20
+						],
+						[
+							3,
+							21
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							21
+						],
+						[
+							3,
+							22
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							22
+						],
+						[
+							3,
+							23
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							23
+						],
+						[
+							3,
+							24
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							24
+						],
+						[
+							3,
+							25
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							25
+						],
+						[
+							3,
+							26
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							26
+						],
+						[
+							3,
+							27
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							27
+						],
+						[
+							3,
+							28
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							28
+						],
+						[
+							3,
+							29
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							29
+						],
+						[
+							3,
+							30
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							30
+						],
+						[
+							3,
+							31
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							31
+						],
+						[
+							3,
+							32
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							32
+						],
+						[
+							3,
+							33
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							33
+						],
+						[
+							3,
+							34
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							34
+						],
+						[
+							3,
+							35
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							35
+						],
+						[
+							3,
+							36
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							36
+						],
+						[
+							3,
+							37
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							37
+						],
+						[
+							3,
+							38
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							38
+						],
+						[
+							3,
+							39
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							39
+						],
+						[
+							3,
+							40
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							40
+						],
+						[
+							3,
+							41
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							41
+						],
+						[
+							3,
+							42
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							42
+						],
+						[
+							3,
+							43
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							43
+						],
+						[
+							3,
+							44
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							44
+						],
+						[
+							3,
+							45
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							45
+						],
+						[
+							3,
+							46
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							46
+						],
+						[
+							3,
+							47
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							47
+						],
+						[
+							3,
+							48
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							48
+						],
+						[
+							3,
+							49
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							49
+						],
+						[
+							3,
+							50
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							50
+						],
+						[
+							3,
+							51
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							51
+						],
+						[
+							3,
+							52
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							52
+						],
+						[
+							3,
+							53
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							53
+						],
+						[
+							3,
+							54
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							54
+						],
+						[
+							3,
+							55
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							55
+						],
+						[
+							3,
+							56
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							56
+						],
+						[
+							3,
+							57
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							57
+						],
+						[
+							3,
+							58
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							58
+						],
+						[
+							3,
+							59
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							59
+						],
+						[
+							3,
+							60
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							60
+						],
+						[
+							3,
+							61
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							61
+						],
+						[
+							3,
+							62
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							62
+						],
+						[
+							3,
+							63
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							63
+						],
+						[
+							3,
+							64
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							64
+						],
+						[
+							3,
+							65
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							65
+						],
+						[
+							3,
+							66
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							66
+						],
+						[
+							3,
+							67
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							67
+						],
+						[
+							3,
+							68
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							68
+						],
+						[
+							3,
+							69
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							69
+						],
+						[
+							3,
+							70
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							70
+						],
+						[
+							3,
+							71
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							71
+						],
+						[
+							3,
+							72
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							72
+						],
+						[
+							3,
+							73
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							73
+						],
+						[
+							3,
+							74
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							74
+						],
+						[
+							3,
+							75
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							75
+						],
+						[
+							3,
+							76
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							76
+						],
+						[
+							3,
+							77
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							77
+						],
+						[
+							3,
+							78
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							78
+						],
+						[
+							3,
+							79
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							79
+						],
+						[
+							3,
+							80
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							80
+						],
+						[
+							3,
+							81
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							81
+						],
+						[
+							3,
+							82
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							82
+						],
+						[
+							3,
+							83
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							83
+						],
+						[
+							3,
+							84
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							84
+						],
+						[
+							3,
+							85
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							85
+						],
+						[
+							3,
+							86
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							86
+						],
+						[
+							3,
+							87
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							87
+						],
+						[
+							3,
+							88
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							88
+						],
+						[
+							3,
+							89
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							89
+						],
+						[
+							3,
+							90
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							90
+						],
+						[
+							3,
+							91
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							91
+						],
+						[
+							3,
+							92
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							92
+						],
+						[
+							3,
+							93
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							93
+						],
+						[
+							3,
+							94
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							94
+						],
+						[
+							3,
+							95
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							95
+						],
+						[
+							3,
+							96
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							96
+						],
+						[
+							3,
+							97
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							97
+						],
+						[
+							3,
+							98
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							98
+						],
+						[
+							3,
+							99
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							99
+						],
+						[
+							3,
+							100
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							3,
+							100
+						],
+						[
+							3,
+							101
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Token`Comment",
+					"value": "(* Do Operation 2 *)",
+					"source": [
+						[
+							3,
+							101
+						],
+						[
+							3,
+							121
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Token`Fake`ImplicitNull",
+					"value": "",
+					"source": [
+						[
+							3,
+							121
+						],
+						[
+							3,
+							121
+						]
+					]
+				}
+			],
+			"source": [
+				[
+					3,
+					1
+				],
+				[
+					3,
+					121
+				]
+			]
+		},
+		{
+			"type": "LeafNode",
+			"kind": "Token`Newline",
+			"value": "\n",
+			"source": [
+				[
+					3,
+					121
+				],
+				[
+					4,
+					1
+				]
+			]
+		},
+		{
+			"type": "InfixNode",
+			"op": "CompoundExpression",
+			"children": [
+				{
+					"type": "LeafNode",
+					"kind": "Symbol",
+					"value": "opeasdadsasdration3",
+					"source": [
+						[
+							4,
+							1
+						],
+						[
+							4,
+							20
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Token`Semi",
+					"value": ";",
+					"source": [
+						[
+							4,
+							20
+						],
+						[
+							4,
+							21
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							21
+						],
+						[
+							4,
+							22
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							22
+						],
+						[
+							4,
+							23
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							23
+						],
+						[
+							4,
+							24
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							24
+						],
+						[
+							4,
+							25
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							25
+						],
+						[
+							4,
+							26
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							26
+						],
+						[
+							4,
+							27
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							27
+						],
+						[
+							4,
+							28
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							28
+						],
+						[
+							4,
+							29
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							29
+						],
+						[
+							4,
+							30
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							30
+						],
+						[
+							4,
+							31
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							31
+						],
+						[
+							4,
+							32
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							32
+						],
+						[
+							4,
+							33
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							33
+						],
+						[
+							4,
+							34
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							34
+						],
+						[
+							4,
+							35
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							35
+						],
+						[
+							4,
+							36
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							36
+						],
+						[
+							4,
+							37
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							37
+						],
+						[
+							4,
+							38
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							38
+						],
+						[
+							4,
+							39
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							39
+						],
+						[
+							4,
+							40
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							40
+						],
+						[
+							4,
+							41
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							41
+						],
+						[
+							4,
+							42
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							42
+						],
+						[
+							4,
+							43
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							43
+						],
+						[
+							4,
+							44
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							44
+						],
+						[
+							4,
+							45
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							45
+						],
+						[
+							4,
+							46
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							46
+						],
+						[
+							4,
+							47
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							47
+						],
+						[
+							4,
+							48
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							48
+						],
+						[
+							4,
+							49
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							49
+						],
+						[
+							4,
+							50
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							50
+						],
+						[
+							4,
+							51
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							51
+						],
+						[
+							4,
+							52
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							52
+						],
+						[
+							4,
+							53
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							53
+						],
+						[
+							4,
+							54
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							54
+						],
+						[
+							4,
+							55
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							55
+						],
+						[
+							4,
+							56
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							56
+						],
+						[
+							4,
+							57
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							57
+						],
+						[
+							4,
+							58
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							58
+						],
+						[
+							4,
+							59
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							59
+						],
+						[
+							4,
+							60
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							60
+						],
+						[
+							4,
+							61
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							61
+						],
+						[
+							4,
+							62
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							62
+						],
+						[
+							4,
+							63
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							63
+						],
+						[
+							4,
+							64
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							64
+						],
+						[
+							4,
+							65
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							65
+						],
+						[
+							4,
+							66
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							66
+						],
+						[
+							4,
+							67
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							67
+						],
+						[
+							4,
+							68
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							68
+						],
+						[
+							4,
+							69
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							69
+						],
+						[
+							4,
+							70
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							70
+						],
+						[
+							4,
+							71
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							71
+						],
+						[
+							4,
+							72
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							72
+						],
+						[
+							4,
+							73
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							73
+						],
+						[
+							4,
+							74
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							74
+						],
+						[
+							4,
+							75
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							75
+						],
+						[
+							4,
+							76
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							76
+						],
+						[
+							4,
+							77
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							77
+						],
+						[
+							4,
+							78
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							78
+						],
+						[
+							4,
+							79
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							79
+						],
+						[
+							4,
+							80
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							80
+						],
+						[
+							4,
+							81
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							81
+						],
+						[
+							4,
+							82
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							82
+						],
+						[
+							4,
+							83
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							83
+						],
+						[
+							4,
+							84
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							84
+						],
+						[
+							4,
+							85
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							85
+						],
+						[
+							4,
+							86
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							86
+						],
+						[
+							4,
+							87
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							87
+						],
+						[
+							4,
+							88
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							88
+						],
+						[
+							4,
+							89
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							89
+						],
+						[
+							4,
+							90
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							90
+						],
+						[
+							4,
+							91
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							91
+						],
+						[
+							4,
+							92
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							92
+						],
+						[
+							4,
+							93
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							93
+						],
+						[
+							4,
+							94
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							94
+						],
+						[
+							4,
+							95
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							95
+						],
+						[
+							4,
+							96
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							96
+						],
+						[
+							4,
+							97
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							97
+						],
+						[
+							4,
+							98
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							98
+						],
+						[
+							4,
+							99
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							99
+						],
+						[
+							4,
+							100
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							4,
+							100
+						],
+						[
+							4,
+							101
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Token`Comment",
+					"value": "(* Do Operation 3 *)",
+					"source": [
+						[
+							4,
+							101
+						],
+						[
+							4,
+							121
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Token`Fake`ImplicitNull",
+					"value": "",
+					"source": [
+						[
+							4,
+							121
+						],
+						[
+							4,
+							121
+						]
+					]
+				}
+			],
+			"source": [
+				[
+					4,
+					1
+				],
+				[
+					4,
+					121
+				]
+			]
+		},
+		{
+			"type": "LeafNode",
+			"kind": "Token`Newline",
+			"value": "\n",
+			"source": [
+				[
+					4,
+					121
+				],
+				[
+					5,
+					1
+				]
+			]
+		},
+		{
+			"type": "InfixNode",
+			"op": "CompoundExpression",
+			"children": [
+				{
+					"type": "LeafNode",
+					"kind": "Symbol",
+					"value": "operation4",
+					"source": [
+						[
+							5,
+							1
+						],
+						[
+							5,
+							11
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Token`Semi",
+					"value": ";",
+					"source": [
+						[
+							5,
+							11
+						],
+						[
+							5,
+							12
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							12
+						],
+						[
+							5,
+							13
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							13
+						],
+						[
+							5,
+							14
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							14
+						],
+						[
+							5,
+							15
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							15
+						],
+						[
+							5,
+							16
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							16
+						],
+						[
+							5,
+							17
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							17
+						],
+						[
+							5,
+							18
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							18
+						],
+						[
+							5,
+							19
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							19
+						],
+						[
+							5,
+							20
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							20
+						],
+						[
+							5,
+							21
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							21
+						],
+						[
+							5,
+							22
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							22
+						],
+						[
+							5,
+							23
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							23
+						],
+						[
+							5,
+							24
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							24
+						],
+						[
+							5,
+							25
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							25
+						],
+						[
+							5,
+							26
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							26
+						],
+						[
+							5,
+							27
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							27
+						],
+						[
+							5,
+							28
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							28
+						],
+						[
+							5,
+							29
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							29
+						],
+						[
+							5,
+							30
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							30
+						],
+						[
+							5,
+							31
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							31
+						],
+						[
+							5,
+							32
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							32
+						],
+						[
+							5,
+							33
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							33
+						],
+						[
+							5,
+							34
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							34
+						],
+						[
+							5,
+							35
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							35
+						],
+						[
+							5,
+							36
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							36
+						],
+						[
+							5,
+							37
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							37
+						],
+						[
+							5,
+							38
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							38
+						],
+						[
+							5,
+							39
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							39
+						],
+						[
+							5,
+							40
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							40
+						],
+						[
+							5,
+							41
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							41
+						],
+						[
+							5,
+							42
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							42
+						],
+						[
+							5,
+							43
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							43
+						],
+						[
+							5,
+							44
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							44
+						],
+						[
+							5,
+							45
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							45
+						],
+						[
+							5,
+							46
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							46
+						],
+						[
+							5,
+							47
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							47
+						],
+						[
+							5,
+							48
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							48
+						],
+						[
+							5,
+							49
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							49
+						],
+						[
+							5,
+							50
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							50
+						],
+						[
+							5,
+							51
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							51
+						],
+						[
+							5,
+							52
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							52
+						],
+						[
+							5,
+							53
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							53
+						],
+						[
+							5,
+							54
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							54
+						],
+						[
+							5,
+							55
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							55
+						],
+						[
+							5,
+							56
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							56
+						],
+						[
+							5,
+							57
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							57
+						],
+						[
+							5,
+							58
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							58
+						],
+						[
+							5,
+							59
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							59
+						],
+						[
+							5,
+							60
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							60
+						],
+						[
+							5,
+							61
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							61
+						],
+						[
+							5,
+							62
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							62
+						],
+						[
+							5,
+							63
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							63
+						],
+						[
+							5,
+							64
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							64
+						],
+						[
+							5,
+							65
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							65
+						],
+						[
+							5,
+							66
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							66
+						],
+						[
+							5,
+							67
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							67
+						],
+						[
+							5,
+							68
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							68
+						],
+						[
+							5,
+							69
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							69
+						],
+						[
+							5,
+							70
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							70
+						],
+						[
+							5,
+							71
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							71
+						],
+						[
+							5,
+							72
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							72
+						],
+						[
+							5,
+							73
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							73
+						],
+						[
+							5,
+							74
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							74
+						],
+						[
+							5,
+							75
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							75
+						],
+						[
+							5,
+							76
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							76
+						],
+						[
+							5,
+							77
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							77
+						],
+						[
+							5,
+							78
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							78
+						],
+						[
+							5,
+							79
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							79
+						],
+						[
+							5,
+							80
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							80
+						],
+						[
+							5,
+							81
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							81
+						],
+						[
+							5,
+							82
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							82
+						],
+						[
+							5,
+							83
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							83
+						],
+						[
+							5,
+							84
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							84
+						],
+						[
+							5,
+							85
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							85
+						],
+						[
+							5,
+							86
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							86
+						],
+						[
+							5,
+							87
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							87
+						],
+						[
+							5,
+							88
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							88
+						],
+						[
+							5,
+							89
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							89
+						],
+						[
+							5,
+							90
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							90
+						],
+						[
+							5,
+							91
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							91
+						],
+						[
+							5,
+							92
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							92
+						],
+						[
+							5,
+							93
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							93
+						],
+						[
+							5,
+							94
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							94
+						],
+						[
+							5,
+							95
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							95
+						],
+						[
+							5,
+							96
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							96
+						],
+						[
+							5,
+							97
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							97
+						],
+						[
+							5,
+							98
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							98
+						],
+						[
+							5,
+							99
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							99
+						],
+						[
+							5,
+							100
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							100
+						],
+						[
+							5,
+							101
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Token`Comment",
+					"value": "(* Do Operation 4 *)",
+					"source": [
+						[
+							5,
+							101
+						],
+						[
+							5,
+							121
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Token`Fake`ImplicitNull",
+					"value": "",
+					"source": [
+						[
+							5,
+							121
+						],
+						[
+							5,
+							121
+						]
+					]
+				}
+			],
+			"source": [
+				[
+					5,
+					1
+				],
+				[
+					5,
+					121
+				]
+			]
+		}
+	],
+	"source": [
+		[
+			1,
+			1
+		],
+		[
+			5,
+			121
+		]
+	]
+}

@@ -1,0 +1,14 @@
+square = #^2 &
+addPair = #1 + #2 &
+spread = f[##] &
+prev = %
+prev2 = %%
+msg = MyFunc::usage
+tagged = a::b
+get = << "file.wl"
+put = expr >> "out.txt"
+appendPut = expr >>> "log.txt"
+tilde = a ~ f ~ b
+assoc = <| "k" -> 1, "v" -> 2 |>
+patt = x_Integer
+spanEx = list[[2 ;; 5]]
