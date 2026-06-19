@@ -1,5 +1,5 @@
 import { makeLineIndex, nodeSource } from "./position.js";
-import { INFIX_OPS, opName } from "./operators.js";
+import { INFIX_OPS, BINARY_OPS, PREFIX_OPS, POSTFIX_OPS, opName } from "./operators.js";
 
 const LEAF_KIND = { symbol: "Symbol", integer: "Integer", real: "Real", string: "String", comment: "Token`Comment" };
 
@@ -41,6 +41,9 @@ function adaptNode(node, ctx) {
 		case "call": return adaptCall(node, ctx, "Token`OpenSquare", "[", "Token`CloseSquare", "]");
 		case "part": return adaptCall(node, ctx, "Token`OpenSquare`OpenSquare", "[[", "Token`CloseSquare`CloseSquare", "]]");
 		case "infix": return adaptInfix(node, ctx);
+		case "binary": return adaptBinary(node, ctx);
+		case "prefix": return adaptPrefix(node, ctx);
+		case "postfix": return adaptPostfix(node, ctx);
 		case "ERROR": case "MISSING":
 			return { type: "Unknown", kind: "SyntaxErrorNode[]", source: nodeSource(node, ctx.lineIndex) };
 		default:
@@ -93,7 +96,18 @@ function operatorLiteral(node, ctx) {
 }
 
 // Map operator literal to the CodeParser token kind suffix.
-const TOKEN_KIND_NAME = { ",": "Comma", "+": "Plus", "-": "Minus", "*": "Star", ";": "Semi", ".": "Dot" };
+const TOKEN_KIND_NAME = {
+	",": "Comma", "+": "Plus", "-": "Minus", "*": "Star", ";": "Semi", ".": "Dot",
+	"=": "Equal", "&": "Amp", ":=": "ColonEqual", "^=": "CaretEqual", "^:=": "CaretColonEqual",
+	"->": "MinusGreater", ":>": "ColonGreater", "<->": "LessMinusGreater", "|->": "BarMinusGreater",
+	"/;": "SlashSemi", "/.": "SlashDot", "//.": "SlashSlashDot",
+	"/:": "SlashColon", "//": "SlashSlash", "//=": "SlashSlashEqual",
+	"+=": "PlusEqual", "-=": "MinusEqual", "*=": "StarEqual", "/=": "SlashEqual",
+	"^": "Caret", "@": "At", "@@": "AtAt", "@@@": "AtAtAt",
+	"/@": "SlashAt", "//@": "SlashSlashAt", "?": "Question", ":": "Colon",
+	"!": "Bang", "!!": "BangBang", "++": "PlusPlus", "--": "MinusMinus",
+	"..": "DotDot", "...": "DotDotDot", "'": "SingleQuote", "=.": "EqualDot",
+};
 function tokenKindName(literal) {
 	return TOKEN_KIND_NAME[literal] ?? "Operator";
 }
@@ -141,6 +155,55 @@ function adaptInfix(node, ctx) {
 function adaptArguments(node, ctx) {
 	if (node.type === "infix" && operatorLiteral(node, ctx) === ",") return adaptInfix(node, ctx);
 	return adaptNode(node, ctx);
+}
+
+// Produce a LeafNode for an operator token.
+function opLeaf(tokenNode, ctx) {
+	const v = ctx.source.slice(tokenNode.startIndex, tokenNode.endIndex);
+	return { type: "LeafNode", kind: `Token\`${tokenKindName(v)}`, value: v, source: nodeSource(tokenNode, ctx.lineIndex) };
+}
+
+// Separate a node's children into named (operands) and unnamed (operator tokens).
+function parts(node) {
+	const named = [], tokens = [];
+	for (let i = 0; i < node.childCount; i++) {
+		const c = node.child(i);
+		(c.isNamed ? named : tokens).push(c);
+	}
+	return { named, tokens };
+}
+
+function adaptBinary(node, ctx) {
+	const { named, tokens } = parts(node);
+	const literal = ctx.source.slice(tokens[0].startIndex, tokens[0].endIndex);
+	return {
+		type: "BinaryNode",
+		op: opName(BINARY_OPS, literal),
+		children: [adaptNode(named[0], ctx), opLeaf(tokens[0], ctx), adaptNode(named[1], ctx)],
+		source: nodeSource(node, ctx.lineIndex),
+	};
+}
+
+function adaptPrefix(node, ctx) {
+	const { named, tokens } = parts(node);
+	const literal = ctx.source.slice(tokens[0].startIndex, tokens[0].endIndex);
+	return {
+		type: "PrefixNode",
+		op: opName(PREFIX_OPS, literal),
+		children: [opLeaf(tokens[0], ctx), adaptNode(named[0], ctx)],
+		source: nodeSource(node, ctx.lineIndex),
+	};
+}
+
+function adaptPostfix(node, ctx) {
+	const { named, tokens } = parts(node);
+	const literal = ctx.source.slice(tokens[0].startIndex, tokens[0].endIndex);
+	return {
+		type: "PostfixNode",
+		op: opName(POSTFIX_OPS, literal),
+		children: [adaptNode(named[0], ctx), opLeaf(tokens[0], ctx)],
+		source: nodeSource(node, ctx.lineIndex),
+	};
 }
 
 export { adaptNode, namedChildren, leaf };
