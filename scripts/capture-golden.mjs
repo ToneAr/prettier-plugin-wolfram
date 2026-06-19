@@ -1,6 +1,6 @@
 // DEV-ONLY. Regenerates the golden corpus from a real Wolfram kernel.
 // Not shipped (excluded from package.json "files"). Run: node scripts/capture-golden.mjs
-import { execFileSync, execSync } from "child_process";
+import { execFileSync } from "child_process";
 import { readdirSync, readFileSync, writeFileSync, mkdirSync, unlinkSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, resolve, join } from "path";
@@ -41,7 +41,7 @@ function captureCst(source) {
 		// last occurrence of the pattern '{\n\t"type"' which uniquely identifies
 		// the start of our serialized JSON.
 		const jsonMarker = '{\n\t"type"';
-		const markerIdx = output.indexOf(jsonMarker);
+		const markerIdx = output.lastIndexOf(jsonMarker);
 		if (markerIdx === -1) {
 			throw new Error(`No JSON object found in wolframscript output:\n${output.slice(0, 500)}`);
 		}
