@@ -22,29 +22,24 @@ function stripTrivia(node) {
 
 /** Reconstruct a minimal source text that satisfies the line/col positions in the fixture */
 function syntheticSourceText(cst) {
-	let maxLine = 1;
-	let maxCol = 1;
-
+	const lineWidths = new Map();
 	function walk(node) {
 		if (!node || typeof node !== "object") return;
 		if (Array.isArray(node.source) && node.source.length === 2) {
 			const [, end] = node.source;
 			if (Array.isArray(end)) {
-				if (end[0] > maxLine) maxLine = end[0];
-				if (end[0] === maxLine && end[1] > maxCol) maxCol = end[1];
+				const [line, col] = end;
+				lineWidths.set(line, Math.max(lineWidths.get(line) ?? 1, col));
 			}
 		}
 		for (const child of node.children ?? []) walk(child);
 		if (node.head) walk(node.head);
 	}
-
 	walk(cst);
-
-	// Build a text of `maxLine` lines, each long enough for its columns.
-	// Simple: just spaces on each line (no tabs), separated by newlines.
+	const maxLine = Math.max(...lineWidths.keys());
 	const lines = [];
-	for (let i = 0; i < maxLine; i++) {
-		lines.push(" ".repeat(maxCol));
+	for (let i = 1; i <= maxLine; i++) {
+		lines.push(" ".repeat(lineWidths.get(i) ?? 1));
 	}
 	return lines.join("\n");
 }
