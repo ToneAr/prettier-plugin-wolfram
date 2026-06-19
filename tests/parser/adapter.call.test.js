@@ -19,7 +19,7 @@ beforeAll(async () => {
 
 describe("adapter calls/groups", () => {
 	// unskipped in Task 8 — requires comma flattening to match InfixNode structure
-	it.skip("matches CodeParser CST for f[g[x], h[y, z]] modulo trivia", () => {
+	it("matches CodeParser CST for f[g[x], h[y, z]] modulo trivia", () => {
 		const src = "f[g[x], h[y, z]]";
 		const golden = require("../fixtures/call-nested.json");
 		expect(cstEqualModuloTrivia(adapt(parser.parse(src), src), golden)).toBe(true);

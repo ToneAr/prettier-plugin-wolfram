@@ -1,4 +1,5 @@
 import { makeLineIndex, nodeSource } from "./position.js";
+import { INFIX_OPS, opName } from "./operators.js";
 
 const LEAF_KIND = { symbol: "Symbol", integer: "Integer", real: "Real", string: "String", comment: "Token`Comment" };
 
@@ -39,10 +40,11 @@ function adaptNode(node, ctx) {
 		case "group": return adaptGroup(node, ctx);
 		case "call": return adaptCall(node, ctx, "Token`OpenSquare", "[", "Token`CloseSquare", "]");
 		case "part": return adaptCall(node, ctx, "Token`OpenSquare`OpenSquare", "[[", "Token`CloseSquare`CloseSquare", "]]");
+		case "infix": return adaptInfix(node, ctx);
 		case "ERROR": case "MISSING":
 			return { type: "Unknown", kind: "SyntaxErrorNode[]", source: nodeSource(node, ctx.lineIndex) };
 		default:
-			// Filled in by later tasks (infix/binary/prefix/postfix/span/pattern).
+			// Filled in by later tasks (binary/prefix/postfix/span/pattern).
 			return { type: "Unknown", kind: "SyntaxErrorNode[]", source: nodeSource(node, ctx.lineIndex) };
 	}
 }
@@ -81,7 +83,64 @@ function delimLeaf(node, kind, value, ctx) {
 	return { type: "LeafNode", kind, value, source: nodeSource(node, ctx.lineIndex) };
 }
 
-// Until Task 8, arguments are a single expression; Task 8 replaces this with comma flattening.
-function adaptArguments(node, ctx) { return adaptNode(node, ctx); }
+// Return the first unnamed child's text — this is the operator literal for an infix node.
+function operatorLiteral(node, ctx) {
+	for (let i = 0; i < node.childCount; i++) {
+		const c = node.child(i);
+		if (!c.isNamed) return ctx.source.slice(c.startIndex, c.endIndex);
+	}
+	return null;
+}
+
+// Map operator literal to the CodeParser token kind suffix.
+const TOKEN_KIND_NAME = { ",": "Comma", "+": "Plus", "-": "Minus", "*": "Star", ";": "Semi", ".": "Dot" };
+function tokenKindName(literal) {
+	return TOKEN_KIND_NAME[literal] ?? "Operator";
+}
+
+// Recursively collapse a left-assoc chain of the same infix operator into a flat children array.
+// Appends to out.children: [operand, opLeaf, ..., operand, opLeaf, operand]
+function flattenInfix(node, literal, ctx, out) {
+	const named = [];
+	const anonsBetween = []; // anonymous tokens between each pair of named children
+	let seenNamed = 0;
+	for (let i = 0; i < node.childCount; i++) {
+		const c = node.child(i);
+		if (c.isNamed) {
+			seenNamed++;
+			named.push(c);
+			if (seenNamed < node.childCount) anonsBetween.push([]);
+		} else {
+			if (anonsBetween.length > 0) anonsBetween[anonsBetween.length - 1].push(c);
+		}
+	}
+	// named[0] is LHS, named[named.length-1] is RHS; anonsBetween[i] are tokens between named[i] and named[i+1]
+	const lhs = named[0];
+	if (lhs.type === "infix" && operatorLiteral(lhs, ctx) === literal) {
+		flattenInfix(lhs, literal, ctx, out);
+	} else {
+		out.children.push(adaptNode(lhs, ctx));
+	}
+	// Emit the anonymous tokens (operator) between LHS and RHS, then RHS
+	for (const t of anonsBetween[0] ?? []) {
+		const text = ctx.source.slice(t.startIndex, t.endIndex);
+		out.children.push({ type: "LeafNode", kind: `Token\`${tokenKindName(text)}`, value: text, source: nodeSource(t, ctx.lineIndex) });
+	}
+	out.children.push(adaptNode(named[named.length - 1], ctx));
+}
+
+function adaptInfix(node, ctx) {
+	const literal = operatorLiteral(node, ctx);
+	const out = { type: "InfixNode", op: opName(INFIX_OPS, literal), children: [], source: nodeSource(node, ctx.lineIndex) };
+	flattenInfix(node, literal, ctx, out);
+	return out;
+}
+
+// A comma-separated argument list parses as an infix(",") chain; map to flat Comma InfixNode.
+// Otherwise, adapt the single argument normally.
+function adaptArguments(node, ctx) {
+	if (node.type === "infix" && operatorLiteral(node, ctx) === ",") return adaptInfix(node, ctx);
+	return adaptNode(node, ctx);
+}
 
 export { adaptNode, namedChildren, leaf };
