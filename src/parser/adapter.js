@@ -49,7 +49,7 @@ function adaptNode(node, ctx) {
 			return leaf(node, ctx);
 		case "group": return adaptGroup(node, ctx);
 		case "call": return adaptCall(node, ctx, "Token`OpenSquare", "[", "Token`CloseSquare", "]");
-		case "part": return adaptCall(node, ctx, "Token`OpenSquare`OpenSquare", "[[", "Token`CloseSquare`CloseSquare", "]]");
+		case "part": return adaptPart(node, ctx);
 		case "infix": return adaptInfix(node, ctx);
 		case "binary": return adaptBinary(node, ctx);
 		case "prefix": return adaptPrefix(node, ctx);
@@ -57,6 +57,14 @@ function adaptNode(node, ctx) {
 		case "pattern": return adaptPattern(node, ctx);
 		case "blank": case "blank_sequence": case "blank_null_sequence":
 			return adaptBlank(node, ctx);
+		case "slot": return adaptSlot(node, ctx);
+		case "slot_sequence": return adaptSlotSequence(node, ctx);
+		case "out": return adaptOut(node, ctx);
+		case "message_name": return adaptMessageName(node, ctx);
+		case "get": return adaptGet(node, ctx);
+		case "put": return adaptPut(node, ctx);
+		case "tilde_infix": return adaptTildeInfix(node, ctx);
+		case "span": return adaptSpan(node, ctx);
 		case "ERROR": case "MISSING":
 			return { type: "Unknown", kind: "SyntaxErrorNode[]", source: nodeSource(node, ctx.lineIndex) };
 		default:
@@ -84,6 +92,43 @@ function adaptCall(node, ctx, openKind, openText, closeKind, closeText) {
 	if (argsNode) children.push(adaptArguments(argsNode, ctx));
 	children.push(delimLeaf(close, closeKind, closeText, ctx));
 	return { type: "CallNode", head: adaptNode(headNode, ctx), children, source: nodeSource(node, ctx.lineIndex) };
+}
+
+// adaptPart: produces the CodeParser shape for list[[...]] which is
+// CallNode(head, [Token`OpenSquare, GroupNode(GroupSquare, [Token`OpenSquare, content, Token`CloseSquare]), Token`CloseSquare])
+// The tree-sitter "part" node uses "[[" and "]]" tokens; we split each into two "["/"]" leaves.
+function adaptPart(node, ctx) {
+	const headNode = node.childForFieldName("head");
+	const argsNode = node.childForFieldName("arguments");
+	// Find the "[[" and "]]" anonymous tokens
+	let openDoubleToken = null, closeDoubleToken = null;
+	for (let i = 0; i < node.childCount; i++) {
+		const c = node.child(i);
+		if (!c.isNamed) {
+			const t = ctx.source.slice(c.startIndex, c.endIndex);
+			if (t === "[[") openDoubleToken = c;
+			else if (t === "]]") closeDoubleToken = c;
+		}
+	}
+	// Split "[[" into outer "[" (first char) and inner "[" (second char)
+	const outerOpenSrc = [offsetToLineCol(ctx.lineIndex, openDoubleToken.startIndex), offsetToLineCol(ctx.lineIndex, openDoubleToken.startIndex + 1)];
+	const innerOpenSrc = [offsetToLineCol(ctx.lineIndex, openDoubleToken.startIndex + 1), offsetToLineCol(ctx.lineIndex, openDoubleToken.endIndex)];
+	const outerOpenLeaf = { type: "LeafNode", kind: "Token`OpenSquare", value: "[", source: outerOpenSrc };
+	const innerOpenLeaf = { type: "LeafNode", kind: "Token`OpenSquare", value: "[", source: innerOpenSrc };
+	// Split "]]" into inner "]" (first char) and outer "]" (second char)
+	const innerCloseSrc = [offsetToLineCol(ctx.lineIndex, closeDoubleToken.startIndex), offsetToLineCol(ctx.lineIndex, closeDoubleToken.startIndex + 1)];
+	const outerCloseSrc = [offsetToLineCol(ctx.lineIndex, closeDoubleToken.startIndex + 1), offsetToLineCol(ctx.lineIndex, closeDoubleToken.endIndex)];
+	const innerCloseLeaf = { type: "LeafNode", kind: "Token`CloseSquare", value: "]", source: innerCloseSrc };
+	const outerCloseLeaf = { type: "LeafNode", kind: "Token`CloseSquare", value: "]", source: outerCloseSrc };
+	// Build GroupNode(GroupSquare) wrapping the content
+	const groupChildren = [innerOpenLeaf];
+	if (argsNode) groupChildren.push(adaptArguments(argsNode, ctx));
+	groupChildren.push(innerCloseLeaf);
+	const groupSrc = [offsetToLineCol(ctx.lineIndex, openDoubleToken.startIndex + 1), offsetToLineCol(ctx.lineIndex, closeDoubleToken.startIndex + 1)];
+	const groupNode = { type: "GroupNode", kind: "GroupSquare", children: groupChildren, source: groupSrc };
+	// Build CallNode
+	const callChildren = [outerOpenLeaf, groupNode, outerCloseLeaf];
+	return { type: "CallNode", head: adaptNode(headNode, ctx), children: callChildren, source: nodeSource(node, ctx.lineIndex) };
 }
 
 function firstAnon(node, text, ctx) {
@@ -126,6 +171,9 @@ const TOKEN_KIND_NAME = {
 	"/": "Slash",
 	// blank tokens
 	"_": "Under", "__": "UnderUnder", "___": "UnderUnderUnder",
+	// tier-1 gap constructs
+	"::": "ColonColon", "<<": "LessLess", ">>": "GreaterGreater", ">>>": "GreaterGreaterGreater",
+	"~": "Tilde", ";;": "SemiSemi",
 };
 
 const INEQUALITY_OPS = new Set(["<", "<=", ">", ">=", "==", "!=", "===", "=!="]);
@@ -287,6 +335,153 @@ function adaptPattern(node, ctx) {
 	const headLeaf = { type: "LeafNode", kind: "Symbol", value: headText, source: headSource };
 	const blankCompound = { type: "CompoundNode", op: BLANK_OP[underText], children: [underLeaf, headLeaf], source: nodeSource(blankNode, ctx.lineIndex) };
 	return { type: "CompoundNode", op: patternOp, children: [symLeaf, blankCompound], source: nodeSource(node, ctx.lineIndex) };
+}
+
+// slot: "#" optionally followed by integer or symbol name
+function adaptSlot(node, ctx) {
+	const hashToken = node.child(0); // the "#" anonymous token
+	const hashLeaf = { type: "LeafNode", kind: "Token`Hash", value: "#", source: nodeSource(hashToken, ctx.lineIndex) };
+	const suffix = ctx.source.slice(node.startIndex + 1, node.endIndex);
+	if (!suffix) return hashLeaf;
+	const suffixSource = [offsetToLineCol(ctx.lineIndex, node.startIndex + 1), offsetToLineCol(ctx.lineIndex, node.endIndex)];
+	if (/^[0-9]+$/.test(suffix)) {
+		const intLeaf = { type: "LeafNode", kind: "Integer", value: suffix, source: suffixSource };
+		return { type: "CompoundNode", op: "Slot", children: [hashLeaf, intLeaf], source: nodeSource(node, ctx.lineIndex) };
+	}
+	const symLeaf = { type: "LeafNode", kind: "Symbol", value: suffix, source: suffixSource };
+	return { type: "CompoundNode", op: "Slot", children: [hashLeaf, symLeaf], source: nodeSource(node, ctx.lineIndex) };
+}
+
+// slot_sequence: "##" optionally followed by integer
+function adaptSlotSequence(node, ctx) {
+	const hashHashToken = node.child(0); // the "##" anonymous token
+	const hashHashLeaf = { type: "LeafNode", kind: "Token`HashHash", value: "##", source: nodeSource(hashHashToken, ctx.lineIndex) };
+	const suffix = ctx.source.slice(node.startIndex + 2, node.endIndex);
+	if (!suffix) return hashHashLeaf;
+	const suffixSource = [offsetToLineCol(ctx.lineIndex, node.startIndex + 2), offsetToLineCol(ctx.lineIndex, node.endIndex)];
+	const intLeaf = { type: "LeafNode", kind: "Integer", value: suffix, source: suffixSource };
+	return { type: "CompoundNode", op: "SlotSequence", children: [hashHashLeaf, intLeaf], source: nodeSource(node, ctx.lineIndex) };
+}
+
+// out: whole-node token: "%" → Token`Percent, "%%" or "%%..." → Token`PercentPercent, "%n" → CompoundNode(Out)
+function adaptOut(node, ctx) {
+	const text = ctx.source.slice(node.startIndex, node.endIndex);
+	if (text === "%") return { type: "LeafNode", kind: "Token`Percent", value: "%", source: nodeSource(node, ctx.lineIndex) };
+	if (/^%%+$/.test(text)) return { type: "LeafNode", kind: "Token`PercentPercent", value: text, source: nodeSource(node, ctx.lineIndex) };
+	// %n form
+	const percentSource = [offsetToLineCol(ctx.lineIndex, node.startIndex), offsetToLineCol(ctx.lineIndex, node.startIndex + 1)];
+	const nSource = [offsetToLineCol(ctx.lineIndex, node.startIndex + 1), offsetToLineCol(ctx.lineIndex, node.endIndex)];
+	const percentLeaf = { type: "LeafNode", kind: "Token`Percent", value: "%", source: percentSource };
+	const nLeaf = { type: "LeafNode", kind: "Integer", value: text.slice(1), source: nSource };
+	return { type: "CompoundNode", op: "Out", children: [percentLeaf, nLeaf], source: nodeSource(node, ctx.lineIndex) };
+}
+
+// message_name: lhs :: tag — emit InfixNode(MessageName, [lhs, Token`ColonColon, LeafNode(String, tag)])
+// Note: token.immediate() in the grammar makes the tag text part of the node range but NOT a separate child.
+// We extract the tag text by slicing from the end of the "::" token to the end of the node.
+function adaptMessageName(node, ctx) {
+	const named = [], unnamed = [];
+	for (let i = 0; i < node.childCount; i++) {
+		const c = node.child(i);
+		(c.isNamed ? named : unnamed).push(c);
+	}
+	// named[0] = LHS expression; unnamed[0] = "::" token
+	const lhs = adaptNode(named[0], ctx);
+	const colonColonToken = unnamed[0]; // the "::" token
+	const colonColonLeaf = { type: "LeafNode", kind: "Token`ColonColon", value: "::", source: nodeSource(colonColonToken, ctx.lineIndex) };
+	// The tag name text sits between end of "::" and end of message_name node
+	const tagStart = colonColonToken.endIndex;
+	const tagEnd = node.endIndex;
+	const tagText = ctx.source.slice(tagStart, tagEnd);
+	const tagSource = [offsetToLineCol(ctx.lineIndex, tagStart), offsetToLineCol(ctx.lineIndex, tagEnd)];
+	const tagLeaf = { type: "LeafNode", kind: "String", value: tagText, source: tagSource };
+	return { type: "InfixNode", op: "MessageName", children: [lhs, colonColonLeaf, tagLeaf], source: nodeSource(node, ctx.lineIndex) };
+}
+
+// get: << expr — emit PrefixNode(Get, [Token`LessLess, expr])
+function adaptGet(node, ctx) {
+	const { named, tokens } = parts(node);
+	const opToken = tokens[0];
+	const opLeafNode = { type: "LeafNode", kind: "Token`LessLess", value: "<<", source: nodeSource(opToken, ctx.lineIndex) };
+	return { type: "PrefixNode", op: "Get", children: [opLeafNode, adaptNode(named[0], ctx)], source: nodeSource(node, ctx.lineIndex) };
+}
+
+// put: lhs >> rhs or lhs >>> rhs — emit BinaryNode(Put/PutAppend, [lhs, op, rhs])
+function adaptPut(node, ctx) {
+	const { named, tokens } = parts(node);
+	const opToken = tokens[0];
+	const opText = ctx.source.slice(opToken.startIndex, opToken.endIndex);
+	const op = opText === ">>>" ? "PutAppend" : "Put";
+	const kind = opText === ">>>" ? "Token`GreaterGreaterGreater" : "Token`GreaterGreater";
+	const opLeafNode = { type: "LeafNode", kind, value: opText, source: nodeSource(opToken, ctx.lineIndex) };
+	return {
+		type: "BinaryNode",
+		op,
+		children: [adaptNode(named[0], ctx), opLeafNode, adaptNode(named[1], ctx)],
+		source: nodeSource(node, ctx.lineIndex),
+	};
+}
+
+// tilde_infix: a ~ f ~ b — emit TernaryNode(TernaryTilde, [a, Token`Tilde, f, Token`Tilde, b])
+function adaptTildeInfix(node, ctx) {
+	const named = [], tildeTokens = [];
+	for (let i = 0; i < node.childCount; i++) {
+		const c = node.child(i);
+		if (c.isNamed) named.push(c);
+		else tildeTokens.push(c);
+	}
+	const tildeLeaf1 = { type: "LeafNode", kind: "Token`Tilde", value: "~", source: nodeSource(tildeTokens[0], ctx.lineIndex) };
+	const tildeLeaf2 = { type: "LeafNode", kind: "Token`Tilde", value: "~", source: nodeSource(tildeTokens[1], ctx.lineIndex) };
+	return {
+		type: "TernaryNode",
+		op: "TernaryTilde",
+		children: [adaptNode(named[0], ctx), tildeLeaf1, adaptNode(named[1], ctx), tildeLeaf2, adaptNode(named[2], ctx)],
+		source: nodeSource(node, ctx.lineIndex),
+	};
+}
+
+// span: ;; with optional LHS and RHS
+// Forms: a ;; b, a ;;, ;; b, ;; (bare)
+function adaptSpan(node, ctx) {
+	const named = [], semiSemiTokens = [];
+	for (let i = 0; i < node.childCount; i++) {
+		const c = node.child(i);
+		if (c.isNamed) named.push(c);
+		else if (ctx.source.slice(c.startIndex, c.endIndex) === ";;") semiSemiTokens.push(c);
+	}
+	const semiSemiToken = semiSemiTokens[0];
+	const semiSemiLeaf = { type: "LeafNode", kind: "Token`SemiSemi", value: ";;", source: nodeSource(semiSemiToken, ctx.lineIndex) };
+
+	// Determine LHS and RHS based on what's present
+	// We look at whether the ";;" comes after or before named children by comparing indices
+	let lhsNode = null, rhsNode = null;
+	if (named.length === 2) {
+		// a ;; b
+		lhsNode = named[0];
+		rhsNode = named[1];
+	} else if (named.length === 1) {
+		if (named[0].startIndex < semiSemiToken.startIndex) {
+			// a ;;
+			lhsNode = named[0];
+		} else {
+			// ;; b
+			rhsNode = named[0];
+		}
+	}
+	// else named.length === 0: bare ;;
+
+	const lhs = lhsNode
+		? adaptNode(lhsNode, ctx)
+		: { type: "LeafNode", kind: "Integer", value: "1", source: nodeSource(semiSemiToken, ctx.lineIndex) };
+	const rhs = rhsNode
+		? adaptNode(rhsNode, ctx)
+		: { type: "LeafNode", kind: "Symbol", value: "All", source: nodeSource(semiSemiToken, ctx.lineIndex) };
+	return {
+		type: "BinaryNode",
+		op: "Span",
+		children: [lhs, semiSemiLeaf, rhs],
+		source: nodeSource(node, ctx.lineIndex),
+	};
 }
 
 export { adaptNode, namedChildren, leaf };
