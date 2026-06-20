@@ -1,9 +1,9 @@
-import { makeLineIndex, nodeSource } from "./position.js";
+import { makeLineIndex, nodeSource, offsetToLineCol } from "./position.js";
 import { INFIX_OPS, BINARY_OPS, PREFIX_OPS, POSTFIX_OPS, opName } from "./operators.js";
 
 const LEAF_KIND = { symbol: "Symbol", integer: "Integer", real: "Real", string: "String", comment: "Token`Comment" };
 
-const GROUP_KIND = { "{": "List", "(": "Paren", "[": "Group", "<|": "Association" };
+const GROUP_KIND = { "{": "List", "(": "GroupParen", "[": "Group", "<|": "Association" };
 const GROUP_OPEN_LEAF = { "{": "Token`OpenCurly", "(": "Token`OpenParen", "[": "Token`OpenSquare", "<|": "Token`LessBar" };
 const GROUP_CLOSE_LEAF = { "}": "Token`CloseCurly", ")": "Token`CloseParen", "]": "Token`CloseSquare", "|>": "Token`BarGreater" };
 
@@ -11,12 +11,22 @@ export function adapt(tree, source) {
 	const lineIndex = makeLineIndex(source);
 	const ctx = { source, lineIndex };
 	const root = tree.rootNode;
+	if (subtreeHasError(root)) {
+		const src = nodeSource(root, lineIndex);
+		return { type: "ContainerNode", kind: "String", children: [{ type: "Unknown", kind: "SyntaxErrorNode[]", source: src }], source: src };
+	}
 	return {
 		type: "ContainerNode",
 		kind: "String",
 		children: namedChildren(root).map((c) => adaptNode(c, ctx)),
 		source: nodeSource(root, lineIndex),
 	};
+}
+
+function subtreeHasError(node) {
+	if (node.type === "ERROR" || node.isMissing) return true;
+	for (let i = 0; i < node.childCount; i++) if (subtreeHasError(node.child(i))) return true;
+	return false;
 }
 
 // tree-sitter named children, including comment extras, in source order.
@@ -44,10 +54,12 @@ function adaptNode(node, ctx) {
 		case "binary": return adaptBinary(node, ctx);
 		case "prefix": return adaptPrefix(node, ctx);
 		case "postfix": return adaptPostfix(node, ctx);
+		case "pattern": return adaptPattern(node, ctx);
+		case "blank": case "blank_sequence": case "blank_null_sequence":
+			return adaptBlank(node, ctx);
 		case "ERROR": case "MISSING":
 			return { type: "Unknown", kind: "SyntaxErrorNode[]", source: nodeSource(node, ctx.lineIndex) };
 		default:
-			// Filled in by later tasks (binary/prefix/postfix/span/pattern).
 			return { type: "Unknown", kind: "SyntaxErrorNode[]", source: nodeSource(node, ctx.lineIndex) };
 	}
 }
@@ -107,7 +119,20 @@ const TOKEN_KIND_NAME = {
 	"/@": "SlashAt", "//@": "SlashSlashAt", "?": "Question", ":": "Colon",
 	"!": "Bang", "!!": "BangBang", "++": "PlusPlus", "--": "MinusMinus",
 	"..": "DotDot", "...": "DotDotDot", "'": "SingleQuote", "=.": "EqualDot",
+	// comparison operators
+	">": "Greater", "<": "Less", ">=": "GreaterEqual", "<=": "LessEqual",
+	"==": "EqualEqual", "!=": "BangEqual", "===": "TripleEqual", "=!=": "EqualBangEqual",
+	// division
+	"/": "Slash",
+	// blank tokens
+	"_": "Under", "__": "UnderUnder", "___": "UnderUnderUnder",
 };
+
+const INEQUALITY_OPS = new Set(["<", "<=", ">", ">=", "==", "!=", "===", "=!="]);
+const RIGHT_ASSOC_BINARY = new Set(["=", ":=", "^=", "^:="]);
+
+const BLANK_OP = { "_": "Blank", "__": "BlankSequence", "___": "BlankNullSequence" };
+const PATTERN_OP = { "_": "PatternBlank", "__": "PatternBlankSequence", "___": "PatternBlankNullSequence" };
 function tokenKindName(literal) {
 	return TOKEN_KIND_NAME[literal] ?? "Operator";
 }
@@ -145,7 +170,8 @@ function flattenInfix(node, literal, ctx, out) {
 
 function adaptInfix(node, ctx) {
 	const literal = operatorLiteral(node, ctx);
-	const out = { type: "InfixNode", op: opName(INFIX_OPS, literal), children: [], source: nodeSource(node, ctx.lineIndex) };
+	const op = INEQUALITY_OPS.has(literal) ? "InfixInequality" : opName(INFIX_OPS, literal);
+	const out = { type: "InfixNode", op, children: [], source: nodeSource(node, ctx.lineIndex) };
 	flattenInfix(node, literal, ctx, out);
 	return out;
 }
@@ -173,12 +199,37 @@ function parts(node) {
 	return { named, tokens };
 }
 
+function collectBinaryChain(node, literal, ctx, operands, opTokens) {
+	if (node.type !== "binary") { operands.push(node); return; }
+	const { named, tokens } = parts(node);
+	const lit = ctx.source.slice(tokens[0].startIndex, tokens[0].endIndex);
+	if (lit !== literal) { operands.push(node); return; }
+	collectBinaryChain(named[0], literal, ctx, operands, opTokens);
+	opTokens.push(tokens[0]);
+	operands.push(named[1]);
+}
+
+function adaptBinaryRight(node, literal, op, ctx) {
+	const operands = [], opTokens = [];
+	collectBinaryChain(node, literal, ctx, operands, opTokens);
+	const last = operands[operands.length - 1];
+	let rhs = adaptNode(last, ctx);
+	for (let i = operands.length - 2; i >= 0; i--) {
+		const lhs = adaptNode(operands[i], ctx);
+		const src = [offsetToLineCol(ctx.lineIndex, operands[i].startIndex), offsetToLineCol(ctx.lineIndex, last.endIndex)];
+		rhs = { type: "BinaryNode", op, children: [lhs, opLeaf(opTokens[i], ctx), rhs], source: src };
+	}
+	return rhs;
+}
+
 function adaptBinary(node, ctx) {
 	const { named, tokens } = parts(node);
 	const literal = ctx.source.slice(tokens[0].startIndex, tokens[0].endIndex);
+	const op = opName(BINARY_OPS, literal);
+	if (RIGHT_ASSOC_BINARY.has(literal)) return adaptBinaryRight(node, literal, op, ctx);
 	return {
 		type: "BinaryNode",
-		op: opName(BINARY_OPS, literal),
+		op,
 		children: [adaptNode(named[0], ctx), opLeaf(tokens[0], ctx), adaptNode(named[1], ctx)],
 		source: nodeSource(node, ctx.lineIndex),
 	};
@@ -204,6 +255,38 @@ function adaptPostfix(node, ctx) {
 		children: [adaptNode(named[0], ctx), opLeaf(tokens[0], ctx)],
 		source: nodeSource(node, ctx.lineIndex),
 	};
+}
+
+// blank/blank_sequence/blank_null_sequence: "_", "__", "___" tokens, optionally followed by a head type.
+// Returns LeafNode(Token`Under) when no head, CompoundNode(Blank/BlankSeq/BlankNullSeq, [...]) when there is one.
+function adaptBlank(node, ctx) {
+	const underToken = node.child(0);
+	const underText = ctx.source.slice(underToken.startIndex, underToken.endIndex);
+	const underLeaf = { type: "LeafNode", kind: `Token\`${tokenKindName(underText)}`, value: underText, source: nodeSource(underToken, ctx.lineIndex) };
+	const headText = ctx.source.slice(underToken.endIndex, node.endIndex);
+	if (!headText) return underLeaf;
+	const headSource = [offsetToLineCol(ctx.lineIndex, underToken.endIndex), offsetToLineCol(ctx.lineIndex, node.endIndex)];
+	const headLeaf = { type: "LeafNode", kind: "Symbol", value: headText, source: headSource };
+	return { type: "CompoundNode", op: BLANK_OP[underText], children: [underLeaf, headLeaf], source: nodeSource(node, ctx.lineIndex) };
+}
+
+// pattern: symbol followed by blank/blank_sequence/blank_null_sequence.
+function adaptPattern(node, ctx) {
+	const nc = namedChildren(node);
+	const symLeaf = leaf(nc[0], ctx, "Symbol");
+	const blankNode = nc[1];
+	const underToken = blankNode.child(0);
+	const underText = ctx.source.slice(underToken.startIndex, underToken.endIndex);
+	const underLeaf = { type: "LeafNode", kind: `Token\`${tokenKindName(underText)}`, value: underText, source: nodeSource(underToken, ctx.lineIndex) };
+	const headText = ctx.source.slice(underToken.endIndex, blankNode.endIndex);
+	const patternOp = PATTERN_OP[underText];
+	if (!headText) {
+		return { type: "CompoundNode", op: patternOp, children: [symLeaf, underLeaf], source: nodeSource(node, ctx.lineIndex) };
+	}
+	const headSource = [offsetToLineCol(ctx.lineIndex, underToken.endIndex), offsetToLineCol(ctx.lineIndex, blankNode.endIndex)];
+	const headLeaf = { type: "LeafNode", kind: "Symbol", value: headText, source: headSource };
+	const blankCompound = { type: "CompoundNode", op: BLANK_OP[underText], children: [underLeaf, headLeaf], source: nodeSource(blankNode, ctx.lineIndex) };
+	return { type: "CompoundNode", op: patternOp, children: [symLeaf, blankCompound], source: nodeSource(node, ctx.lineIndex) };
 }
 
 export { adaptNode, namedChildren, leaf };
