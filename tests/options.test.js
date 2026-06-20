@@ -12,15 +12,11 @@ describe("Wolfram option normalization", () => {
 				wolfram: {
 					spaceAfterComma: false,
 					trailingNewline: true,
-					cstRequestTimeoutMs: 45000,
-					enginePath: "/opt/Wolfram",
 				},
 			}),
 		).toMatchObject({
 			wolframSpaceAfterComma: false,
 			wolframTrailingNewline: true,
-			wolframCSTRequestTimeoutMs: 45000,
-			wolframEnginePath: "/opt/Wolfram",
 		});
 	});
 

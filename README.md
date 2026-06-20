@@ -5,7 +5,7 @@
 <h1 align="center">@wrel/prettier-plugin-wolfram</h1>
 
 <p align="center">
-  <strong>Prettier 3 formatting for Wolfram Language, powered by Wolfram CodeParser.</strong>
+  <strong>Prettier 3 formatting for Wolfram Language, powered by tree-sitter.</strong>
 </p>
 
 <p align="center">
@@ -15,28 +15,23 @@
   <a href="#vs-code-extension">VS Code</a>
 </p>
 
-The plugin parses Wolfram Language through Wolfram `CodeParser` and prints the
-result with Prettier. It supports `.wl`, `.wls`, `.wlt`, `.mt`, and `.m` files.
-The normal runtime uses a shared local helper process so repeated CLI and VS
-Code formatting requests can reuse one warm Wolfram kernel. A native WSTP addon
-can be built manually, but it is optional.
+The plugin parses Wolfram Language through a bundled tree-sitter WebAssembly
+grammar and prints the result with Prettier. It supports `.wl`, `.wls`, `.wlt`,
+`.mt`, and `.m` files. No Wolfram Engine or local kernel installation is required.
 
 ## At A Glance
 
-| Need                | What this package provides                                                      |
-| ------------------- | ------------------------------------------------------------------------------- |
-| Prettier formatting | A Wolfram parser and printer for Prettier 3 projects.                           |
-| Editor support      | A bundled VS Code extension with document, range, and format-on-save workflows. |
-| Diagnostics         | Formatter-backed rule findings, line-width hints, and fixable style diffs.      |
-| Runtime reuse       | A shared local Wolfram kernel helper for faster repeated formatting requests.   |
+| Need                | What this package provides                                                       |
+| ------------------- | -------------------------------------------------------------------------------- |
+| Prettier formatting | A Wolfram parser and printer for Prettier 3 projects.                            |
+| Editor support      | A bundled VS Code extension with document, range, and format-on-save workflows.  |
+| Diagnostics         | Formatter-backed rule findings, line-width hints, and fixable style diffs.       |
+| Zero dependencies   | Parsing via a bundled tree-sitter WASM grammar; no Wolfram Engine required.      |
 
 ## Requirements
 
 - Node.js
 - Prettier 3.x
-- A local Wolfram Engine or Mathematica installation with `CodeParser`
-- `WolframKernel` discoverable automatically, or `wolfram.enginePath`
-  configured explicitly
 
 ## Install
 
@@ -134,12 +129,10 @@ Typical `.prettierrc` example:
 		"documentationCommentPadding": 2,
 		"topLevelSpacingMode": "declarations",
 		"preserveTildeInfixFunctions": "",
-		"cstRequestTimeoutMs": 180000,
 		"moduleVarsBreakThreshold": 40,
 		"conditionFirstFunctions": "If,Switch",
 		"blockStructureFunctions": "Module,With,Block,DynamicModule",
 		"caseStructureFunctions": "Which",
-		"enginePath": "",
 		"lintRules": "{}"
 	}
 }
@@ -165,12 +158,10 @@ this plugin.
 | `wolfram.documentationCommentPadding`                 | integer     | `2`                                 | Minimum spaces between code and an aligned trailing documentation comment when the column is computed automatically. |
 | `wolfram.topLevelSpacingMode`                         | string      | `"declarations"`                    | Top-level blank-line policy. Allowed values are `declarations`, `all`, and `none`. |
 | `wolfram.preserveTildeInfixFunctions`                 | string      | `""`                                | Comma-separated function names that stay in `x ~ f ~ y` form instead of normalizing to `f[x, y]`. |
-| `wolfram.cstRequestTimeoutMs`                         | integer     | `180000`                            | Milliseconds to wait for a WolframKernel CST parse request before the request is timed out and the kernel session can be restarted. Minimum effective value is `1000`. |
 | `wolfram.moduleVarsBreakThreshold`                    | integer     | `40`                                | Character count at which block-structure variable lists break across lines. |
 | `wolfram.conditionFirstFunctions`                     | string      | `"If,Switch"`                       | Comma-separated heads whose first argument stays on the same line as the head when it fits. |
 | `wolfram.blockStructureFunctions`                     | string      | `"Module,With,Block,DynamicModule"` | Comma-separated heads formatted with block-structure argument layout. |
 | `wolfram.caseStructureFunctions`                      | string      | `"Which"`                           | Comma-separated heads formatted with alternating condition/body indentation. |
-| `wolfram.enginePath`                                  | path string | `""`                                | Path to a Wolfram install directory, a `WolframKernel` executable, or a `wolframscript` executable. Empty means auto-detect. |
 | `wolfram.lintRules`                                   | string      | `"{}"`                              | JSON object string for rule-level overrides used by lint integrations, for example `{"prefer-rule-delayed":"error"}`. |
 
 ### Top-Level Spacing
@@ -245,54 +236,11 @@ Rule levels are `off`, `warn`, and `error`.
 | `no-shadowed-pattern`          | `error` | no   | Reports pattern variables that shadow local variables from `Module`, `With`, or `Block`. |
 | `no-unused-module-var`         | `warn`  | no   | Reports unused variables declared in `Module`, `With`, `Block`, or `DynamicModule`. |
 
-## Bridge Runtime
+## Parse Runtime
 
-No manual startup is required for normal usage. On the first parse request, the
-plugin auto-starts `scripts/kernel-server.js` and connects to it over a Unix
-domain socket on Linux/macOS or a named pipe on Windows. The helper owns one
-Wolfram kernel and serves active CLI and VS Code requests from the same local
-process. After the last connected client disconnects, the helper exits
-automatically so one-off formatting runs do not leave a background process.
-
-Kernel discovery checks explicit `wolfram.enginePath` configuration first,
-then common Wolfram install locations and `WolframKernel` available on `PATH`.
-You can also set `WOLFRAM_ENGINE_PATH` in the environment. In VS Code, the
-extension also uses `wolfram.systemKernel` when
-`wolframPrettier.wolframEnginePath` is empty.
-
-If VS Code or another Electron host cannot find a real Node.js executable, set
-`WOLFRAM_NODE_PATH` to the `node` executable before launching the host.
-
-To inspect startup and connection reuse from a repository checkout:
-
-```bash
-npm run debug:bridge
-```
-
-You can also start the helper directly:
-
-```bash
-node scripts/kernel-server.js
-```
-
-A successful manual start prints:
-
-```text
-KERNEL_READY
-```
-
-## Optional Native Addon Build
-
-The published package does not build the WSTP addon during `npm install`. If
-you want the native WSTP path in a repository checkout, build it manually:
-
-```bash
-npm run build:addon
-```
-
-When `wstp-addon/build/Release/wstp.node` exists, the helper tries that native
-backend first. If loading or startup fails, it falls back to the script-based
-kernel backend.
+The plugin uses a bundled tree-sitter WebAssembly grammar
+(`src/parser/tree-sitter-wolfram.wasm`) to parse Wolfram Language. No Wolfram
+Engine, Mathematica installation, or kernel process is required at runtime.
 
 ## VS Code Extension
 

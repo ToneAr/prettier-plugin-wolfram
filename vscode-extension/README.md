@@ -22,12 +22,12 @@ files, and reports formatter-backed diagnostics with Quick Fix actions.
 
 ## Highlights
 
-| Workflow             | What you get                                                                        |
-| -------------------- | ----------------------------------------------------------------------------------- |
-| Format Wolfram files | Document formatting, selection formatting, and format-on-save support.              |
-| Keep feedback close  | Formatter-backed diagnostics with Quick Fixes for ranges or whole files.            |
-| Share project config | Prettier and EditorConfig resolution from the current workspace file.               |
-| Work without setup   | Bundled Prettier and Wolfram plugin fallback when a workspace has no local install. |
+| Workflow             | What you get                                                                         |
+| -------------------- | ------------------------------------------------------------------------------------ |
+| Format Wolfram files | Document formatting, selection formatting, and format-on-save support.               |
+| Keep feedback close  | Formatter-backed diagnostics with Quick Fixes for ranges or whole files.             |
+| Share project config | Prettier and EditorConfig resolution from the current workspace file.                |
+| Work without setup   | Bundled Prettier and Wolfram plugin; no Wolfram Engine or kernel required at runtime.|
 
 ## Features
 
@@ -47,21 +47,16 @@ With...`, and format-on-save workflows.
   `.prettierrc.json5`.
 - Prefers workspace-installed `prettier` and
   `@wrel/prettier-plugin-wolfram`, then falls back to the bundled copies.
-- Reuses the plugin's shared Wolfram kernel helper across CLI and editor
-  requests.
+- Parsing uses a bundled tree-sitter WebAssembly grammar; no Wolfram kernel is
+  required at runtime.
 
 ## Requirements
 
 - VS Code 1.75 or newer
-- Node.js available on `PATH`
-- A local Wolfram Engine or Mathematica installation with `CodeParser`
-- `WolframKernel` discoverable automatically, or an explicit Wolfram engine path
 
-The extension bundles Prettier and the Wolfram Prettier plugin. Parsing still
-requires a local Wolfram runtime.
-
-If VS Code cannot find `node`, set `WOLFRAM_NODE_PATH` to a Node.js executable
-before launching VS Code.
+The extension bundles Prettier, the Wolfram Prettier plugin, and a tree-sitter
+WebAssembly grammar. No Wolfram Engine, Mathematica, or local kernel installation
+is required.
 
 ## Install
 
@@ -107,30 +102,13 @@ This extension contributes these VS Code settings:
 
 ```json
 {
-	"wolframPrettier.wolframEnginePath": "",
-	"wolframPrettier.diagnosticSeverity": "information",
-	"wolframPrettier.cstRequestTimeoutMs": 180000
+	"wolframPrettier.diagnosticSeverity": "information"
 }
 ```
 
-| Setting                               | Default         | Description                                                                                                                                                 |
-| ------------------------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `wolframPrettier.wolframEnginePath`   | `""`            | Path to a Wolfram install directory, a `WolframKernel` executable, or a `wolframscript` executable. Empty means auto-detect.                                |
-| `wolframPrettier.diagnosticSeverity`  | `"information"` | Severity used for formatter-backed diagnostics. Allowed values are `information`, `warning`, `hint`, and `error`.                                           |
-| `wolframPrettier.cstRequestTimeoutMs` | `180000`        | Milliseconds to wait for a WolframKernel CST parse request before timing out and allowing the kernel session to restart. Minimum effective value is `1000`. |
-
-Use `wolframPrettier.wolframEnginePath` for editor-only setup. If that setting
-is empty, the extension also honors `wolfram.systemKernel`. Use the Prettier
-option `wolfram.enginePath` when the same path should also apply to CLI
-formatting.
-
-After changing `wolframPrettier.wolframEnginePath` or `wolfram.systemKernel`,
-reload the VS Code window so the extension can restart with the updated
-environment.
-
-`wolframPrettier.cstRequestTimeoutMs` supplies the editor default for formatter
-requests. A `wolfram.cstRequestTimeoutMs` value in the resolved Prettier config
-takes precedence for that file.
+| Setting                              | Default         | Description                                                                                       |
+| ------------------------------------ | --------------- | ------------------------------------------------------------------------------------------------- |
+| `wolframPrettier.diagnosticSeverity` | `"information"` | Severity used for formatter-backed diagnostics. Allowed values are `information`, `warning`, `hint`, and `error`. |
 
 ## Prettier Configuration
 
@@ -162,12 +140,10 @@ Typical `.prettierrc` example:
 		"documentationCommentPadding": 2,
 		"topLevelSpacingMode": "declarations",
 		"preserveTildeInfixFunctions": "",
-		"cstRequestTimeoutMs": 180000,
 		"moduleVarsBreakThreshold": 40,
 		"conditionFirstFunctions": "If,Switch",
 		"blockStructureFunctions": "Module,With,Block,DynamicModule",
 		"caseStructureFunctions": "Which",
-		"enginePath": "",
 		"lintRules": "{}"
 	}
 }
@@ -194,12 +170,10 @@ related options for core Prettier behavior.
 | `wolfram.documentationCommentPadding`                 | integer     | `2`                                 | Minimum spaces between code and an aligned trailing documentation comment when the column is computed automatically.                                                                                                      |
 | `wolfram.topLevelSpacingMode`                         | string      | `"declarations"`                    | Top-level blank-line policy. Allowed values are `declarations`, `all`, and `none`.                                                                                                                                        |
 | `wolfram.preserveTildeInfixFunctions`                 | string      | `""`                                | Comma-separated function names that stay in `x ~ f ~ y` form instead of normalizing to `f[x, y]`.                                                                                                                         |
-| `wolfram.cstRequestTimeoutMs`                         | integer     | `180000`                            | Milliseconds to wait for a WolframKernel CST parse request before the request is timed out and the kernel session can be restarted. Minimum effective value is `1000`.                                                    |
 | `wolfram.moduleVarsBreakThreshold`                    | integer     | `40`                                | Character count at which block-structure variable lists break across lines.                                                                                                                                               |
 | `wolfram.conditionFirstFunctions`                     | string      | `"If,Switch"`                       | Comma-separated heads whose first argument stays on the same line as the head when it fits.                                                                                                                               |
 | `wolfram.blockStructureFunctions`                     | string      | `"Module,With,Block,DynamicModule"` | Comma-separated heads formatted with block-structure argument layout.                                                                                                                                                     |
 | `wolfram.caseStructureFunctions`                      | string      | `"Which"`                           | Comma-separated heads formatted with alternating condition/body indentation.                                                                                                                                              |
-| `wolfram.enginePath`                                  | path string | `""`                                | Path to a Wolfram install directory, a `WolframKernel` executable, or a `wolframscript` executable. Empty means auto-detect.                                                                                              |
 | `wolfram.lintRules`                                   | string      | `"{}"`                              | JSON object string for rule-level overrides used by lint integrations, for example `{"prefer-rule-delayed":"error"}`. The extension's diagnostic squiggle severity is controlled by `wolframPrettier.diagnosticSeverity`. |
 
 `wolfram.topLevelSpacingMode` has these values:
@@ -272,22 +246,13 @@ To format another custom extension, add a VS Code file association:
 
 ## Troubleshooting
 
-`WolframKernel not found`:
-Set `wolframPrettier.wolframEnginePath`, set `wolfram.enginePath` in Prettier
-config, set `wolfram.systemKernel`, set `WOLFRAM_ENGINE_PATH`, or make sure
-`WolframKernel` is available on `PATH`.
-
-`Node.js not found in PATH`:
-Install Node.js and make it available on `PATH`, or set `WOLFRAM_NODE_PATH` to
-the Node.js executable before starting VS Code.
-
 Formatting does not run:
 Make sure the file language mode is `Wolfram` and select this extension with
 `Format Document With...` if another formatter is installed.
 
 Diagnostics do not appear immediately:
-Diagnostics run after documents open, change, or save. Large files and cold
-Wolfram startup can delay the first result.
+Diagnostics run after documents open, change, or save. Large files may delay
+the first result.
 
 Config changes are not reflected:
 The extension disables Prettier's config cache for resolution, but VS Code may
