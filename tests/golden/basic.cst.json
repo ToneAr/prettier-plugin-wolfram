@@ -5,7 +5,7 @@
 		{
 			"type": "LeafNode",
 			"kind": "Token`Comment",
-			"value": "(* tests/wl/basic.wl Ã¢ÂÂ simple expressions for basic formatting *)",
+			"value": "(* tests/wl/basic.wl — simple expressions for basic formatting *)",
 			"source": [
 				[
 					1,

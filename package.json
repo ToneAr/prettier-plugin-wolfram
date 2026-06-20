@@ -22,16 +22,14 @@
 	},
 	"files": [
 		"bin/",
-		"scripts/find-wstp.js",
-		"scripts/kernel-server.js",
 		"src/",
+		"src/parser/tree-sitter-wolfram.wasm",
 		"README.md"
 	],
 	"peerDependencies": {
 		"prettier": "^3.0.0"
 	},
 	"dependencies": {
-		"node-addon-api": "^7.0.0",
 		"web-tree-sitter": "^0.25.0"
 	},
 	"devDependencies": {
@@ -41,7 +39,6 @@
 		"tree-sitter-cli": "^0.25.0"
 	},
 	"scripts": {
-		"build:addon": "node-gyp rebuild --directory wstp-addon",
 		"build:grammar": "node scripts/build-grammar.mjs",
 		"bump:version": "node scripts/bump-version.mjs",
 		"package:vscode": "node scripts/package-vscode-extension.mjs",
@@ -49,7 +46,6 @@
 		"publish:vscode:standalone": "node scripts/package-vscode-extension.mjs --publish",
 		"package:vscode:pre-release": "node scripts/package-vscode-extension.mjs --pre-release",
 		"publish:vscode:pre-release": "node scripts/package-vscode-extension.mjs --pre-release --publish",
-		"debug:bridge": "node scripts/debug-bridge.js",
 		"test": "vitest run",
 		"test:watch": "vitest"
 	},

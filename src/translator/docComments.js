@@ -1,5 +1,6 @@
 import { doc } from "prettier";
 import { normalizeWolframOptions } from "../options.js";
+import { sameLineCommentSeparator } from "./commentSpacing.js";
 
 export function joinDocsWithSpace(docs) {
 	const nonEmptyDocs = docs.filter(
@@ -10,6 +11,26 @@ export function joinDocsWithSpace(docs) {
 	const joined = [nonEmptyDocs[0]];
 	for (let i = 1; i < nonEmptyDocs.length; i++) {
 		joined.push(" ", nonEmptyDocs[i]);
+	}
+	return joined;
+}
+
+export function joinCommentDocs(comments, options) {
+	const nonEmptyComments = comments.filter(
+		(comment) => comment?.doc !== "" && comment?.doc != null,
+	);
+	if (nonEmptyComments.length === 0) return "";
+
+	const joined = [nonEmptyComments[0].doc];
+	for (let i = 1; i < nonEmptyComments.length; i++) {
+		joined.push(
+			sameLineCommentSeparator(
+				nonEmptyComments[i - 1].node,
+				nonEmptyComments[i].node,
+				options,
+			),
+			nonEmptyComments[i].doc,
+		);
 	}
 	return joined;
 }

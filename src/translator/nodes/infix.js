@@ -4,9 +4,10 @@ const { builders } = doc;
 import { isTrivia, isComment } from "./leaf.js";
 import {
 	documentationCommentColumn,
-	joinDocsWithSpace,
+	joinCommentDocs,
 	withAlignedTrailingComment,
 } from "../docComments.js";
+import { commentBoundarySeparator } from "../commentSpacing.js";
 import { wantsSpacesAroundOperator } from "../../utils/operatorSpacing.js";
 import {
 	hasImmediateComment,
@@ -15,7 +16,6 @@ import {
 import {
 	nodeEndLine,
 	nodeStartLine,
-	sourceLineGap,
 } from "../sourceLines.js";
 import { normalizeWolframOptions } from "../../options.js";
 const { group, indent, line, hardline, join, fill } = builders;
@@ -72,11 +72,7 @@ function isNewlineTrivia(node) {
 }
 
 function commentBoundary(leftNode, rightNode, options, fallback = line) {
-	if (!rightNode) return "";
-	const gap = sourceLineGap(leftNode, rightNode, options);
-	if (gap === 0) return " ";
-	if (gap > 0) return hardline;
-	return fallback;
+	return commentBoundarySeparator(leftNode, rightNode, options, fallback);
 }
 
 function hasCommentBoundary(leftNode, rightNode) {
@@ -148,7 +144,10 @@ export function printInfix(node, options, print) {
 						!commentLine ||
 						previousLine === commentLine)
 				) {
-					previousEntry.trailingCommentDocs.push(print(child));
+					previousEntry.trailingComments.push({
+						node: child,
+						doc: print(child),
+					});
 					previousEntry.endLine =
 						nodeEndLine(child, options) ?? previousEntry.endLine;
 					continue;
@@ -164,7 +163,7 @@ export function printInfix(node, options, print) {
 				node: child,
 				doc: print(child),
 				leadingComments,
-				trailingCommentDocs: [],
+				trailingComments: [],
 				hasSemicolon: false,
 				breakBefore:
 					entries.length > 0 &&
@@ -181,8 +180,9 @@ export function printInfix(node, options, print) {
 		}
 
 		for (const entry of entries) {
-			entry.trailingCommentDoc = joinDocsWithSpace(
-				entry.trailingCommentDocs,
+			entry.trailingCommentDoc = joinCommentDocs(
+				entry.trailingComments,
+				options,
 			);
 		}
 

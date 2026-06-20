@@ -5,7 +5,7 @@
 		{
 			"type": "LeafNode",
 			"kind": "Token`Comment",
-			"value": "(* tests/wl/rules.wl Ã¢ÂÂ pattern matching and rule definitions *)",
+			"value": "(* tests/wl/rules.wl — pattern matching and rule definitions *)",
 			"source": [
 				[
 					1,

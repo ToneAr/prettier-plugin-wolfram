@@ -5,7 +5,7 @@
 		{
 			"type": "LeafNode",
 			"kind": "Token`Comment",
-			"value": "(* tests/wl/conditions.wl Ã¢ÂÂ If/Switch/Which patterns *)",
+			"value": "(* tests/wl/conditions.wl — If/Switch/Which patterns *)",
 			"source": [
 				[
 					1,

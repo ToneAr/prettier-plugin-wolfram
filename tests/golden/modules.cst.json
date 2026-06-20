@@ -5,7 +5,7 @@
 		{
 			"type": "LeafNode",
 			"kind": "Token`Comment",
-			"value": "(* tests/wl/modules.wl Ã¢ÂÂ Module/With/Block scoping constructs *)",
+			"value": "(* tests/wl/modules.wl — Module/With/Block scoping constructs *)",
 			"source": [
 				[
 					1,
@@ -2739,7 +2739,7 @@
 		{
 			"type": "LeafNode",
 			"kind": "Token`Comment",
-			"value": "(* With Ã¢ÂÂ binds constants *)",
+			"value": "(* With — binds constants *)",
 			"source": [
 				[
 					7,
@@ -3331,7 +3331,7 @@
 		{
 			"type": "LeafNode",
 			"kind": "Token`Comment",
-			"value": "(* Block Ã¢ÂÂ dynamic binding *)",
+			"value": "(* Block — dynamic binding *)",
 			"source": [
 				[
 					9,
@@ -4620,7 +4620,7 @@
 		{
 			"type": "LeafNode",
 			"kind": "Token`Comment",
-			"value": "(* Many variables Ã¢ÂÂ should trigger break *)",
+			"value": "(* Many variables — should trigger break *)",
 			"source": [
 				[
 					13,
