@@ -77,13 +77,13 @@ npx prettier --plugin @wrel/prettier-plugin-wolfram --parser wolfram --range-sta
 ```
 
 Range formatting expands to the top-level Wolfram expressions touched by the
-range. This avoids formatting incomplete fragments that `CodeParser` cannot
+range. This avoids formatting incomplete fragments that the parser cannot
 parse on their own.
 
 ## Formatting Features
 
 - Formats Wolfram calls, lists, associations, prefix, postfix, infix, binary,
-  ternary, compound, and leaf nodes produced by `CodeParser`.
+  ternary, compound, and leaf nodes produced by the tree-sitter grammar.
 - Applies specialized layouts to configurable block-style forms such as
   `Module`, `With`, `Block`, and `DynamicModule`.
 - Applies condition-first layout to configurable forms such as `If` and
