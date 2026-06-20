@@ -13,9 +13,10 @@ export const BINARY_OPS = {
 	"=": "Set", ":=": "SetDelayed", "^=": "UpSet", "^:=": "UpSetDelayed",
 	"->": "Rule", ":>": "RuleDelayed", "<->": "TwoWayRule", "|->": "Function",
 	"/;": "Condition", "/.": "ReplaceAll", "//.": "ReplaceRepeated",
-	"/:": "TagSet", "//": "Postfix", "//=": "ApplyTo",
+	"/:": "TagSet", "//": "BinarySlashSlash", "//=": "ApplyTo",
 	"+=": "AddTo", "-=": "SubtractFrom", "*=": "TimesBy", "/=": "DivideBy",
-	"^": "Power", "@": "Prefix", "@@": "Apply", "@@@": "Apply",
+	"/": "Divide",
+	"^": "Power", "@": "BinaryAt", "@@": "Apply", "@@@": "Apply",
 	"/@": "Map", "//@": "MapAll", "?": "PatternTest", ":": "Pattern",
 };
 export const PREFIX_OPS = {

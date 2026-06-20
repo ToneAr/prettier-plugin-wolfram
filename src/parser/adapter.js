@@ -15,16 +15,128 @@ export function adapt(tree, source) {
 		const src = nodeSource(root, lineIndex);
 		return { type: "ContainerNode", kind: "String", children: [{ type: "Unknown", kind: "SyntaxErrorNode[]", source: src }], source: src };
 	}
+	// Hoist top-level semicolon chains that end with a trailing ";" (MISSING rhs) into separate
+	// ContainerNode children, matching the CodeParser output structure.
+	// Only hoist if the outer infix has a trailing MISSING (i.e. ends with ";").
+	const children = [];
+	for (const c of namedChildren(root)) {
+		if (c.type === "infix" && operatorLiteral(c, ctx) === ";" && hasTrailingSemicolon(c)) {
+			hoistSemicolonChildren(c, ctx, children);
+		} else {
+			children.push(adaptNode(c, ctx));
+		}
+	}
 	return {
 		type: "ContainerNode",
 		kind: "String",
-		children: namedChildren(root).map((c) => adaptNode(c, ctx)),
+		children,
 		source: nodeSource(root, lineIndex),
 	};
 }
 
+// Returns true if the infix node ends with a MISSING node (i.e. has a trailing ";").
+function hasTrailingSemicolon(node) {
+	const last = node.child(node.childCount - 1);
+	return last !== null && last.isMissing;
+}
+
+// Collect all leaf statements from a semicolon infix chain (possibly left-recursive),
+// flattening the left-associative structure into a linear list of segments.
+// Each segment is { nodes: TSNode[], semiToken: TSNode|null } where semiToken is the ";" that follows.
+function collectSemicolonSegments(node, ctx, segments) {
+	// A semicolon infix has children: [lhs, ";", rhs] or with comments interspersed.
+	// The lhs may itself be a semicolon infix (left-assoc chaining).
+	let lhs = null, semiToken = null, rhs = null;
+	const pendingComments = [];
+
+	for (let i = 0; i < node.childCount; i++) {
+		const c = node.child(i);
+		if (!c.isNamed) {
+			// ";" operator token
+			semiToken = c;
+		} else if (c.isMissing) {
+			// trailing implicit null — rhs is nothing (trailing semicolon)
+		} else if (c.type === "comment") {
+			pendingComments.push(c);
+		} else if (lhs === null) {
+			lhs = c;
+		} else {
+			rhs = c;
+		}
+	}
+
+	if (lhs !== null && lhs.type === "infix" && operatorLiteral(lhs, ctx) === ";") {
+		// Flatten the left subtree
+		collectSemicolonSegments(lhs, ctx, segments);
+		// The last segment from lhs should get the semiToken we found
+		if (segments.length > 0 && semiToken !== null) {
+			segments[segments.length - 1].semiToken = semiToken;
+		}
+		// Add any comments from between lhs and rhs to the last segment's pending
+		for (const c of pendingComments) {
+			if (segments.length > 0) segments[segments.length - 1].trailingComments.push(c);
+		}
+	} else {
+		// Push lhs as a new segment
+		const nodes = [];
+		if (lhs !== null) nodes.push(lhs);
+		segments.push({ nodes, semiToken, trailingComments: [] });
+		for (const c of pendingComments) segments[segments.length - 1].trailingComments.push(c);
+	}
+
+	// Push rhs as the next segment (no semiToken yet — will be set by caller if needed)
+	if (rhs !== null) {
+		segments.push({ nodes: [rhs], semiToken: null, trailingComments: [] });
+	}
+}
+
+// Hoist top-level semicolon-separated statements into separate ContainerNode children.
+// For `a; b; c;`, produces [CompoundExpr(a;Null), CompoundExpr(b;Null), CompoundExpr(c;Null)].
+// For `a; b`, produces [CompoundExpr(a;Null), b].
+function hoistSemicolonChildren(node, ctx, out) {
+	const segments = [];
+	collectSemicolonSegments(node, ctx, segments);
+
+	for (const seg of segments) {
+		if (seg.nodes.length === 0) continue;
+
+		const adaptedNodes = seg.nodes.map(n => adaptNode(n, ctx));
+		const src = nodeSource(seg.nodes[0], ctx.lineIndex);
+
+		if (seg.semiToken !== null) {
+			// This statement had a trailing ";" — wrap in CompoundExpression
+			const semiLeaf = { type: "LeafNode", kind: "Token`Semi", value: ";", source: nodeSource(seg.semiToken, ctx.lineIndex) };
+			const implicitNullLeaf = { type: "LeafNode", kind: "Token`Fake`ImplicitNull", value: "", source: nodeSource(seg.semiToken, ctx.lineIndex) };
+			const trailingCommentLeaves = seg.trailingComments.map(c => leaf(c, ctx));
+			out.push({ type: "InfixNode", op: "CompoundExpression", children: [...adaptedNodes, semiLeaf, ...trailingCommentLeaves, implicitNullLeaf], source: src });
+		} else {
+			// No trailing semicolon — emit the node directly
+			out.push(...adaptedNodes);
+		}
+	}
+}
+
+// A MISSING node that is the last child of a ";" infix represents trailing-semicolon implicit null —
+// a valid Wolfram Language construct. Allow it rather than treating it as a parse error.
+// Note: web-tree-sitter returns new JS wrappers each time, so use .id for identity comparison.
+function isTrailingSemicolonImplicitNull(node) {
+	if (!node.isMissing) return false;
+	const parent = node.parent;
+	if (!parent || parent.type !== "infix") return false;
+	// The last child must be this MISSING node (compare by id)
+	const lastIdx = parent.childCount - 1;
+	if (parent.child(lastIdx).id !== node.id) return false;
+	// Find the last unnamed child (the operator) and check it's ";"
+	for (let i = lastIdx - 1; i >= 0; i--) {
+		const c = parent.child(i);
+		if (!c.isNamed) return c.type === ";";
+	}
+	return false;
+}
+
 function subtreeHasError(node) {
-	if (node.type === "ERROR" || node.isMissing) return true;
+	if (node.type === "ERROR") return true;
+	if (node.isMissing && !isTrailingSemicolonImplicitNull(node)) return true;
 	for (let i = 0; i < node.childCount; i++) if (subtreeHasError(node.child(i))) return true;
 	return false;
 }
@@ -65,9 +177,11 @@ function adaptNode(node, ctx) {
 		case "put": return adaptPut(node, ctx);
 		case "tilde_infix": return adaptTildeInfix(node, ctx);
 		case "span": return adaptSpan(node, ctx);
-		case "ERROR": case "MISSING":
+		case "ERROR":
 			return { type: "Unknown", kind: "SyntaxErrorNode[]", source: nodeSource(node, ctx.lineIndex) };
 		default:
+			// MISSING nodes that passed subtreeHasError (i.e. trailing semicolon implicit null)
+			if (node.isMissing) return { type: "LeafNode", kind: "Token`Fake`ImplicitNull", value: "", source: nodeSource(node, ctx.lineIndex) };
 			return { type: "Unknown", kind: "SyntaxErrorNode[]", source: nodeSource(node, ctx.lineIndex) };
 	}
 }
@@ -78,7 +192,15 @@ function adaptGroup(node, ctx) {
 	const close = node.child(node.childCount - 1);
 	const closeText = ctx.source.slice(close.startIndex, close.endIndex);
 	const children = [delimLeaf(open, GROUP_OPEN_LEAF[openText], openText, ctx)];
-	for (const c of namedChildren(node)) children.push(adaptArguments(c, ctx));
+	// Collect all named children in source order, injecting whitespace trivia between them.
+	let lastIdx = open.endIndex;
+	for (const c of namedChildren(node)) {
+		for (const t of triviaLeaves(lastIdx, c.startIndex, ctx)) children.push(t);
+		if (c.type === "comment") children.push(leaf(c, ctx));
+		else children.push(adaptArguments(c, ctx));
+		lastIdx = c.endIndex;
+	}
+	for (const t of triviaLeaves(lastIdx, close.startIndex, ctx)) children.push(t);
 	children.push(delimLeaf(close, GROUP_CLOSE_LEAF[closeText], closeText, ctx));
 	return { type: "GroupNode", kind: GROUP_KIND[openText], children, source: nodeSource(node, ctx.lineIndex) };
 }
@@ -89,7 +211,31 @@ function adaptCall(node, ctx, openKind, openText, closeKind, closeText) {
 	const open = firstAnon(node, openText, ctx);
 	const close = firstAnon(node, closeText, ctx);
 	const children = [delimLeaf(open, openKind, openText, ctx)];
-	if (argsNode) children.push(adaptArguments(argsNode, ctx));
+	const openEnd = open.endIndex;
+	const closeStart = close.startIndex;
+	let lastIdx = openEnd;
+	if (argsNode) {
+		// Collect all named non-head children between delimiters (args + any comment extras)
+		for (const c of namedChildren(node)) {
+			if (c === headNode) continue;
+			if (c.startIndex < openEnd || c.endIndex > closeStart) continue;
+			for (const t of triviaLeaves(lastIdx, c.startIndex, ctx)) children.push(t);
+			if (c.type === "comment") children.push(leaf(c, ctx));
+			else children.push(adaptArguments(c, ctx));
+			lastIdx = c.endIndex;
+		}
+	} else {
+		// No arguments field: only comments (or truly empty) between delimiters
+		for (const c of namedChildren(node)) {
+			if (c === headNode) continue;
+			if (c.type === "comment" && c.startIndex >= openEnd && c.endIndex <= closeStart) {
+				for (const t of triviaLeaves(lastIdx, c.startIndex, ctx)) children.push(t);
+				children.push(leaf(c, ctx));
+				lastIdx = c.endIndex;
+			}
+		}
+	}
+	for (const t of triviaLeaves(lastIdx, closeStart, ctx)) children.push(t);
 	children.push(delimLeaf(close, closeKind, closeText, ctx));
 	return { type: "CallNode", head: adaptNode(headNode, ctx), children, source: nodeSource(node, ctx.lineIndex) };
 }
@@ -143,6 +289,42 @@ function delimLeaf(node, kind, value, ctx) {
 	return { type: "LeafNode", kind, value, source: nodeSource(node, ctx.lineIndex) };
 }
 
+// Produce trivia (whitespace/newline) LeafNodes for the gap between two character offsets.
+// Splits on newlines: each run of spaces produces Token`Whitespace, each "\n" produces Token`Newline.
+function triviaLeaves(fromIdx, toIdx, ctx) {
+	if (fromIdx >= toIdx) return [];
+	const gap = ctx.source.slice(fromIdx, toIdx);
+	if (!/[\s]/.test(gap)) return [];
+	const leaves = [];
+	let i = 0;
+	while (i < gap.length) {
+		const ch = gap[i];
+		if (ch === "\n") {
+			const endChar = fromIdx + i + 1;
+			const src = [offsetToLineCol(ctx.lineIndex, fromIdx + i), offsetToLineCol(ctx.lineIndex, endChar)];
+			leaves.push({ type: "LeafNode", kind: "Token`Newline", value: "\n", source: src });
+			i++;
+		} else if (ch === "\r") {
+			const nl = gap[i + 1] === "\n" ? "\r\n" : "\r";
+			const endChar = fromIdx + i + nl.length;
+			const src = [offsetToLineCol(ctx.lineIndex, fromIdx + i), offsetToLineCol(ctx.lineIndex, endChar)];
+			leaves.push({ type: "LeafNode", kind: "Token`Newline", value: nl, source: src });
+			i += nl.length;
+		} else {
+			// Collect run of whitespace (non-newline)
+			let j = i;
+			while (j < gap.length && gap[j] !== "\n" && gap[j] !== "\r") j++;
+			const ws = gap.slice(i, j);
+			const startChar = fromIdx + i;
+			const endChar = fromIdx + j;
+			const src = [offsetToLineCol(ctx.lineIndex, startChar), offsetToLineCol(ctx.lineIndex, endChar)];
+			leaves.push({ type: "LeafNode", kind: "Token`Whitespace", value: ws, source: src });
+			i = j;
+		}
+	}
+	return leaves;
+}
+
 // Return the first unnamed child's text — this is the operator literal for an infix node.
 function operatorLiteral(node, ctx) {
 	for (let i = 0; i < node.childCount; i++) {
@@ -174,6 +356,8 @@ const TOKEN_KIND_NAME = {
 	// tier-1 gap constructs
 	"::": "ColonColon", "<<": "LessLess", ">>": "GreaterGreater", ">>>": "GreaterGreaterGreater",
 	"~": "Tilde", ";;": "SemiSemi",
+	// string operators
+	"<>": "LessGreater", "~~": "TildeEqual",
 };
 
 const INEQUALITY_OPS = new Set(["<", "<=", ">", ">=", "==", "!=", "===", "=!="]);
@@ -187,33 +371,36 @@ function tokenKindName(literal) {
 
 // Recursively collapse a left-assoc chain of the same infix operator into a flat children array.
 // Appends to out.children: [operand, opLeaf, ..., operand, opLeaf, operand]
+// Comments (tree-sitter extras) are threaded through in source order.
+// Whitespace/newlines between children are injected as trivia nodes.
+// Returns the endIndex of the last tree-sitter node processed (for trivia tracking).
 function flattenInfix(node, literal, ctx, out) {
-	const named = [];
-	const anonsBetween = []; // anonymous tokens between each pair of named children
-	let seenNamed = 0;
+	let lastEndIndex = node.startIndex; // track end of last emitted node for trivia
+	let operandCount = 0;
 	for (let i = 0; i < node.childCount; i++) {
 		const c = node.child(i);
-		if (c.isNamed) {
-			seenNamed++;
-			named.push(c);
-			if (seenNamed < node.childCount) anonsBetween.push([]);
+		// Inject trivia for the gap before this child
+		for (const t of triviaLeaves(lastEndIndex, c.startIndex, ctx)) out.children.push(t);
+		if (!c.isNamed) {
+			// Operator token
+			const text = ctx.source.slice(c.startIndex, c.endIndex);
+			out.children.push({ type: "LeafNode", kind: `Token\`${tokenKindName(text)}`, value: text, source: nodeSource(c, ctx.lineIndex) });
+			lastEndIndex = c.endIndex;
+		} else if (c.type === "comment") {
+			out.children.push(leaf(c, ctx));
+			lastEndIndex = c.endIndex;
 		} else {
-			if (anonsBetween.length > 0) anonsBetween[anonsBetween.length - 1].push(c);
+			// Operand: if it's the first and is a same-op infix, flatten recursively
+			if (operandCount === 0 && c.type === "infix" && operatorLiteral(c, ctx) === literal) {
+				flattenInfix(c, literal, ctx, out);
+				lastEndIndex = c.endIndex; // sub-infix ends at its endIndex
+			} else {
+				out.children.push(adaptNode(c, ctx));
+				lastEndIndex = c.endIndex;
+			}
+			operandCount++;
 		}
 	}
-	// named[0] is LHS, named[named.length-1] is RHS; anonsBetween[i] are tokens between named[i] and named[i+1]
-	const lhs = named[0];
-	if (lhs.type === "infix" && operatorLiteral(lhs, ctx) === literal) {
-		flattenInfix(lhs, literal, ctx, out);
-	} else {
-		out.children.push(adaptNode(lhs, ctx));
-	}
-	// Emit the anonymous tokens (operator) between LHS and RHS, then RHS
-	for (const t of anonsBetween[0] ?? []) {
-		const text = ctx.source.slice(t.startIndex, t.endIndex);
-		out.children.push({ type: "LeafNode", kind: `Token\`${tokenKindName(text)}`, value: text, source: nodeSource(t, ctx.lineIndex) });
-	}
-	out.children.push(adaptNode(named[named.length - 1], ctx));
 }
 
 function adaptInfix(node, ctx) {
@@ -237,14 +424,38 @@ function opLeaf(tokenNode, ctx) {
 	return { type: "LeafNode", kind: `Token\`${tokenKindName(v)}`, value: v, source: nodeSource(tokenNode, ctx.lineIndex) };
 }
 
-// Separate a node's children into named (operands) and unnamed (operator tokens).
+// Separate a node's children into non-comment named operands and unnamed operator tokens,
+// preserving source order. Also returns all children in source order for ordering-aware callers.
 function parts(node) {
-	const named = [], tokens = [];
+	const named = [], tokens = [], comments_ = [];
 	for (let i = 0; i < node.childCount; i++) {
 		const c = node.child(i);
-		(c.isNamed ? named : tokens).push(c);
+		if (!c.isNamed) tokens.push(c);
+		else if (c.type === "comment") comments_.push(c);
+		else named.push(c);
 	}
-	return { named, tokens };
+	return { named, tokens, comments: comments_ };
+}
+
+// Collect all children of a node in source order as adapted CST nodes.
+// Named non-comment children are adapted via adaptNode; comments become LeafNode(Token`Comment);
+// unnamed tokens become operator LeafNodes. Whitespace between nodes is injected as trivia.
+function adaptChildrenInOrder(node, ctx) {
+	const out = [];
+	let lastEndIndex = node.startIndex;
+	for (let i = 0; i < node.childCount; i++) {
+		const c = node.child(i);
+		for (const t of triviaLeaves(lastEndIndex, c.startIndex, ctx)) out.push(t);
+		if (!c.isNamed) {
+			out.push(opLeaf(c, ctx));
+		} else if (c.type === "comment") {
+			out.push(leaf(c, ctx));
+		} else {
+			out.push(adaptNode(c, ctx));
+		}
+		lastEndIndex = c.endIndex;
+	}
+	return out;
 }
 
 function collectBinaryChain(node, literal, ctx, operands, opTokens) {
@@ -263,46 +474,46 @@ function adaptBinaryRight(node, literal, op, ctx) {
 	const last = operands[operands.length - 1];
 	let rhs = adaptNode(last, ctx);
 	for (let i = operands.length - 2; i >= 0; i--) {
-		const lhs = adaptNode(operands[i], ctx);
-		const src = [offsetToLineCol(ctx.lineIndex, operands[i].startIndex), offsetToLineCol(ctx.lineIndex, last.endIndex)];
-		rhs = { type: "BinaryNode", op, children: [lhs, opLeaf(opTokens[i], ctx), rhs], source: src };
+		const lhsNode = operands[i];
+		const opToken = opTokens[i];
+		const lhs = adaptNode(lhsNode, ctx);
+		const src = [offsetToLineCol(ctx.lineIndex, lhsNode.startIndex), offsetToLineCol(ctx.lineIndex, last.endIndex)];
+		// Inject whitespace between lhs and operator, and between operator and rhs
+		const children = [lhs,
+			...triviaLeaves(lhsNode.endIndex, opToken.startIndex, ctx),
+			opLeaf(opToken, ctx),
+			...triviaLeaves(opToken.endIndex, operands[i + 1].startIndex, ctx),
+			rhs,
+		];
+		rhs = { type: "BinaryNode", op, children, source: src };
 	}
 	return rhs;
 }
 
 function adaptBinary(node, ctx) {
-	const { named, tokens } = parts(node);
+	const { tokens } = parts(node);
 	const literal = ctx.source.slice(tokens[0].startIndex, tokens[0].endIndex);
 	const op = opName(BINARY_OPS, literal);
 	if (RIGHT_ASSOC_BINARY.has(literal)) return adaptBinaryRight(node, literal, op, ctx);
-	return {
-		type: "BinaryNode",
-		op,
-		children: [adaptNode(named[0], ctx), opLeaf(tokens[0], ctx), adaptNode(named[1], ctx)],
-		source: nodeSource(node, ctx.lineIndex),
-	};
+	// Iterate children in source order so comments between operands are preserved
+	const children = adaptChildrenInOrder(node, ctx);
+	return { type: "BinaryNode", op, children, source: nodeSource(node, ctx.lineIndex) };
 }
 
 function adaptPrefix(node, ctx) {
-	const { named, tokens } = parts(node);
+	const { tokens } = parts(node);
 	const literal = ctx.source.slice(tokens[0].startIndex, tokens[0].endIndex);
-	return {
-		type: "PrefixNode",
-		op: opName(PREFIX_OPS, literal),
-		children: [opLeaf(tokens[0], ctx), adaptNode(named[0], ctx)],
-		source: nodeSource(node, ctx.lineIndex),
-	};
+	// Iterate in source order to preserve any comments between operator and operand
+	const children = adaptChildrenInOrder(node, ctx);
+	return { type: "PrefixNode", op: opName(PREFIX_OPS, literal), children, source: nodeSource(node, ctx.lineIndex) };
 }
 
 function adaptPostfix(node, ctx) {
-	const { named, tokens } = parts(node);
+	const { tokens } = parts(node);
 	const literal = ctx.source.slice(tokens[0].startIndex, tokens[0].endIndex);
-	return {
-		type: "PostfixNode",
-		op: opName(POSTFIX_OPS, literal),
-		children: [adaptNode(named[0], ctx), opLeaf(tokens[0], ctx)],
-		source: nodeSource(node, ctx.lineIndex),
-	};
+	// Iterate in source order to preserve any comments between operand and operator
+	const children = adaptChildrenInOrder(node, ctx);
+	return { type: "PostfixNode", op: opName(POSTFIX_OPS, literal), children, source: nodeSource(node, ctx.lineIndex) };
 }
 
 // blank/blank_sequence/blank_null_sequence: "_", "__", "___" tokens, optionally followed by a head type.
@@ -423,21 +634,10 @@ function adaptPut(node, ctx) {
 }
 
 // tilde_infix: a ~ f ~ b — emit TernaryNode(TernaryTilde, [a, Token`Tilde, f, Token`Tilde, b])
+// Comments between operands and tilde tokens are preserved in source order.
 function adaptTildeInfix(node, ctx) {
-	const named = [], tildeTokens = [];
-	for (let i = 0; i < node.childCount; i++) {
-		const c = node.child(i);
-		if (c.isNamed) named.push(c);
-		else tildeTokens.push(c);
-	}
-	const tildeLeaf1 = { type: "LeafNode", kind: "Token`Tilde", value: "~", source: nodeSource(tildeTokens[0], ctx.lineIndex) };
-	const tildeLeaf2 = { type: "LeafNode", kind: "Token`Tilde", value: "~", source: nodeSource(tildeTokens[1], ctx.lineIndex) };
-	return {
-		type: "TernaryNode",
-		op: "TernaryTilde",
-		children: [adaptNode(named[0], ctx), tildeLeaf1, adaptNode(named[1], ctx), tildeLeaf2, adaptNode(named[2], ctx)],
-		source: nodeSource(node, ctx.lineIndex),
-	};
+	const children = adaptChildrenInOrder(node, ctx);
+	return { type: "TernaryNode", op: "TernaryTilde", children, source: nodeSource(node, ctx.lineIndex) };
 }
 
 // span: ;; with optional LHS and RHS
