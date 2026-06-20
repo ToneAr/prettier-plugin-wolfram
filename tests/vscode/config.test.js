@@ -45,7 +45,7 @@ describe("VS Code config helpers", () => {
 			mergeConfiguredPlugins(
 				{
 					plugins: [
-						"@wrel/prettier-plugin-wolfram",
+						"prettier-plugin-wolfram",
 						configuredPlugin,
 						"prettier-plugin-wolfram",
 					],

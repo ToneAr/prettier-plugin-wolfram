@@ -47,7 +47,7 @@ describe("direct dependency resolution", () => {
 				"package.json",
 			),
 			JSON.stringify({
-				name: "@wrel/prettier-plugin-wolfram",
+				name: "prettier-plugin-wolfram",
 				main: "src/index.js",
 			}),
 		);
@@ -64,10 +64,7 @@ describe("direct dependency resolution", () => {
 		);
 
 		expect(
-			resolveDirectDependency(
-				"@wrel/prettier-plugin-wolfram",
-				workspaceRoot,
-			),
+			resolveDirectDependency("prettier-plugin-wolfram", workspaceRoot),
 		).toBe(
 			path.join(
 				workspaceRoot,
@@ -82,10 +79,7 @@ describe("direct dependency resolution", () => {
 		rmSync(workspaceRoot, { recursive: true, force: true });
 		mkdirSync(workspaceRoot, { recursive: true });
 		expect(
-			resolveDirectDependency(
-				"@wrel/prettier-plugin-wolfram",
-				workspaceRoot,
-			),
+			resolveDirectDependency("prettier-plugin-wolfram", workspaceRoot),
 		).toBeNull();
 	});
 });

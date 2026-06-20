@@ -1,11 +1,11 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/ToneAr/prettier-plugin-wolfram/main/vscode-extension/assets/icon.png" width="96" height="96" alt="Prettier Wolfram VS Code extension logo">
+  <img src="https://raw.githubusercontent.com/ToneAr/prettier-plugin-wolfram/main/vscode-extension/assets/icon.png" width="96" height="96" alt="Wolfram Prettier Plugin extension logo">
 </p>
 
-<h1 align="center">Prettier - Code Formatter<br><sub>Wolfram Language for VS Code</sub></h1>
+<h1 align="center">Wolfram Prettier Plugin for VS Code</h1>
 
 <p align="center">
-  <strong>Format Wolfram Language files in VS Code with Prettier and <code>@wrel/prettier-plugin-wolfram</code>.</strong>
+  <strong>Format Wolfram Language files in VS Code, powered by Prettier and <code>prettier-plugin-wolfram</code>.</strong>
 </p>
 
 <p align="center">
@@ -46,7 +46,7 @@ With...`, and format-on-save workflows.
   Prettier options in `.prettierrc`, `.prettierrc.json`, and
   `.prettierrc.json5`.
 - Prefers workspace-installed `prettier` and
-  `@wrel/prettier-plugin-wolfram`, then falls back to the bundled copies.
+  `prettier-plugin-wolfram`, then falls back to the bundled copies.
 - Parsing uses a bundled tree-sitter WebAssembly grammar; no Wolfram kernel is
   required at runtime.
 
@@ -63,7 +63,7 @@ is required.
 Install from the VS Code Extensions view by searching for:
 
 ```text
-Prettier - Code formatter (Wolfram Language)
+Wolfram Prettier Plugin
 ```
 
 For manual installation, install a packaged `.vsix`:
@@ -125,7 +125,7 @@ Typical `.prettierrc` example:
 
 ```json
 {
-	"plugins": ["@wrel/prettier-plugin-wolfram"],
+	"plugins": ["prettier-plugin-wolfram"],
 	"printWidth": 80,
 	"tabWidth": 2,
 	"wolfram": {
@@ -214,8 +214,8 @@ For each file, the extension resolves formatter dependencies in this order:
 
 1. A direct workspace dependency on `prettier`, otherwise bundled Prettier.
 2. A plugin checkout when the workspace package is
-   `@wrel/prettier-plugin-wolfram` or `prettier-plugin-wolfram`.
-3. A direct workspace dependency on `@wrel/prettier-plugin-wolfram` or
+   `prettier-plugin-wolfram` or `prettier-plugin-wolfram`.
+3. A direct workspace dependency on `prettier-plugin-wolfram` or
    `prettier-plugin-wolfram`.
 4. The bundled Wolfram plugin.
 

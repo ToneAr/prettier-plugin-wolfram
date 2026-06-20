@@ -2,7 +2,7 @@
 	"$schema": "http://json-schema.org/draft-07/schema#",
 	"$id": "https://wrel.dev/schemas/prettier-plugin-wolfram/prettierrc.schema.json",
 	"title": "Wolfram Prettier Options",
-	"description": "Wolfram Language options recognized by @wrel/prettier-plugin-wolfram.",
+	"description": "Wolfram Language options recognized by prettier-plugin-wolfram.",
 	"type": "object",
 	"additionalProperties": true,
 	"properties": {

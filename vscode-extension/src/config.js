@@ -1,7 +1,7 @@
 "use strict";
 
 const WOLFRAM_PLUGIN_PACKAGE_NAMES = new Set([
-	"@wrel/prettier-plugin-wolfram",
+	"prettier-plugin-wolfram",
 	"prettier-plugin-wolfram",
 ]);
 

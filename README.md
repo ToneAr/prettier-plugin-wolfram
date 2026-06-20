@@ -1,11 +1,11 @@
 <p align="center">
-  <img src="vscode-extension/assets/icon.png" width="96" height="96" alt="@wrel/prettier-plugin-wolfram logo">
+  <img src="vscode-extension/assets/icon.png" width="96" height="96" alt="prettier-plugin-wolfram logo">
 </p>
 
-<h1 align="center">@wrel/prettier-plugin-wolfram</h1>
+<h1 align="center">Wolfram Prettier Plugin — prettier-plugin-wolfram</h1>
 
 <p align="center">
-  <strong>Prettier 3 formatting for Wolfram Language, powered by tree-sitter.</strong>
+  <strong>Prettier formatting for Wolfram Language, powered by tree-sitter.</strong>
 </p>
 
 <p align="center">
@@ -18,6 +18,8 @@
 The plugin parses Wolfram Language through a bundled tree-sitter WebAssembly
 grammar and prints the result with Prettier. It supports `.wl`, `.wls`, `.wlt`,
 `.mt`, and `.m` files. No Wolfram Engine or local kernel installation is required.
+
+Not affiliated with the original prettier extension.
 
 ## At A Glance
 
@@ -39,14 +41,14 @@ Install Prettier and the plugin in the project that contains your Wolfram
 source:
 
 ```bash
-npm install --save-dev prettier @wrel/prettier-plugin-wolfram
+npm install --save-dev prettier prettier-plugin-wolfram
 ```
 
 Add the plugin to your Prettier configuration for CLI use:
 
 ```json
 {
-	"plugins": ["@wrel/prettier-plugin-wolfram"]
+	"plugins": ["prettier-plugin-wolfram"]
 }
 ```
 
@@ -55,25 +57,25 @@ Add the plugin to your Prettier configuration for CLI use:
 Format a file to stdout:
 
 ```bash
-npx prettier --plugin @wrel/prettier-plugin-wolfram --parser wolfram file.wl
+npx prettier --plugin prettier-plugin-wolfram --parser wolfram file.wl
 ```
 
 Write changes back:
 
 ```bash
-npx prettier --plugin @wrel/prettier-plugin-wolfram --parser wolfram --write file.wl
+npx prettier --plugin prettier-plugin-wolfram --parser wolfram --write file.wl
 ```
 
 Check whether files would change:
 
 ```bash
-npx prettier --plugin @wrel/prettier-plugin-wolfram --parser wolfram --check "src/**/*.wl"
+npx prettier --plugin prettier-plugin-wolfram --parser wolfram --check "src/**/*.wl"
 ```
 
 Format a byte range with Prettier's standard range flags:
 
 ```bash
-npx prettier --plugin @wrel/prettier-plugin-wolfram --parser wolfram --range-start 0 --range-end 200 file.wl
+npx prettier --plugin prettier-plugin-wolfram --parser wolfram --range-start 0 --range-end 200 file.wl
 ```
 
 Range formatting expands to the top-level Wolfram expressions touched by the
@@ -114,7 +116,7 @@ Typical `.prettierrc` example:
 
 ```json
 {
-	"plugins": ["@wrel/prettier-plugin-wolfram"],
+	"plugins": ["prettier-plugin-wolfram"],
 	"printWidth": 80,
 	"tabWidth": 2,
 	"wolfram": {
@@ -284,5 +286,5 @@ npm publish --registry http://localhost:4873
 Verify:
 
 ```bash
-npm view @wrel/prettier-plugin-wolfram --registry http://localhost:4873
+npm view prettier-plugin-wolfram --registry http://localhost:4873
 ```

@@ -14,7 +14,7 @@ import { spawnSync } from "child_process";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, "..");
 const extensionSrc = join(repoRoot, "vscode-extension");
-const packagedPluginName = "@wrel/prettier-plugin-wolfram";
+const packagedPluginName = "prettier-plugin-wolfram";
 const extensionNodeModules = resolve(extensionSrc, "node_modules");
 const args = process.argv.slice(2);
 const preRelease = args.includes("--pre-release");
