@@ -25,7 +25,14 @@ describe("adapter golden CST sweep (modulo trivia)", () => {
 			const src = readFileSync(join(goldenDir, `${name}.wl`), "utf8");
 			const golden = require(join(goldenDir, `${name}.cst.json`));
 			const tree = parser.parse(src);
-			if (tree.rootNode.hasError) return; // Tier-3: grammar gap, handled by Task 11 fallback
+			if (tree.rootNode.hasError) {
+				// Grammar gap: this file has constructs not yet covered. The adapter
+				// will emit a single Unknown ContainerNode (safe passthrough), so
+				// the golden CST will not match. Skip rather than fail, but warn so
+				// gaps don't go unnoticed.
+				console.warn(`[adapter.golden] ${name}: tree has parse errors — skipping CST comparison (grammar gap)`);
+				return;
+			}
 			expect(cstEqualModuloTrivia(adapt(tree, src), golden)).toBe(true);
 		});
 	}

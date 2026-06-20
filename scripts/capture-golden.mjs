@@ -1,5 +1,8 @@
 // DEV-ONLY. Regenerates the golden corpus from a real Wolfram kernel.
 // Not shipped (excluded from package.json "files"). Run: node scripts/capture-golden.mjs
+//
+// Requires a Wolfram kernel with CodeParser available. The inline WL below
+// defines cstToJSON using CodeParser directly (no external init.m needed).
 import { execFileSync } from "child_process";
 import { readdirSync, readFileSync, writeFileSync, mkdirSync, unlinkSync } from "fs";
 import { fileURLToPath } from "url";
@@ -10,15 +13,37 @@ import * as plugin from "../src/index.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const dir = resolve(here, "../tests/golden");
-const initM = resolve(here, "../src/bridge/init.m");
 
-// Build a temporary WL script that uses the same cstToJSON serializer as init.m
+// Inline WL definition: serialize a CodeParser CST to JSON.
+const SERIALIZER_WL = `
+Needs["CodeParser\`"];
+cstToJSON[node_] := Module[{type, children, value},
+  Which[
+    MatchQ[node, _LeafNode],
+      "{\"type\":\"LeafNode\",\"op\":\"" <> SymbolName[node[[1]]] <> "\",\"value\":" <>
+        ExportString[node[[2]], "JSON", "Compact" -> True] <> ",\"source\":" <>
+        ExportString[node[[3, "Source"]], "JSON", "Compact" -> True] <> "}",
+    MatchQ[node, _ContainerNode | _CallNode | _InfixNode | _BinaryNode | _PrefixNode | _PostfixNode | _GroupNode | _CompoundNode | _TernaryNode | _SyntaxErrorNode | _GroupMissingCloserNode | _UnterminatedGroupNode],
+      "{\"type\":\"" <> SymbolName[Head[node]] <> "\",\"op\":\"" <>
+        If[StringQ[node[[1]]], node[[1]], SymbolName[node[[1]]]] <> "\",\"children\":[" <>
+        StringRiffle[cstToJSON /@ node[[2]], ","] <> "],\"data\":" <>
+        ExportString[node[[3]], "JSON", "Compact" -> True] <> "}",
+    True, ExportString[node, "JSON", "Compact" -> True]
+  ]
+];
+getCSTJSON[src_String, indent_:2] := Module[{cst},
+  cst = CodeConcreteParse[src];
+  ExportString[ImportString[cstToJSON[cst], "JSON"], "JSON"]
+];
+`;
+
+// Build a temporary WL script that uses the inline serializer
 function makeCaptureScript(source) {
 	// Escape the source for embedding in a WL string literal
 	const escaped = source
 		.replace(/\\/g, "\\\\")
 		.replace(/"/g, '\\"');
-	return `Get["${initM.replace(/\\/g, "\\\\")}"];
+	return `${SERIALIZER_WL}
 src = "${escaped}";
 result = getCSTJSON[src, 2];
 WriteString[$Output, result];

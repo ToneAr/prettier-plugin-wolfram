@@ -357,7 +357,10 @@ const TOKEN_KIND_NAME = {
 	"::": "ColonColon", "<<": "LessLess", ">>": "GreaterGreater", ">>>": "GreaterGreaterGreater",
 	"~": "Tilde", ";;": "SemiSemi",
 	// string operators
-	"<>": "LessGreater", "~~": "TildeEqual",
+	"<>": "LessGreater", "~~": "TildeTilde",
+	// additional infix operators missing from original table
+	"**": "StarStar", "|": "Bar", "||": "BarBar", "&&": "AmpAmp",
+	"@*": "AtStar", "/*": "SlashStar",
 };
 
 const INEQUALITY_OPS = new Set(["<", "<=", ">", ">=", "==", "!=", "===", "=!="]);

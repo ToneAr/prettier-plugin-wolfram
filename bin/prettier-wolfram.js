@@ -4,7 +4,7 @@
 
 import { readFileSync } from "fs";
 import { globSync } from "fs";
-import { KernelBridge } from "../src/bridge/index.js";
+import { WolframParser } from "../src/parser/index.js";
 import { runRules } from "../src/rules/index.js";
 import { buildOffsetTable, addOffsets } from "../src/utils/offsets.js";
 
@@ -25,7 +25,7 @@ try {
 	lintRules = JSON.parse(process.env.WOLFRAM_LINT_RULES ?? "{}");
 } catch {}
 
-const bridge = new KernelBridge();
+const parser = new WolframParser();
 let totalDiagnostics = 0;
 
 for (const pattern of args) {
@@ -33,7 +33,7 @@ for (const pattern of args) {
 	for (const file of files) {
 		const source = readFileSync(file, "utf8");
 		try {
-			const cst = await bridge.getCST(source, {});
+			const cst = await parser.getCST(source);
 			const table = buildOffsetTable(source);
 			addOffsets(cst, table);
 			const diagnostics = await runRules(cst, lintRules);
@@ -52,5 +52,4 @@ for (const pattern of args) {
 	}
 }
 
-bridge.close();
 process.exit(totalDiagnostics > 0 ? 1 : 0);
