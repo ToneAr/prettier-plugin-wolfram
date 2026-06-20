@@ -47,64 +47,6 @@ const pluginPackages = [
 	"prettier-plugin-wolfram",
 ];
 const CHANGE_DIAGNOSTIC_DELAY_MS = 500;
-const DEFAULT_CST_REQUEST_TIMEOUT_MS = 180000;
-
-function firstNonEmptyPath(...values) {
-	for (const value of values) {
-		if (typeof value !== "string") continue;
-		if (value.trim()) return value;
-	}
-	return "";
-}
-
-function configuredKernelPath() {
-	return firstNonEmptyPath(
-		vscode.workspace
-			.getConfiguration("wolframPrettier")
-			.get("wolframEnginePath"),
-		vscode.workspace.getConfiguration("wolfram").get("systemKernel"),
-	);
-}
-
-function configuredCSTRequestTimeoutMs() {
-	const configured = vscode.workspace
-		.getConfiguration("wolframPrettier")
-		.get("cstRequestTimeoutMs", DEFAULT_CST_REQUEST_TIMEOUT_MS);
-	const numeric = Number(configured);
-	if (!Number.isFinite(numeric) || numeric <= 0) {
-		return DEFAULT_CST_REQUEST_TIMEOUT_MS;
-	}
-	return Math.floor(numeric);
-}
-
-function mergeExtensionFormatterOptions(resolvedConfig = {}) {
-	const resolvedWolfram =
-		resolvedConfig.wolfram &&
-		typeof resolvedConfig.wolfram === "object" &&
-		!Array.isArray(resolvedConfig.wolfram)
-			? resolvedConfig.wolfram
-			: {};
-	const wolfram = { ...resolvedWolfram };
-
-	if (
-		!Object.prototype.hasOwnProperty.call(wolfram, "cstRequestTimeoutMs") &&
-		resolvedConfig.wolframCSTRequestTimeoutMs === undefined
-	) {
-		wolfram.cstRequestTimeoutMs = configuredCSTRequestTimeoutMs();
-	}
-
-	if (
-		!Object.prototype.hasOwnProperty.call(wolfram, "enginePath") &&
-		resolvedConfig.wolframEnginePath === undefined
-	) {
-		wolfram.enginePath = configuredKernelPath();
-	}
-
-	return {
-		...resolvedConfig,
-		wolfram,
-	};
-}
 
 function log(message) {
 	output.appendLine(message);
@@ -216,9 +158,8 @@ async function resolveFormatterContext(workspaceFolder, filePath) {
 	if (!pluginPath) return null;
 
 	const resolvedConfig = await resolveProjectConfig(prettier, filePath);
-	const formatterConfig = mergeExtensionFormatterOptions(resolvedConfig);
-	const plugins = mergeConfiguredPlugins(formatterConfig, pluginPath);
-	return { prettier, pluginPath, plugins, resolvedConfig: formatterConfig };
+	const plugins = mergeConfiguredPlugins(resolvedConfig, pluginPath);
+	return { prettier, pluginPath, plugins, resolvedConfig };
 }
 
 async function loadFormatterPlugin(pluginPath) {
@@ -550,11 +491,6 @@ async function collectDiagnostics(document, collection, generation) {
 
 /** @param {vscode.ExtensionContext} context */
 function activate(context) {
-	const wolframEnginePath = configuredKernelPath();
-	if (wolframEnginePath) {
-		process.env.WOLFRAM_ENGINE_PATH = wolframEnginePath;
-	}
-
 	const selector = [
 		{ language: "wolfram", scheme: "file" },
 		{ language: "wolframscript", scheme: "file" },

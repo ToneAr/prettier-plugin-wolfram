@@ -93,12 +93,6 @@
 					"default": "",
 					"markdownDescription": "Comma-separated function names that stay in `~f~` infix form instead of normalizing to `f[x, y]`."
 				},
-				"cstRequestTimeoutMs": {
-					"type": "integer",
-					"default": 180000,
-					"minimum": 1000,
-					"markdownDescription": "Milliseconds to wait for a WolframKernel CST parse request before restarting the kernel session."
-				},
 				"moduleVarsBreakThreshold": {
 					"type": "integer",
 					"default": 40,
@@ -119,11 +113,6 @@
 					"type": "string",
 					"default": "Which",
 					"markdownDescription": "Comma-separated symbols using alternating condition/body indentation."
-				},
-				"enginePath": {
-					"type": "string",
-					"default": "",
-					"markdownDescription": "Path to a Wolfram install or executable. Auto-detected if empty."
 				},
 				"lintRules": {
 					"type": "string",

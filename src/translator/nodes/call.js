@@ -3,9 +3,9 @@ import { doc } from "prettier";
 const { builders } = doc;
 import { isComment, isTrivia } from "./leaf.js";
 import { alignedRuleDoc, withAlignedRuleValues } from "../ruleAlignment.js";
-import { sourceLineGap } from "../sourceLines.js";
+import { commentBoundarySeparator } from "../commentSpacing.js";
 import { normalizeWolframOptions } from "../../options.js";
-const { group, indent, softline, line, hardline } = builders;
+const { group, indent, softline, line } = builders;
 
 const BRACKET_KINDS = new Set(["Token`OpenSquare", "Token`CloseSquare"]);
 
@@ -37,10 +37,12 @@ function hasCommentBoundary(leftEntry, rightEntry) {
 
 function commentBoundary(leftEntry, rightEntry, options, fallback = line) {
 	if (!leftEntry || !rightEntry) return fallback;
-	const gap = sourceLineGap(leftEntry.node, rightEntry.node, options);
-	if (gap === 0) return " ";
-	if (gap > 0) return hardline;
-	return fallback;
+	return commentBoundarySeparator(
+		leftEntry.node,
+		rightEntry.node,
+		options,
+		fallback,
+	);
 }
 
 /** Find index of the InfixNode[Comma] wrapper in node.children, or -1. */

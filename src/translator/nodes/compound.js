@@ -2,7 +2,7 @@
 import { doc } from "prettier";
 const { builders } = doc;
 import { isTrivia, isComment } from "./leaf.js";
-import { joinDocsWithSpace } from "../docComments.js";
+import { joinCommentDocs } from "../docComments.js";
 import {
 	blankLinesForCodeGap,
 	observedBlankLinesBetween,
@@ -71,7 +71,13 @@ export function printCompound(node, options, print) {
 			: [
 					print(stmts[0]),
 					"; ",
-					joinDocsWithSpace(trailingComments.map((c) => print(c))),
+					joinCommentDocs(
+						trailingComments.map((node) => ({
+							node,
+							doc: print(node),
+						})),
+						options,
+					),
 				];
 	}
 
@@ -103,6 +109,9 @@ export function printCompound(node, options, print) {
 	return [
 		body,
 		" ",
-		joinDocsWithSpace(trailingComments.map((c) => print(c))),
+		joinCommentDocs(
+			trailingComments.map((node) => ({ node, doc: print(node) })),
+			options,
+		),
 	];
 }

@@ -60,6 +60,38 @@ function definition(op, lhs, value, source) {
 }
 
 describe("printContainer", () => {
+	it("keeps adjacent same-line comments tight when their source ranges touch", () => {
+		const node = {
+			type: "ContainerNode",
+			kind: "String",
+			children: [
+				{
+					type: "LeafNode",
+					kind: "Token`Comment",
+					value: "(* a *)",
+					source: [
+						[1, 1],
+						[1, 8],
+					],
+				},
+				{
+					type: "LeafNode",
+					kind: "Token`Comment",
+					value: "(* b *)",
+					source: [
+						[1, 8],
+						[1, 15],
+					],
+				},
+			],
+		};
+
+		const print = (child) => String(child.value ?? "");
+		const out = fmt(printContainer(node, {}, print));
+
+		expect(out).toBe("(* a *)(* b *)");
+	});
+
 	it("keeps leading comments attached to the following declaration and inserts blank lines above the comment block", () => {
 		const node = {
 			type: "ContainerNode",

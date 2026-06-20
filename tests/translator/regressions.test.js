@@ -711,6 +711,37 @@ describe("translator regressions", () => {
 		}
 	}, 15000);
 
+	it("allows separate same-line comments with no space between them", async () => {
+		const cases = [
+			"(*a*)(*b*)",
+			"f[(*a*)(*b*)]",
+			"{(*a*)(*b*)}",
+			"f[1,(*a*)(*b*)2]",
+			"a;(*a*)(*b*)b",
+			"a\n(*a*)(*b*)\nb",
+		];
+
+		const expected = [
+			"(*a*)(*b*)",
+			"f[(*a*)(*b*)]",
+			"{(*a*)(*b*)}",
+			"f[1, (*a*)(*b*) 2]",
+			"a; (*a*)(*b*) b",
+			"a\n(*a*)(*b*)\nb",
+		];
+
+		for (const [index, source] of cases.entries()) {
+			const result = await prettier.format(source, {
+				parser: "wolfram",
+				plugins: [plugin],
+				printWidth: 80,
+				tabWidth: 2,
+			});
+
+			expect(result, source).toBe(expected[index]);
+		}
+	}, 15000);
+
 	it("retains multiline comment indentation across formatting passes", async () => {
 		const cases = [
 			{

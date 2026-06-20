@@ -3,9 +3,9 @@ import { doc } from "prettier";
 const { builders } = doc;
 import { isComment, isTrivia } from "./leaf.js";
 import { alignedRuleDoc, withAlignedRuleValues } from "../ruleAlignment.js";
-import { sourceLineGap } from "../sourceLines.js";
+import { commentBoundarySeparator } from "../commentSpacing.js";
 import { normalizeWolframOptions } from "../../options.js";
-const { group, indent, softline, line, hardline } = builders;
+const { group, indent, softline, line } = builders;
 
 const GROUP_DELIMITERS = {
 	GroupSquare: ["[", "]"],
@@ -55,10 +55,12 @@ function hasCommentBoundary(leftEntry, rightEntry) {
 
 function commentBoundary(leftEntry, rightEntry, options, fallback = line) {
 	if (!leftEntry || !rightEntry) return fallback;
-	const gap = sourceLineGap(leftEntry.node, rightEntry.node, options);
-	if (gap === 0) return " ";
-	if (gap > 0) return hardline;
-	return fallback;
+	return commentBoundarySeparator(
+		leftEntry.node,
+		rightEntry.node,
+		options,
+		fallback,
+	);
 }
 
 function sequenceEntries(path, print, node) {

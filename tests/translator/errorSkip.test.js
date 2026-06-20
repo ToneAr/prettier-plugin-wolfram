@@ -5,8 +5,8 @@ const { getCST } = vi.hoisted(() => ({
 	getCST: vi.fn(),
 }));
 
-vi.mock("../../src/bridge/index.js", () => ({
-	KernelBridge: class KernelBridge {
+vi.mock("../../src/parser/index.js", () => ({
+	WolframParser: class WolframParser {
 		getCST(...args) {
 			return getCST(...args);
 		}

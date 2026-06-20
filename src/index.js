@@ -1,6 +1,6 @@
 // src/index.js
 import { normalizeWolframOptions, options } from "./options.js";
-import { KernelBridge } from "./bridge/index.js";
+import { WolframParser } from "./parser/index.js";
 import { printNode } from "./translator/index.js";
 import { buildOffsetTable, addOffsets } from "./utils/offsets.js";
 import {
@@ -9,7 +9,7 @@ import {
 } from "./utils/cstErrors.js";
 import { preprocessRange } from "./range.js";
 
-const bridge = new KernelBridge();
+const parser = new WolframParser();
 
 function extractLeadingShebang(text) {
 	if (!text.startsWith("#!")) {
@@ -42,7 +42,7 @@ export const parsers = {
 			const normalizedOptions = normalizeWolframOptions(parsedOptions);
 			const shebang = extractLeadingShebang(text);
 			const cstText = shebang?.maskedText ?? text;
-			const cst = await bridge.getCST(cstText, normalizedOptions);
+			const cst = await parser.getCST(cstText, normalizedOptions);
 			if (!cst || containsCstErrors(cst)) {
 				return createUnformattableNode(text);
 			}

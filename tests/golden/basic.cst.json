@@ -1,0 +1,2612 @@
+{
+	"type": "ContainerNode",
+	"kind": "String",
+	"children": [
+		{
+			"type": "LeafNode",
+			"kind": "Token`Comment",
+			"value": "(* tests/wl/basic.wl — simple expressions for basic formatting *)",
+			"source": [
+				[
+					1,
+					1
+				],
+				[
+					1,
+					68
+				]
+			]
+		},
+		{
+			"type": "LeafNode",
+			"kind": "Token`Newline",
+			"value": "\n",
+			"source": [
+				[
+					1,
+					68
+				],
+				[
+					2,
+					1
+				]
+			]
+		},
+		{
+			"type": "BinaryNode",
+			"op": "Set",
+			"children": [
+				{
+					"type": "LeafNode",
+					"kind": "Symbol",
+					"value": "x",
+					"source": [
+						[
+							2,
+							1
+						],
+						[
+							2,
+							2
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							2
+						],
+						[
+							2,
+							3
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Token`Equal",
+					"value": "=",
+					"source": [
+						[
+							2,
+							3
+						],
+						[
+							2,
+							4
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							2,
+							4
+						],
+						[
+							2,
+							5
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Integer",
+					"value": "1",
+					"source": [
+						[
+							2,
+							5
+						],
+						[
+							2,
+							6
+						]
+					]
+				}
+			],
+			"source": [
+				[
+					2,
+					1
+				],
+				[
+					2,
+					6
+				]
+			]
+		},
+		{
+			"type": "LeafNode",
+			"kind": "Token`Newline",
+			"value": "\n",
+			"source": [
+				[
+					2,
+					6
+				],
+				[
+					3,
+					1
+				]
+			]
+		},
+		{
+			"type": "LeafNode",
+			"kind": "Token`Newline",
+			"value": "\n",
+			"source": [
+				[
+					3,
+					1
+				],
+				[
+					4,
+					1
+				]
+			]
+		},
+		{
+			"type": "LeafNode",
+			"kind": "Token`Newline",
+			"value": "\n",
+			"source": [
+				[
+					4,
+					1
+				],
+				[
+					5,
+					1
+				]
+			]
+		},
+		{
+			"type": "BinaryNode",
+			"op": "Set",
+			"children": [
+				{
+					"type": "LeafNode",
+					"kind": "Symbol",
+					"value": "y",
+					"source": [
+						[
+							5,
+							1
+						],
+						[
+							5,
+							2
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							2
+						],
+						[
+							5,
+							3
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Token`Equal",
+					"value": "=",
+					"source": [
+						[
+							5,
+							3
+						],
+						[
+							5,
+							4
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							5,
+							4
+						],
+						[
+							5,
+							5
+						]
+					]
+				},
+				{
+					"type": "InfixNode",
+					"op": "Plus",
+					"children": [
+						{
+							"type": "LeafNode",
+							"kind": "Integer",
+							"value": "2",
+							"source": [
+								[
+									5,
+									5
+								],
+								[
+									5,
+									6
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Whitespace",
+							"value": " ",
+							"source": [
+								[
+									5,
+									6
+								],
+								[
+									5,
+									7
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Token`Plus",
+							"value": "+",
+							"source": [
+								[
+									5,
+									7
+								],
+								[
+									5,
+									8
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Whitespace",
+							"value": " ",
+							"source": [
+								[
+									5,
+									8
+								],
+								[
+									5,
+									9
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Integer",
+							"value": "3",
+							"source": [
+								[
+									5,
+									9
+								],
+								[
+									5,
+									10
+								]
+							]
+						}
+					],
+					"source": [
+						[
+							5,
+							5
+						],
+						[
+							5,
+							10
+						]
+					]
+				}
+			],
+			"source": [
+				[
+					5,
+					1
+				],
+				[
+					5,
+					10
+				]
+			]
+		},
+		{
+			"type": "LeafNode",
+			"kind": "Token`Newline",
+			"value": "\n",
+			"source": [
+				[
+					5,
+					10
+				],
+				[
+					6,
+					1
+				]
+			]
+		},
+		{
+			"type": "LeafNode",
+			"kind": "Token`Newline",
+			"value": "\n",
+			"source": [
+				[
+					6,
+					1
+				],
+				[
+					7,
+					1
+				]
+			]
+		},
+		{
+			"type": "LeafNode",
+			"kind": "Token`Newline",
+			"value": "\n",
+			"source": [
+				[
+					7,
+					1
+				],
+				[
+					8,
+					1
+				]
+			]
+		},
+		{
+			"type": "BinaryNode",
+			"op": "Set",
+			"children": [
+				{
+					"type": "LeafNode",
+					"kind": "Symbol",
+					"value": "z",
+					"source": [
+						[
+							8,
+							1
+						],
+						[
+							8,
+							2
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							8,
+							2
+						],
+						[
+							8,
+							3
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Token`Equal",
+					"value": "=",
+					"source": [
+						[
+							8,
+							3
+						],
+						[
+							8,
+							4
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							8,
+							4
+						],
+						[
+							8,
+							5
+						]
+					]
+				},
+				{
+					"type": "InfixNode",
+					"op": "Plus",
+					"children": [
+						{
+							"type": "InfixNode",
+							"op": "Times",
+							"children": [
+								{
+									"type": "LeafNode",
+									"kind": "Symbol",
+									"value": "x",
+									"source": [
+										[
+											8,
+											5
+										],
+										[
+											8,
+											6
+										]
+									]
+								},
+								{
+									"type": "LeafNode",
+									"kind": "Whitespace",
+									"value": " ",
+									"source": [
+										[
+											8,
+											6
+										],
+										[
+											8,
+											7
+										]
+									]
+								},
+								{
+									"type": "LeafNode",
+									"kind": "Token`Star",
+									"value": "*",
+									"source": [
+										[
+											8,
+											7
+										],
+										[
+											8,
+											8
+										]
+									]
+								},
+								{
+									"type": "LeafNode",
+									"kind": "Whitespace",
+									"value": " ",
+									"source": [
+										[
+											8,
+											8
+										],
+										[
+											8,
+											9
+										]
+									]
+								},
+								{
+									"type": "LeafNode",
+									"kind": "Symbol",
+									"value": "y",
+									"source": [
+										[
+											8,
+											9
+										],
+										[
+											8,
+											10
+										]
+									]
+								}
+							],
+							"source": [
+								[
+									8,
+									5
+								],
+								[
+									8,
+									10
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Whitespace",
+							"value": " ",
+							"source": [
+								[
+									8,
+									10
+								],
+								[
+									8,
+									11
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Token`Minus",
+							"value": "-",
+							"source": [
+								[
+									8,
+									11
+								],
+								[
+									8,
+									12
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Whitespace",
+							"value": " ",
+							"source": [
+								[
+									8,
+									12
+								],
+								[
+									8,
+									13
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Integer",
+							"value": "1",
+							"source": [
+								[
+									8,
+									13
+								],
+								[
+									8,
+									14
+								]
+							]
+						}
+					],
+					"source": [
+						[
+							8,
+							5
+						],
+						[
+							8,
+							14
+						]
+					]
+				}
+			],
+			"source": [
+				[
+					8,
+					1
+				],
+				[
+					8,
+					14
+				]
+			]
+		},
+		{
+			"type": "LeafNode",
+			"kind": "Token`Newline",
+			"value": "\n",
+			"source": [
+				[
+					8,
+					14
+				],
+				[
+					9,
+					1
+				]
+			]
+		},
+		{
+			"type": "LeafNode",
+			"kind": "Token`Newline",
+			"value": "\n",
+			"source": [
+				[
+					9,
+					1
+				],
+				[
+					10,
+					1
+				]
+			]
+		},
+		{
+			"type": "LeafNode",
+			"kind": "Token`Newline",
+			"value": "\n",
+			"source": [
+				[
+					10,
+					1
+				],
+				[
+					11,
+					1
+				]
+			]
+		},
+		{
+			"type": "BinaryNode",
+			"op": "Set",
+			"children": [
+				{
+					"type": "LeafNode",
+					"kind": "Symbol",
+					"value": "longName",
+					"source": [
+						[
+							11,
+							1
+						],
+						[
+							11,
+							9
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							11,
+							9
+						],
+						[
+							11,
+							10
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Token`Equal",
+					"value": "=",
+					"source": [
+						[
+							11,
+							10
+						],
+						[
+							11,
+							11
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Token`Newline",
+					"value": "\n",
+					"source": [
+						[
+							11,
+							11
+						],
+						[
+							12,
+							1
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": "\t",
+					"source": [
+						[
+							12,
+							1
+						],
+						[
+							12,
+							3
+						]
+					]
+				},
+				{
+					"type": "CallNode",
+					"head": {
+						"type": "LeafNode",
+						"kind": "Symbol",
+						"value": "StringJoin",
+						"source": [
+							[
+								12,
+								3
+							],
+							[
+								12,
+								13
+							]
+						]
+					},
+					"children": [
+						{
+							"type": "LeafNode",
+							"kind": "Token`OpenSquare",
+							"value": "[",
+							"source": [
+								[
+									12,
+									13
+								],
+								[
+									12,
+									14
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Token`Newline",
+							"value": "\n",
+							"source": [
+								[
+									12,
+									14
+								],
+								[
+									13,
+									1
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Whitespace",
+							"value": "\t",
+							"source": [
+								[
+									13,
+									1
+								],
+								[
+									13,
+									3
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Whitespace",
+							"value": "\t",
+							"source": [
+								[
+									13,
+									3
+								],
+								[
+									13,
+									5
+								]
+							]
+						},
+						{
+							"type": "InfixNode",
+							"op": "Comma",
+							"children": [
+								{
+									"type": "LeafNode",
+									"kind": "String",
+									"value": "\"a very long string that might wrap depending on line width settings \"",
+									"source": [
+										[
+											13,
+											5
+										],
+										[
+											13,
+											75
+										]
+									]
+								},
+								{
+									"type": "LeafNode",
+									"kind": "Token`Comma",
+									"value": ",",
+									"source": [
+										[
+											13,
+											75
+										],
+										[
+											13,
+											76
+										]
+									]
+								},
+								{
+									"type": "LeafNode",
+									"kind": "Token`Newline",
+									"value": "\n",
+									"source": [
+										[
+											13,
+											76
+										],
+										[
+											14,
+											1
+										]
+									]
+								},
+								{
+									"type": "LeafNode",
+									"kind": "Whitespace",
+									"value": "\t",
+									"source": [
+										[
+											14,
+											1
+										],
+										[
+											14,
+											3
+										]
+									]
+								},
+								{
+									"type": "LeafNode",
+									"kind": "Whitespace",
+									"value": "\t",
+									"source": [
+										[
+											14,
+											3
+										],
+										[
+											14,
+											5
+										]
+									]
+								},
+								{
+									"type": "LeafNode",
+									"kind": "String",
+									"value": "\"and how the printer handles string literals\"",
+									"source": [
+										[
+											14,
+											5
+										],
+										[
+											14,
+											50
+										]
+									]
+								}
+							],
+							"source": [
+								[
+									13,
+									5
+								],
+								[
+									14,
+									50
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Token`Newline",
+							"value": "\n",
+							"source": [
+								[
+									14,
+									50
+								],
+								[
+									15,
+									1
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Whitespace",
+							"value": "\t",
+							"source": [
+								[
+									15,
+									1
+								],
+								[
+									15,
+									3
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Token`CloseSquare",
+							"value": "]",
+							"source": [
+								[
+									15,
+									3
+								],
+								[
+									15,
+									4
+								]
+							]
+						}
+					],
+					"source": [
+						[
+							12,
+							3
+						],
+						[
+							15,
+							4
+						]
+					]
+				}
+			],
+			"source": [
+				[
+					11,
+					1
+				],
+				[
+					15,
+					4
+				]
+			]
+		},
+		{
+			"type": "LeafNode",
+			"kind": "Token`Newline",
+			"value": "\n",
+			"source": [
+				[
+					15,
+					4
+				],
+				[
+					16,
+					1
+				]
+			]
+		},
+		{
+			"type": "LeafNode",
+			"kind": "Token`Newline",
+			"value": "\n",
+			"source": [
+				[
+					16,
+					1
+				],
+				[
+					17,
+					1
+				]
+			]
+		},
+		{
+			"type": "LeafNode",
+			"kind": "Token`Newline",
+			"value": "\n",
+			"source": [
+				[
+					17,
+					1
+				],
+				[
+					18,
+					1
+				]
+			]
+		},
+		{
+			"type": "LeafNode",
+			"kind": "Token`Comment",
+			"value": "(* Arithmetic *)",
+			"source": [
+				[
+					18,
+					1
+				],
+				[
+					18,
+					17
+				]
+			]
+		},
+		{
+			"type": "LeafNode",
+			"kind": "Token`Newline",
+			"value": "\n",
+			"source": [
+				[
+					18,
+					17
+				],
+				[
+					19,
+					1
+				]
+			]
+		},
+		{
+			"type": "BinaryNode",
+			"op": "Set",
+			"children": [
+				{
+					"type": "LeafNode",
+					"kind": "Symbol",
+					"value": "result",
+					"source": [
+						[
+							19,
+							1
+						],
+						[
+							19,
+							7
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							19,
+							7
+						],
+						[
+							19,
+							8
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Token`Equal",
+					"value": "=",
+					"source": [
+						[
+							19,
+							8
+						],
+						[
+							19,
+							9
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							19,
+							9
+						],
+						[
+							19,
+							10
+						]
+					]
+				},
+				{
+					"type": "InfixNode",
+					"op": "Plus",
+					"children": [
+						{
+							"type": "LeafNode",
+							"kind": "Symbol",
+							"value": "a",
+							"source": [
+								[
+									19,
+									10
+								],
+								[
+									19,
+									11
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Whitespace",
+							"value": " ",
+							"source": [
+								[
+									19,
+									11
+								],
+								[
+									19,
+									12
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Token`Plus",
+							"value": "+",
+							"source": [
+								[
+									19,
+									12
+								],
+								[
+									19,
+									13
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Whitespace",
+							"value": " ",
+							"source": [
+								[
+									19,
+									13
+								],
+								[
+									19,
+									14
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Symbol",
+							"value": "b",
+							"source": [
+								[
+									19,
+									14
+								],
+								[
+									19,
+									15
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Whitespace",
+							"value": " ",
+							"source": [
+								[
+									19,
+									15
+								],
+								[
+									19,
+									16
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Token`Plus",
+							"value": "+",
+							"source": [
+								[
+									19,
+									16
+								],
+								[
+									19,
+									17
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Whitespace",
+							"value": " ",
+							"source": [
+								[
+									19,
+									17
+								],
+								[
+									19,
+									18
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Symbol",
+							"value": "c",
+							"source": [
+								[
+									19,
+									18
+								],
+								[
+									19,
+									19
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Whitespace",
+							"value": " ",
+							"source": [
+								[
+									19,
+									19
+								],
+								[
+									19,
+									20
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Token`Plus",
+							"value": "+",
+							"source": [
+								[
+									19,
+									20
+								],
+								[
+									19,
+									21
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Whitespace",
+							"value": " ",
+							"source": [
+								[
+									19,
+									21
+								],
+								[
+									19,
+									22
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Symbol",
+							"value": "d",
+							"source": [
+								[
+									19,
+									22
+								],
+								[
+									19,
+									23
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Whitespace",
+							"value": " ",
+							"source": [
+								[
+									19,
+									23
+								],
+								[
+									19,
+									24
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Token`Plus",
+							"value": "+",
+							"source": [
+								[
+									19,
+									24
+								],
+								[
+									19,
+									25
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Whitespace",
+							"value": " ",
+							"source": [
+								[
+									19,
+									25
+								],
+								[
+									19,
+									26
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Symbol",
+							"value": "e",
+							"source": [
+								[
+									19,
+									26
+								],
+								[
+									19,
+									27
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Whitespace",
+							"value": " ",
+							"source": [
+								[
+									19,
+									27
+								],
+								[
+									19,
+									28
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Token`Plus",
+							"value": "+",
+							"source": [
+								[
+									19,
+									28
+								],
+								[
+									19,
+									29
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Whitespace",
+							"value": " ",
+							"source": [
+								[
+									19,
+									29
+								],
+								[
+									19,
+									30
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Symbol",
+							"value": "f",
+							"source": [
+								[
+									19,
+									30
+								],
+								[
+									19,
+									31
+								]
+							]
+						}
+					],
+					"source": [
+						[
+							19,
+							10
+						],
+						[
+							19,
+							31
+						]
+					]
+				}
+			],
+			"source": [
+				[
+					19,
+					1
+				],
+				[
+					19,
+					31
+				]
+			]
+		},
+		{
+			"type": "LeafNode",
+			"kind": "Token`Newline",
+			"value": "\n",
+			"source": [
+				[
+					19,
+					31
+				],
+				[
+					20,
+					1
+				]
+			]
+		},
+		{
+			"type": "LeafNode",
+			"kind": "Token`Newline",
+			"value": "\n",
+			"source": [
+				[
+					20,
+					1
+				],
+				[
+					21,
+					1
+				]
+			]
+		},
+		{
+			"type": "LeafNode",
+			"kind": "Token`Newline",
+			"value": "\n",
+			"source": [
+				[
+					21,
+					1
+				],
+				[
+					22,
+					1
+				]
+			]
+		},
+		{
+			"type": "BinaryNode",
+			"op": "Set",
+			"children": [
+				{
+					"type": "LeafNode",
+					"kind": "Symbol",
+					"value": "product",
+					"source": [
+						[
+							22,
+							1
+						],
+						[
+							22,
+							8
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							22,
+							8
+						],
+						[
+							22,
+							9
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Token`Equal",
+					"value": "=",
+					"source": [
+						[
+							22,
+							9
+						],
+						[
+							22,
+							10
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							22,
+							10
+						],
+						[
+							22,
+							11
+						]
+					]
+				},
+				{
+					"type": "InfixNode",
+					"op": "Times",
+					"children": [
+						{
+							"type": "LeafNode",
+							"kind": "Symbol",
+							"value": "a",
+							"source": [
+								[
+									22,
+									11
+								],
+								[
+									22,
+									12
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Whitespace",
+							"value": " ",
+							"source": [
+								[
+									22,
+									12
+								],
+								[
+									22,
+									13
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Token`Star",
+							"value": "*",
+							"source": [
+								[
+									22,
+									13
+								],
+								[
+									22,
+									14
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Whitespace",
+							"value": " ",
+							"source": [
+								[
+									22,
+									14
+								],
+								[
+									22,
+									15
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Symbol",
+							"value": "b",
+							"source": [
+								[
+									22,
+									15
+								],
+								[
+									22,
+									16
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Whitespace",
+							"value": " ",
+							"source": [
+								[
+									22,
+									16
+								],
+								[
+									22,
+									17
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Token`Star",
+							"value": "*",
+							"source": [
+								[
+									22,
+									17
+								],
+								[
+									22,
+									18
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Whitespace",
+							"value": " ",
+							"source": [
+								[
+									22,
+									18
+								],
+								[
+									22,
+									19
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Symbol",
+							"value": "c",
+							"source": [
+								[
+									22,
+									19
+								],
+								[
+									22,
+									20
+								]
+							]
+						}
+					],
+					"source": [
+						[
+							22,
+							11
+						],
+						[
+							22,
+							20
+						]
+					]
+				}
+			],
+			"source": [
+				[
+					22,
+					1
+				],
+				[
+					22,
+					20
+				]
+			]
+		},
+		{
+			"type": "LeafNode",
+			"kind": "Token`Newline",
+			"value": "\n",
+			"source": [
+				[
+					22,
+					20
+				],
+				[
+					23,
+					1
+				]
+			]
+		},
+		{
+			"type": "LeafNode",
+			"kind": "Token`Newline",
+			"value": "\n",
+			"source": [
+				[
+					23,
+					1
+				],
+				[
+					24,
+					1
+				]
+			]
+		},
+		{
+			"type": "LeafNode",
+			"kind": "Token`Comment",
+			"value": "(* Nested calls *)",
+			"source": [
+				[
+					24,
+					1
+				],
+				[
+					24,
+					19
+				]
+			]
+		},
+		{
+			"type": "LeafNode",
+			"kind": "Token`Newline",
+			"value": "\n",
+			"source": [
+				[
+					24,
+					19
+				],
+				[
+					25,
+					1
+				]
+			]
+		},
+		{
+			"type": "CallNode",
+			"head": {
+				"type": "LeafNode",
+				"kind": "Symbol",
+				"value": "f",
+				"source": [
+					[
+						25,
+						1
+					],
+					[
+						25,
+						2
+					]
+				]
+			},
+			"children": [
+				{
+					"type": "LeafNode",
+					"kind": "Token`OpenSquare",
+					"value": "[",
+					"source": [
+						[
+							25,
+							2
+						],
+						[
+							25,
+							3
+						]
+					]
+				},
+				{
+					"type": "CallNode",
+					"head": {
+						"type": "LeafNode",
+						"kind": "Symbol",
+						"value": "g",
+						"source": [
+							[
+								25,
+								3
+							],
+							[
+								25,
+								4
+							]
+						]
+					},
+					"children": [
+						{
+							"type": "LeafNode",
+							"kind": "Token`OpenSquare",
+							"value": "[",
+							"source": [
+								[
+									25,
+									4
+								],
+								[
+									25,
+									5
+								]
+							]
+						},
+						{
+							"type": "CallNode",
+							"head": {
+								"type": "LeafNode",
+								"kind": "Symbol",
+								"value": "h",
+								"source": [
+									[
+										25,
+										5
+									],
+									[
+										25,
+										6
+									]
+								]
+							},
+							"children": [
+								{
+									"type": "LeafNode",
+									"kind": "Token`OpenSquare",
+									"value": "[",
+									"source": [
+										[
+											25,
+											6
+										],
+										[
+											25,
+											7
+										]
+									]
+								},
+								{
+									"type": "LeafNode",
+									"kind": "Symbol",
+									"value": "x",
+									"source": [
+										[
+											25,
+											7
+										],
+										[
+											25,
+											8
+										]
+									]
+								},
+								{
+									"type": "LeafNode",
+									"kind": "Token`CloseSquare",
+									"value": "]",
+									"source": [
+										[
+											25,
+											8
+										],
+										[
+											25,
+											9
+										]
+									]
+								}
+							],
+							"source": [
+								[
+									25,
+									5
+								],
+								[
+									25,
+									9
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Token`CloseSquare",
+							"value": "]",
+							"source": [
+								[
+									25,
+									9
+								],
+								[
+									25,
+									10
+								]
+							]
+						}
+					],
+					"source": [
+						[
+							25,
+							3
+						],
+						[
+							25,
+							10
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Token`CloseSquare",
+					"value": "]",
+					"source": [
+						[
+							25,
+							10
+						],
+						[
+							25,
+							11
+						]
+					]
+				}
+			],
+			"source": [
+				[
+					25,
+					1
+				],
+				[
+					25,
+					11
+				]
+			]
+		},
+		{
+			"type": "LeafNode",
+			"kind": "Token`Newline",
+			"value": "\n",
+			"source": [
+				[
+					25,
+					11
+				],
+				[
+					26,
+					1
+				]
+			]
+		},
+		{
+			"type": "CallNode",
+			"head": {
+				"type": "LeafNode",
+				"kind": "Symbol",
+				"value": "foo",
+				"source": [
+					[
+						26,
+						1
+					],
+					[
+						26,
+						4
+					]
+				]
+			},
+			"children": [
+				{
+					"type": "LeafNode",
+					"kind": "Token`OpenSquare",
+					"value": "[",
+					"source": [
+						[
+							26,
+							4
+						],
+						[
+							26,
+							5
+						]
+					]
+				},
+				{
+					"type": "InfixNode",
+					"op": "Comma",
+					"children": [
+						{
+							"type": "LeafNode",
+							"kind": "Integer",
+							"value": "1",
+							"source": [
+								[
+									26,
+									5
+								],
+								[
+									26,
+									6
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Token`Comma",
+							"value": ",",
+							"source": [
+								[
+									26,
+									6
+								],
+								[
+									26,
+									7
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Whitespace",
+							"value": " ",
+							"source": [
+								[
+									26,
+									7
+								],
+								[
+									26,
+									8
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Integer",
+							"value": "2",
+							"source": [
+								[
+									26,
+									8
+								],
+								[
+									26,
+									9
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Token`Comma",
+							"value": ",",
+							"source": [
+								[
+									26,
+									9
+								],
+								[
+									26,
+									10
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Whitespace",
+							"value": " ",
+							"source": [
+								[
+									26,
+									10
+								],
+								[
+									26,
+									11
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Integer",
+							"value": "3",
+							"source": [
+								[
+									26,
+									11
+								],
+								[
+									26,
+									12
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Token`Comma",
+							"value": ",",
+							"source": [
+								[
+									26,
+									12
+								],
+								[
+									26,
+									13
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Whitespace",
+							"value": " ",
+							"source": [
+								[
+									26,
+									13
+								],
+								[
+									26,
+									14
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Integer",
+							"value": "4",
+							"source": [
+								[
+									26,
+									14
+								],
+								[
+									26,
+									15
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Token`Comma",
+							"value": ",",
+							"source": [
+								[
+									26,
+									15
+								],
+								[
+									26,
+									16
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Whitespace",
+							"value": " ",
+							"source": [
+								[
+									26,
+									16
+								],
+								[
+									26,
+									17
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Integer",
+							"value": "5",
+							"source": [
+								[
+									26,
+									17
+								],
+								[
+									26,
+									18
+								]
+							]
+						}
+					],
+					"source": [
+						[
+							26,
+							5
+						],
+						[
+							26,
+							18
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Token`CloseSquare",
+					"value": "]",
+					"source": [
+						[
+							26,
+							18
+						],
+						[
+							26,
+							19
+						]
+					]
+				}
+			],
+			"source": [
+				[
+					26,
+					1
+				],
+				[
+					26,
+					19
+				]
+			]
+		},
+		{
+			"type": "LeafNode",
+			"kind": "Token`Newline",
+			"value": "\n",
+			"source": [
+				[
+					26,
+					19
+				],
+				[
+					27,
+					1
+				]
+			]
+		},
+		{
+			"type": "LeafNode",
+			"kind": "Token`Newline",
+			"value": "\n",
+			"source": [
+				[
+					27,
+					1
+				],
+				[
+					28,
+					1
+				]
+			]
+		},
+		{
+			"type": "LeafNode",
+			"kind": "Token`Comment",
+			"value": "(* Compound assignment *)",
+			"source": [
+				[
+					28,
+					1
+				],
+				[
+					28,
+					26
+				]
+			]
+		},
+		{
+			"type": "LeafNode",
+			"kind": "Token`Newline",
+			"value": "\n",
+			"source": [
+				[
+					28,
+					26
+				],
+				[
+					29,
+					1
+				]
+			]
+		},
+		{
+			"type": "BinaryNode",
+			"op": "Set",
+			"children": [
+				{
+					"type": "LeafNode",
+					"kind": "Symbol",
+					"value": "a",
+					"source": [
+						[
+							29,
+							1
+						],
+						[
+							29,
+							2
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							29,
+							2
+						],
+						[
+							29,
+							3
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Token`Equal",
+					"value": "=",
+					"source": [
+						[
+							29,
+							3
+						],
+						[
+							29,
+							4
+						]
+					]
+				},
+				{
+					"type": "LeafNode",
+					"kind": "Whitespace",
+					"value": " ",
+					"source": [
+						[
+							29,
+							4
+						],
+						[
+							29,
+							5
+						]
+					]
+				},
+				{
+					"type": "BinaryNode",
+					"op": "Set",
+					"children": [
+						{
+							"type": "LeafNode",
+							"kind": "Symbol",
+							"value": "b",
+							"source": [
+								[
+									29,
+									5
+								],
+								[
+									29,
+									6
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Whitespace",
+							"value": " ",
+							"source": [
+								[
+									29,
+									6
+								],
+								[
+									29,
+									7
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Token`Equal",
+							"value": "=",
+							"source": [
+								[
+									29,
+									7
+								],
+								[
+									29,
+									8
+								]
+							]
+						},
+						{
+							"type": "LeafNode",
+							"kind": "Whitespace",
+							"value": " ",
+							"source": [
+								[
+									29,
+									8
+								],
+								[
+									29,
+									9
+								]
+							]
+						},
+						{
+							"type": "BinaryNode",
+							"op": "Set",
+							"children": [
+								{
+									"type": "LeafNode",
+									"kind": "Symbol",
+									"value": "c",
+									"source": [
+										[
+											29,
+											9
+										],
+										[
+											29,
+											10
+										]
+									]
+								},
+								{
+									"type": "LeafNode",
+									"kind": "Whitespace",
+									"value": " ",
+									"source": [
+										[
+											29,
+											10
+										],
+										[
+											29,
+											11
+										]
+									]
+								},
+								{
+									"type": "LeafNode",
+									"kind": "Token`Equal",
+									"value": "=",
+									"source": [
+										[
+											29,
+											11
+										],
+										[
+											29,
+											12
+										]
+									]
+								},
+								{
+									"type": "LeafNode",
+									"kind": "Whitespace",
+									"value": " ",
+									"source": [
+										[
+											29,
+											12
+										],
+										[
+											29,
+											13
+										]
+									]
+								},
+								{
+									"type": "LeafNode",
+									"kind": "Integer",
+									"value": "0",
+									"source": [
+										[
+											29,
+											13
+										],
+										[
+											29,
+											14
+										]
+									]
+								}
+							],
+							"source": [
+								[
+									29,
+									9
+								],
+								[
+									29,
+									14
+								]
+							]
+						}
+					],
+					"source": [
+						[
+							29,
+							5
+						],
+						[
+							29,
+							14
+						]
+					]
+				}
+			],
+			"source": [
+				[
+					29,
+					1
+				],
+				[
+					29,
+					14
+				]
+			]
+		}
+	],
+	"source": [
+		[
+			1,
+			1
+		],
+		[
+			29,
+			14
+		]
+	]
+}

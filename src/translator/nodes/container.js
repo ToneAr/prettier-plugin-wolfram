@@ -4,18 +4,15 @@ const { builders } = doc;
 const { hardline } = builders;
 import {
 	documentationCommentColumn,
-	joinDocsWithSpace,
+	joinCommentDocs,
 	withAlignedTrailingComment,
 } from "../docComments.js";
+import { commentBoundarySeparator } from "../commentSpacing.js";
 import {
 	blankLinesForCodeGap,
 	observedBlankLinesBetween,
 } from "../../utils/codeSpacing.js";
-import {
-	nodeEndLine,
-	nodeStartLine,
-	sourceLineGap,
-} from "../sourceLines.js";
+import { nodeEndLine, nodeStartLine } from "../sourceLines.js";
 
 function isTrivia(node) {
 	return (
@@ -69,10 +66,7 @@ function trailingDocumentationCommentColumns(entries, options) {
 }
 
 function containerCommentSeparator(leftNode, rightNode, options) {
-	if (!rightNode) return "";
-	return sourceLineGap(leftNode, rightNode, options) === 0
-		? " "
-		: hardline;
+	return commentBoundarySeparator(leftNode, rightNode, options, hardline);
 }
 
 function appendLeadingComments(docs, comments, nextNode, options) {
@@ -109,7 +103,7 @@ export function printContainer(node, options, print) {
 				commentStartLine &&
 				prevEndLine === commentStartLine
 			) {
-				prev.trailingCommentDocs.push(print(child));
+				prev.trailingComments.push({ node: child, doc: print(child) });
 				prev.endLine = Math.max(
 					prev.endLine,
 					nodeEndLine(child, options) ?? prev.endLine,
@@ -133,7 +127,7 @@ export function printContainer(node, options, print) {
 			node: child,
 			doc: print(child),
 			leadingComments,
-			trailingCommentDocs: [],
+			trailingComments: [],
 			startLine: leadingCommentStartLine ?? childStartLine ?? 0,
 			endLine: Math.max(
 				childEndLine,
@@ -146,7 +140,10 @@ export function printContainer(node, options, print) {
 	}
 
 	for (const entry of entries) {
-		entry.trailingCommentDoc = joinDocsWithSpace(entry.trailingCommentDocs);
+		entry.trailingCommentDoc = joinCommentDocs(
+			entry.trailingComments,
+			options,
+		);
 	}
 
 	const trailingCommentColumns = trailingDocumentationCommentColumns(

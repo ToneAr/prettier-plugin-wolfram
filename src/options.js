@@ -128,14 +128,6 @@ export const wolframOptions = {
 		description:
 			"Comma-separated function names that stay in ~f~ infix form instead of normalizing to f[x, y].",
 	},
-	cstRequestTimeoutMs: {
-		type: "int",
-		default: 180000,
-		minimum: 1000,
-		legacyName: "wolframCSTRequestTimeoutMs",
-		description:
-			"Milliseconds to wait for a WolframKernel CST parse request before restarting the kernel session.",
-	},
 	moduleVarsBreakThreshold: {
 		type: "int",
 		default: 40,
@@ -164,13 +156,6 @@ export const wolframOptions = {
 		legacyName: "wolframCaseStructureFunctions",
 		description:
 			"Comma-separated symbols using alternating condition/body indentation.",
-	},
-	enginePath: {
-		type: "path",
-		default: "",
-		legacyName: "wolframEnginePath",
-		description:
-			"Path to a Wolfram install or executable. Auto-detected if empty.",
 	},
 	lintRules: {
 		type: "string",
