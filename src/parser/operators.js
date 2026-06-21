@@ -8,6 +8,8 @@ export const INFIX_OPS = {
 	"==": "Equal", "!=": "Unequal", "<": "Less", "<=": "LessEqual",
 	">": "Greater", ">=": "GreaterEqual",
 	"@*": "Composition", "/*": "RightComposition",
+	// U+2062: WL InvisibleTimes (space-multiplication), inserted by preprocessor
+	"⁢": "InvisibleTimes",
 };
 export const BINARY_OPS = {
 	"=": "Set", ":=": "SetDelayed", "^=": "UpSet", "^:=": "UpSetDelayed",

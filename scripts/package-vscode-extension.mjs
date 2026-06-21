@@ -72,7 +72,6 @@ try {
 		prettier: pkg.dependencies?.prettier ?? "^3.4.0",
 		[packagedPluginName]: `file:${tarballPath}`,
 	};
-	delete pkg.dependencies["prettier-plugin-wolfram"];
 	delete pkg.publishConfig;
 	writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n");
 

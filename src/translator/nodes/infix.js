@@ -331,6 +331,15 @@ export function printInfix(node, options, print) {
 		return printOriginalSource(node, options);
 	}
 
+	if (node.op === "InvisibleTimes") {
+		const terms = operands(node);
+		const parts = [print(terms[0])];
+		for (let i = 1; i < terms.length; i++) {
+			parts.push(" ", print(terms[i]));
+		}
+		return group(parts);
+	}
+
 	if (node.op === "MessageName") {
 		const parts = operands(node);
 		return group(

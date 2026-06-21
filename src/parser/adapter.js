@@ -7,12 +7,18 @@ const GROUP_KIND = { "{": "List", "(": "GroupParen", "[": "Group", "<|": "Associ
 const GROUP_OPEN_LEAF = { "{": "Token`OpenCurly", "(": "Token`OpenParen", "[": "Token`OpenSquare", "<|": "Token`LessBar" };
 const GROUP_CLOSE_LEAF = { "}": "Token`CloseCurly", ")": "Token`CloseParen", "]": "Token`CloseSquare", "|>": "Token`BarGreater" };
 
-export function adapt(tree, source) {
-	const lineIndex = makeLineIndex(source);
-	const ctx = { source, lineIndex };
+// preprocessedSource is the version passed to tree-sitter (may have ⁢ for InvisibleTimes);
+// source is the original — used only for the unformattable fallback.
+export function adapt(tree, source, preprocessedSource) {
+	const ps = preprocessedSource ?? source;
+	const lineIndex = makeLineIndex(ps);
+	const ctx = { source: ps, lineIndex };
 	const root = tree.rootNode;
 	if (subtreeHasError(root)) {
-		const src = nodeSource(root, lineIndex);
+		// Use original source positions for the error fallback so the printer can
+		// emit the unmodified source text verbatim.
+		const errLineIndex = makeLineIndex(source);
+		const src = nodeSource(root, errLineIndex);
 		return { type: "ContainerNode", kind: "String", children: [{ type: "Unknown", kind: "SyntaxErrorNode[]", source: src }], source: src };
 	}
 	// Hoist top-level semicolon chains that end with a trailing ";" (MISSING rhs) into separate
@@ -289,17 +295,34 @@ function delimLeaf(node, kind, value, ctx) {
 	return { type: "LeafNode", kind, value, source: nodeSource(node, ctx.lineIndex) };
 }
 
-// Produce trivia (whitespace/newline) LeafNodes for the gap between two character offsets.
-// Splits on newlines: each run of spaces produces Token`Whitespace, each "\n" produces Token`Newline.
+// Produce trivia LeafNodes for the gap between two character offsets.
+// Splits on newlines and (*...*) comments (which may appear between tokens in right-associative
+// binary nodes like :=). Each whitespace run → Token`Whitespace, each "\n" → Token`Newline,
+// each (*...*) comment → Token`Comment.
 function triviaLeaves(fromIdx, toIdx, ctx) {
 	if (fromIdx >= toIdx) return [];
 	const gap = ctx.source.slice(fromIdx, toIdx);
-	if (!/[\s]/.test(gap)) return [];
+	if (gap.length === 0) return [];
 	const leaves = [];
 	let i = 0;
 	while (i < gap.length) {
 		const ch = gap[i];
-		if (ch === "\n") {
+		// Nested WL comment (*...*)
+		if (ch === "(" && gap[i + 1] === "*") {
+			const start = i;
+			i += 2;
+			let depth = 1;
+			while (i < gap.length && depth > 0) {
+				if (gap[i] === "(" && gap[i + 1] === "*") { depth++; i += 2; }
+				else if (gap[i] === "*" && gap[i + 1] === ")") { depth--; i += 2; }
+				else i++;
+			}
+			const commentText = gap.slice(start, i);
+			const startChar = fromIdx + start;
+			const endChar = fromIdx + i;
+			const src = [offsetToLineCol(ctx.lineIndex, startChar), offsetToLineCol(ctx.lineIndex, endChar)];
+			leaves.push({ type: "LeafNode", kind: "Token`Comment", value: commentText, source: src });
+		} else if (ch === "\n") {
 			const endChar = fromIdx + i + 1;
 			const src = [offsetToLineCol(ctx.lineIndex, fromIdx + i), offsetToLineCol(ctx.lineIndex, endChar)];
 			leaves.push({ type: "LeafNode", kind: "Token`Newline", value: "\n", source: src });
@@ -311,13 +334,19 @@ function triviaLeaves(fromIdx, toIdx, ctx) {
 			leaves.push({ type: "LeafNode", kind: "Token`Newline", value: nl, source: src });
 			i += nl.length;
 		} else {
-			// Collect run of whitespace (non-newline)
+			// Collect run of non-comment, non-newline chars
 			let j = i;
-			while (j < gap.length && gap[j] !== "\n" && gap[j] !== "\r") j++;
+			while (j < gap.length && gap[j] !== "\n" && gap[j] !== "\r" && !(gap[j] === "(" && gap[j + 1] === "*")) j++;
+			if (j === i) { i++; continue; } // safety: skip single unknown char
 			const ws = gap.slice(i, j);
 			const startChar = fromIdx + i;
 			const endChar = fromIdx + j;
 			const src = [offsetToLineCol(ctx.lineIndex, startChar), offsetToLineCol(ctx.lineIndex, endChar)];
+			if (/\S/.test(ws)) {
+				// Non-whitespace that isn't a comment — shouldn't happen in valid WL, skip it
+				i = j;
+				continue;
+			}
 			leaves.push({ type: "LeafNode", kind: "Token`Whitespace", value: ws, source: src });
 			i = j;
 		}
@@ -361,6 +390,8 @@ const TOKEN_KIND_NAME = {
 	// additional infix operators missing from original table
 	"**": "StarStar", "|": "Bar", "||": "BarBar", "&&": "AmpAmp",
 	"@*": "AtStar", "/*": "SlashStar",
+	// InvisibleTimes: WL space-multiplication, encoded as U+2062 during preprocessing
+	"⁢": "InvisibleTimes",
 };
 
 const INEQUALITY_OPS = new Set(["<", "<=", ">", ">=", "==", "!=", "===", "=!="]);
