@@ -57,6 +57,14 @@ export function lineColToOffset(table, line, col) {
 
 function sourceToOffsets(source, table) {
 	if (!Array.isArray(source) || source.length !== 2) return null;
+	// Exact original char offsets recorded by the parser (see nodeSource) are
+	// authoritative when present — they avoid the lossy line/col conversion below.
+	if (
+		typeof source.charStart === "number" &&
+		typeof source.charEnd === "number"
+	) {
+		return { locStart: source.charStart, locEnd: source.charEnd };
+	}
 	const [start, end] = source;
 	if (!Array.isArray(start) || !Array.isArray(end)) return null;
 	const [startLine, startCol] = start;

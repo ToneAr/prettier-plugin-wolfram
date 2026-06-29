@@ -32,7 +32,6 @@ describe("direct dependency resolution", () => {
 			path.join(
 				workspaceRoot,
 				"node_modules",
-				"@wrel",
 				"prettier-plugin-wolfram",
 				"src",
 			),
@@ -42,7 +41,6 @@ describe("direct dependency resolution", () => {
 			path.join(
 				workspaceRoot,
 				"node_modules",
-				"@wrel",
 				"prettier-plugin-wolfram",
 				"package.json",
 			),
@@ -55,7 +53,6 @@ describe("direct dependency resolution", () => {
 			path.join(
 				workspaceRoot,
 				"node_modules",
-				"@wrel",
 				"prettier-plugin-wolfram",
 				"src",
 				"index.js",
@@ -69,7 +66,6 @@ describe("direct dependency resolution", () => {
 			path.join(
 				workspaceRoot,
 				"node_modules",
-				"@wrel",
 				"prettier-plugin-wolfram",
 				"src",
 				"index.js",

@@ -42,7 +42,7 @@ const activeDiagnostics = new Map();
 const pendingDiagnostics = new Map();
 const pluginModuleCache = new Map();
 const extensionRoot = __dirname;
-const pluginPackages = ["prettier-plugin-wolfram", "prettier-plugin-wolfram"];
+const pluginPackages = ["prettier-plugin-wolfram"];
 const CHANGE_DIAGNOSTIC_DELAY_MS = 500;
 
 function log(message) {

@@ -210,6 +210,8 @@ The package also exposes a small rule runner:
 npx prettier-wolfram lint "src/**/*.wl"
 ```
 
+Matched directories and non-Wolfram file extensions are skipped.
+
 It prints diagnostics as:
 
 ```text
@@ -263,12 +265,12 @@ npm run publish:vscode:pre-release
 The extension README with editor setup, settings, diagnostics, and file
 association behavior lives at `vscode-extension/README.md`.
 
-## Publishing To Verdaccio
+## Publishing To npm
 
 Log in:
 
 ```bash
-npm login --registry http://localhost:4873
+npm login
 ```
 
 Preview package contents:
@@ -280,11 +282,11 @@ npm pack --dry-run
 Publish:
 
 ```bash
-npm publish --registry http://localhost:4873
+npm publish
 ```
 
 Verify:
 
 ```bash
-npm view prettier-plugin-wolfram --registry http://localhost:4873
+npm view prettier-plugin-wolfram
 ```

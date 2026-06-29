@@ -1,6 +1,6 @@
 {
 	"name": "prettier-plugin-wolfram",
-	"version": "0.7.3",
+	"version": "0.7.6",
 	"description": "Prettier plugin for Wolfram Language using tree-sitter",
 	"license": "MIT",
 	"repository": {
@@ -21,7 +21,8 @@
 		".": "./src/index.js"
 	},
 	"bin": {
-		"prettier-wolfram": "bin/prettier-wolfram.js"
+		"prettier-wolfram": "bin/prettier-wolfram.js",
+		"prettier-wolfram-lsp": "bin/prettier-wolfram-lsp.js"
 	},
 	"files": [
 		"bin/",

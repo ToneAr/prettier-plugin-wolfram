@@ -55,8 +55,26 @@ export function offsetToLineCol(lineIndex, charOffset) {
 }
 
 export function nodeSource(tsNode, lineIndex) {
-	return [
+	const source = [
 		offsetToLineCol(lineIndex, tsNode.startIndex),
 		offsetToLineCol(lineIndex, tsNode.endIndex),
 	];
+	// When a preprocessing offset map is available, record the exact original
+	// character offsets (non-enumerably, so node.source stays a [[l,c],[l,c]]
+	// pair for lint rules). These bypass the lossy WL-byte/visual-column line/col
+	// round-trip in addOffsets, which otherwise mismaps offsets whenever the
+	// preprocessed text differs from the original (collapsed spaces, tabs, or
+	// non-ASCII characters earlier on the line).
+	const map = lineIndex?.map;
+	if (map) {
+		const charStart = map[tsNode.startIndex];
+		const charEnd = map[tsNode.endIndex];
+		if (typeof charStart === "number" && typeof charEnd === "number") {
+			Object.defineProperties(source, {
+				charStart: { value: charStart, enumerable: false },
+				charEnd: { value: charEnd, enumerable: false },
+			});
+		}
+	}
+	return source;
 }

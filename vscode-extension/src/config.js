@@ -2,7 +2,6 @@
 
 const WOLFRAM_PLUGIN_PACKAGE_NAMES = new Set([
 	"prettier-plugin-wolfram",
-	"prettier-plugin-wolfram",
 ]);
 
 function normalizeResolvedConfig(resolvedConfig = {}) {

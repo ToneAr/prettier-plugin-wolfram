@@ -9,9 +9,12 @@ const GROUP_CLOSE_LEAF = { "}": "Token`CloseCurly", ")": "Token`CloseParen", "]"
 
 // preprocessedSource is the version passed to tree-sitter (may have ⁢ for InvisibleTimes);
 // source is the original — used only for the unformattable fallback.
-export function adapt(tree, source, preprocessedSource) {
+// map (optional) translates preprocessed char offsets back to original offsets;
+// it is attached to lineIndex so nodeSource can record exact original positions.
+export function adapt(tree, source, preprocessedSource, map) {
 	const ps = preprocessedSource ?? source;
 	const lineIndex = makeLineIndex(ps);
+	lineIndex.map = map;
 	const ctx = { source: ps, lineIndex };
 	const root = tree.rootNode;
 	if (subtreeHasError(root)) {
@@ -21,12 +24,14 @@ export function adapt(tree, source, preprocessedSource) {
 		const src = nodeSource(root, errLineIndex);
 		return { type: "ContainerNode", kind: "String", children: [{ type: "Unknown", kind: "SyntaxErrorNode[]", source: src }], source: src };
 	}
-	// Hoist top-level semicolon chains that end with a trailing ";" (MISSING rhs) into separate
-	// ContainerNode children, matching the CodeParser output structure.
-	// Only hoist if the outer infix has a trailing MISSING (i.e. ends with ";").
+	// Hoist top-level semicolon chains into separate ContainerNode children,
+	// matching the CodeParser output structure. This must happen for multiline
+	// chains even when the final expression is not followed by a trailing ";",
+	// otherwise the printer sees one giant CompoundExpression and cannot apply
+	// top-level definition spacing between adjacent definitions.
 	const children = [];
 	for (const c of namedChildren(root)) {
-		if (c.type === "infix" && operatorLiteral(c, ctx) === ";" && hasTrailingSemicolon(c)) {
+		if (shouldHoistTopLevelSemicolonChain(c, ctx)) {
 			hoistSemicolonChildren(c, ctx, children);
 		} else {
 			children.push(adaptNode(c, ctx));
@@ -40,10 +45,20 @@ export function adapt(tree, source, preprocessedSource) {
 	};
 }
 
+function shouldHoistTopLevelSemicolonChain(node, ctx) {
+	if (node.type !== "infix" || operatorLiteral(node, ctx) !== ";") return false;
+	return hasTrailingSemicolon(node) || spansMultipleLines(node, ctx);
+}
+
 // Returns true if the infix node ends with a MISSING node (i.e. has a trailing ";").
 function hasTrailingSemicolon(node) {
 	const last = node.child(node.childCount - 1);
 	return last !== null && last.isMissing;
+}
+
+function spansMultipleLines(node, ctx) {
+	const source = nodeSource(node, ctx.lineIndex);
+	return source?.[0]?.[0] !== source?.[1]?.[0];
 }
 
 // Collect all leaf statements from a semicolon infix chain (possibly left-recursive),
@@ -53,7 +68,8 @@ function collectSemicolonSegments(node, ctx, segments) {
 	// A semicolon infix has children: [lhs, ";", rhs] or with comments interspersed.
 	// The lhs may itself be a semicolon infix (left-assoc chaining).
 	let lhs = null, semiToken = null, rhs = null;
-	const pendingComments = [];
+	const leadingComments = [];
+	const boundaryComments = [];
 
 	for (let i = 0; i < node.childCount; i++) {
 		const c = node.child(i);
@@ -63,7 +79,8 @@ function collectSemicolonSegments(node, ctx, segments) {
 		} else if (c.isMissing) {
 			// trailing implicit null — rhs is nothing (trailing semicolon)
 		} else if (c.type === "comment") {
-			pendingComments.push(c);
+			if (lhs === null) leadingComments.push(c);
+			else boundaryComments.push(c);
 		} else if (lhs === null) {
 			lhs = c;
 		} else {
@@ -71,29 +88,48 @@ function collectSemicolonSegments(node, ctx, segments) {
 		}
 	}
 
+	const trailingComments = [];
+	const rhsLeadingComments = [];
+	for (const c of boundaryComments) {
+		if (rhs !== null && isLeadingCommentForNextSegment(c, semiToken, ctx)) {
+			rhsLeadingComments.push(c);
+		} else {
+			trailingComments.push(c);
+		}
+	}
+
 	if (lhs !== null && lhs.type === "infix" && operatorLiteral(lhs, ctx) === ";") {
+		const segmentStart = segments.length;
 		// Flatten the left subtree
 		collectSemicolonSegments(lhs, ctx, segments);
+		if (segments.length > segmentStart) {
+			segments[segmentStart].leadingComments.unshift(...leadingComments);
+		}
 		// The last segment from lhs should get the semiToken we found
 		if (segments.length > 0 && semiToken !== null) {
 			segments[segments.length - 1].semiToken = semiToken;
 		}
-		// Add any comments from between lhs and rhs to the last segment's pending
-		for (const c of pendingComments) {
+		for (const c of trailingComments) {
 			if (segments.length > 0) segments[segments.length - 1].trailingComments.push(c);
 		}
 	} else {
 		// Push lhs as a new segment
 		const nodes = [];
 		if (lhs !== null) nodes.push(lhs);
-		segments.push({ nodes, semiToken, trailingComments: [] });
-		for (const c of pendingComments) segments[segments.length - 1].trailingComments.push(c);
+		segments.push({ nodes, semiToken, leadingComments, trailingComments });
 	}
 
 	// Push rhs as the next segment (no semiToken yet — will be set by caller if needed)
 	if (rhs !== null) {
-		segments.push({ nodes: [rhs], semiToken: null, trailingComments: [] });
+		segments.push({ nodes: [rhs], semiToken: null, leadingComments: rhsLeadingComments, trailingComments: [] });
 	}
+}
+
+function isLeadingCommentForNextSegment(comment, semiToken, ctx) {
+	if (!semiToken) return false;
+	const semiEndLine = nodeSource(semiToken, ctx.lineIndex)?.[1]?.[0];
+	const commentStartLine = nodeSource(comment, ctx.lineIndex)?.[0]?.[0];
+	return Number.isFinite(semiEndLine) && Number.isFinite(commentStartLine) && commentStartLine > semiEndLine;
 }
 
 // Hoist top-level semicolon-separated statements into separate ContainerNode children.
@@ -104,6 +140,7 @@ function hoistSemicolonChildren(node, ctx, out) {
 	collectSemicolonSegments(node, ctx, segments);
 
 	for (const seg of segments) {
+		for (const c of seg.leadingComments ?? []) out.push(leaf(c, ctx));
 		if (seg.nodes.length === 0) continue;
 
 		const adaptedNodes = seg.nodes.map(n => adaptNode(n, ctx));

@@ -2,11 +2,22 @@
 // bin/prettier-wolfram.js
 // Usage: prettier-wolfram lint [options] <glob...>
 
-import { readFileSync } from "fs";
+import { readFileSync, statSync } from "fs";
 import { globSync } from "fs";
+import { extname } from "path";
 import { WolframParser } from "../src/parser/index.js";
 import { runRules } from "../src/rules/index.js";
 import { buildOffsetTable, addOffsets } from "../src/utils/offsets.js";
+
+const WOLFRAM_EXTENSIONS = new Set([
+	".wl",
+	".wls",
+	".wlt",
+	".mt",
+	".m",
+	".vsnb",
+	".nb",
+]);
 
 const [, , command, ...args] = process.argv;
 
@@ -31,8 +42,14 @@ let totalDiagnostics = 0;
 for (const pattern of args) {
 	const files = globSync(pattern, { absolute: true });
 	for (const file of files) {
-		const source = readFileSync(file, "utf8");
 		try {
+			if (
+				!statSync(file).isFile() ||
+				!WOLFRAM_EXTENSIONS.has(extname(file).toLowerCase())
+			) {
+				continue;
+			}
+			const source = readFileSync(file, "utf8");
 			const cst = await parser.getCST(source);
 			const table = buildOffsetTable(source);
 			addOffsets(cst, table);

@@ -163,12 +163,20 @@ export function printBinary(node, options, print) {
 	const rhsWillBreak =
 		isMultilineStringLeaf(rhs, rhsDoc) || isMultilineStringJoin(rhs);
 
-	if (node.op === "BinaryAt" || node.op === "BinarySlashSlash") {
+	if (node.op === "BinaryAt") {
 		return group([
 			lhsDoc,
 			`${gap}${opStr}`,
 			space ? line : softline,
 			rhsDoc,
+		]);
+	}
+
+	if (node.op === "BinarySlashSlash") {
+		return group([
+			lhsDoc,
+			`${gap}${opStr}`,
+			indent([space ? line : softline, rhsDoc]),
 		]);
 	}
 

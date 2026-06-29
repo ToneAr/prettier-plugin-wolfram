@@ -132,6 +132,66 @@ describe("translator regressions", () => {
 		);
 	}, 15000);
 
+	it("indents broken postfix continuations in association rules", async () => {
+		const source =
+			"ExternalEvaluate[\n" +
+			"\t$DatabaseReference,\n" +
+			"\tStringTemplate[sqlTemplateString][\n" +
+			"\t\t<|\n" +
+			'\t\t\t"HalfLifeDays" -> OptionValue["HalfLifeDays"] // Replace[Except[_Integer] :> 365.0],\n' +
+			'\t\t\t"UnfilteredLimit" -> OptionValue["UnfilteredLimit"] // Replace[Except[_Integer] :> 100],\n' +
+			'\t\t\t"FilteredLimit" -> OptionValue["FilteredLimit"] // Replace[Except[_Integer] :> 10]\n' +
+			"\t\t|>\n" +
+			"\t]\n" +
+			"]";
+
+		const result = await prettier.format(source, {
+			parser: "wolfram",
+			plugins: [plugin],
+			printWidth: 80,
+			tabWidth: 2,
+			useTabs: false,
+		});
+
+		expect(result).toBe(
+			"ExternalEvaluate[\n" +
+				"  $DatabaseReference,\n" +
+				"  StringTemplate[sqlTemplateString][\n" +
+				"    <|\n" +
+				'      "HalfLifeDays" -> OptionValue["HalfLifeDays"] //\n' +
+				"        Replace[Except[_Integer] :> 365.0],\n" +
+				'      "UnfilteredLimit" -> OptionValue["UnfilteredLimit"] //\n' +
+				"        Replace[Except[_Integer] :> 100],\n" +
+				'      "FilteredLimit" -> OptionValue["FilteredLimit"] //\n' +
+				"        Replace[Except[_Integer] :> 10]\n" +
+				"    |>\n" +
+				"  ]\n" +
+				"]",
+		);
+	}, 15000);
+
+	it("indents broken postfix continuations in list rules", async () => {
+		const source =
+			'{"HalfLifeDays" -> OptionValue["HalfLifeDays"] // Replace[Except[_Integer] :> 365.0], "FilteredLimit" -> OptionValue["FilteredLimit"] // Replace[Except[_Integer] :> 10]}';
+
+		const result = await prettier.format(source, {
+			parser: "wolfram",
+			plugins: [plugin],
+			printWidth: 80,
+			tabWidth: 2,
+			useTabs: false,
+		});
+
+		expect(result).toBe(
+			"{\n" +
+				'  "HalfLifeDays" -> OptionValue["HalfLifeDays"] //\n' +
+				"    Replace[Except[_Integer] :> 365.0],\n" +
+				'  "FilteredLimit" -> OptionValue["FilteredLimit"] //\n' +
+				"    Replace[Except[_Integer] :> 10]\n" +
+				"}",
+		);
+	}, 15000);
+
 	it("honors the trailing newline formatter option", async () => {
 		const baseOptions = {
 			parser: "wolfram",
@@ -793,6 +853,35 @@ describe("translator regressions", () => {
 		expect(once).toContain("Some comment");
 		expect(once).toContain("*)");
 		expect(twice).toBe(once);
+	}, 15000);
+
+	it("preserves multiline comment content when implicit-multiplication spacing precedes it", async () => {
+		// `foo  bar` (two spaces between word chars) is collapsed to an
+		// InvisibleTimes character before parsing, which shifts the comment's
+		// source offsets. The slice used to drop the leading "(" and corrupt
+		// the comment. See offset mapping in src/utils/offsets.js.
+		const cases = [
+			"foo  bar  (* line one\n  line two *)\nx = 1;",
+			"aa  bb  cc  (* alpha\n   beta\n   gamma *)\ny = 2;",
+			"Module[{x},\n  aa  bb  (* first\n     second *)\n  x = 1\n]",
+		];
+
+		for (const source of cases) {
+			const result = await prettier.format(source, {
+				parser: "wolfram",
+				plugins: [plugin],
+				printWidth: 80,
+				tabWidth: 2,
+			});
+
+			// Comment content is preserved exactly (nothing cut).
+			expect(comments(result), source).toEqual(comments(source));
+			// No unterminated comments: openers and closers stay balanced.
+			expect(
+				(result.match(/\(\*/g) ?? []).length,
+				source,
+			).toBe((result.match(/\*\)/g) ?? []).length);
+		}
 	}, 15000);
 
 	it("groups leading comments with the following definition and keeps the separating blank line above the comment block", async () => {
@@ -2078,10 +2167,10 @@ scrapeCustomerStoryData[]:=
 		}
 	});
 
-	it("does not indent wrapped prefix and postfix operator bodies", () => {
+	it("uses operator-specific wrapping for prefix and postfix operator bodies", () => {
 		const cases = [
 			["BinaryAt", "f", "@", "body", "f @\nbody"],
-			["BinarySlashSlash", "body", "//", "f", "body //\nf"],
+			["BinarySlashSlash", "body", "//", "f", "body //\n  f"],
 		];
 
 		for (const [op, lhs, token, rhs, expected] of cases) {

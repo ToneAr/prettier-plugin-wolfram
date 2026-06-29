@@ -20,10 +20,24 @@ async function getLanguage() {
 
 // Replace space-based implicit multiplication (a  b) with U+2062 (InvisibleTimes)
 // so the grammar can parse it. Skip content inside strings and nested comments.
-export function preprocessInvisibleTimes(src) {
+//
+// Returns { text, map } where `text` is the preprocessed source and `map` is an
+// index translation table: map[i] is the original-source character offset that
+// corresponds to preprocessed-text offset i (map[text.length] === src.length).
+// Because the only length-changing transform collapses a run of spaces into a
+// single InvisibleTimes char, this map lets callers translate tree-sitter node
+// positions (computed on the preprocessed text) back to exact offsets in the
+// original source, without lossy line/col round-trips.
+export function preprocess(src) {
 	let result = "";
-	let i = 0;
+	const map = [];
 	const n = src.length;
+	// Copy src[start..end) verbatim, recording the source offset of each char.
+	const copyVerbatim = (start, end) => {
+		for (let k = start; k < end; k++) map.push(k);
+		result += src.slice(start, end);
+	};
+	let i = 0;
 	while (i < n) {
 		// Skip quoted string
 		if (src[i] === '"') {
@@ -33,7 +47,7 @@ export function preprocessInvisibleTimes(src) {
 				i++;
 			}
 			if (i < n) i++;
-			result += src.slice(start, i);
+			copyVerbatim(start, i);
 			continue;
 		}
 		// Skip nested WL comment (* ... *)
@@ -46,7 +60,7 @@ export function preprocessInvisibleTimes(src) {
 				else if (src[i] === "*" && src[i + 1] === ")") { depth--; i += 2; }
 				else i++;
 			}
-			result += src.slice(start, i);
+			copyVerbatim(start, i);
 			continue;
 		}
 		// Two or more spaces between word chars on same line → InvisibleTimes
@@ -59,14 +73,22 @@ export function preprocessInvisibleTimes(src) {
 				while (j < n && src[j] === " ") j++;
 				if (j < n && /\w/.test(src[j])) {
 					result += "⁢"; // InvisibleTimes, spaces stripped (they're extras)
+					map.push(i); // the single char maps to the start of the run
 					i = j;
 					continue;
 				}
 			}
 		}
+		map.push(i);
 		result += src[i++];
 	}
-	return result;
+	map.push(n); // sentinel for end offsets (node endIndex === text.length)
+	return { text: result, map };
+}
+
+// Backward-compatible wrapper returning only the preprocessed text.
+export function preprocessInvisibleTimes(src) {
+	return preprocess(src).text;
 }
 
 export class WolframParser {
@@ -74,8 +96,8 @@ export class WolframParser {
 		const lang = await getLanguage();
 		const parser = new Parser();
 		parser.setLanguage(lang);
-		const preprocessed = preprocessInvisibleTimes(sourceText);
+		const { text: preprocessed, map } = preprocess(sourceText);
 		const tree = parser.parse(preprocessed);
-		return adapt(tree, sourceText, preprocessed);
+		return adapt(tree, sourceText, preprocessed, map);
 	}
 }

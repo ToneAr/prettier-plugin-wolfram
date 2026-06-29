@@ -214,9 +214,8 @@ For each file, the extension resolves formatter dependencies in this order:
 
 1. A direct workspace dependency on `prettier`, otherwise bundled Prettier.
 2. A plugin checkout when the workspace package is
-   `prettier-plugin-wolfram` or `prettier-plugin-wolfram`.
-3. A direct workspace dependency on `prettier-plugin-wolfram` or
    `prettier-plugin-wolfram`.
+3. A direct workspace dependency on `prettier-plugin-wolfram`.
 4. The bundled Wolfram plugin.
 
 This lets editor formatting match CLI formatting when the project installs its

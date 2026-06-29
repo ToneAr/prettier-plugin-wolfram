@@ -5,6 +5,7 @@ If[x > 0, positive, negative]
 If[x > 0, If[x > 10, big, small], If[x < -10, verynegative, negative]]
 (* If with Null else *)
 If[flag, doSomething[]]
+
 (* Switch *)
 Switch[x, 1, "one", 2, "two", 3, "three", _, "other"]
 (* Which *)
