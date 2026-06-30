@@ -1,3 +1,3 @@
 [submodule "grammar"]
 	path = grammar
-	url = https://github.com/mtirard/zed-wolfram-treesitter
+	url = https://github.com/WolframResearch/tree-sitter-wolfram.git
