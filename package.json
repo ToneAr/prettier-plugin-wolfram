@@ -1,6 +1,6 @@
 {
 	"name": "prettier-plugin-wolfram",
-	"version": "0.7.6",
+	"version": "0.7.7",
 	"description": "Prettier plugin for Wolfram Language using tree-sitter",
 	"license": "MIT",
 	"repository": {

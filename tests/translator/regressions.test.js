@@ -575,6 +575,30 @@ describe("translator regressions", () => {
 		}
 	}, 15000);
 
+	it("formats ReplaceRepeated rule lists like ReplaceAll rule lists", async () => {
+		const source =
+			'values = {"Content" -> content} /. {HoldPattern[k_String -> str_String] :> Rule[k, str]} //. {HoldPattern["last_scraped" -> Automatic] :> Rule["last_scraped", DateString["ISODateTime"]], HoldPattern["author" -> None] :> Rule["author", "NULL"]};';
+		const result = await prettier.format(source, {
+			parser: "wolfram",
+			plugins: [plugin],
+			printWidth: 80,
+			tabWidth: 2,
+		});
+
+		expect(result).toBe(
+			"values =\n" +
+				'  {"Content" -> content} /. {\n' +
+				"    HoldPattern[k_String -> str_String] :> Rule[k, str]\n" +
+				"  } //. {\n" +
+				'    HoldPattern["last_scraped" -> Automatic] :> Rule[\n' +
+				'      "last_scraped",\n' +
+				'      DateString["ISODateTime"]\n' +
+				"    ],\n" +
+				'    HoldPattern["author" -> None] :> Rule["author", "NULL"]\n' +
+				"  };",
+		);
+	}, 15000);
+
 	it("keeps width-aware special forms within printWidth after formatting", async () => {
 		const cases = [
 			{
