@@ -138,6 +138,7 @@ Typical `.prettierrc` example:
 		"alignRuleValues": false,
 		"documentationCommentColumn": 0,
 		"documentationCommentPadding": 2,
+		"documentationCommentMarkers": false,
 		"topLevelSpacingMode": "declarations",
 		"preserveTildeInfixFunctions": "",
 		"moduleVarsBreakThreshold": 40,
@@ -168,6 +169,7 @@ related options for core Prettier behavior.
 | `wolfram.alignRuleValues`                             | boolean     | `false`                             | Vertically aligns `Rule` and `RuleDelayed` values in multiline argument, list, and association layouts.                                                                                                                   |
 | `wolfram.documentationCommentColumn`                  | integer     | `0`                                 | Column for trailing documentation comments. `0` computes a column per contiguous block.                                                                                                                                   |
 | `wolfram.documentationCommentPadding`                 | integer     | `2`                                 | Minimum spaces between code and an aligned trailing documentation comment when the column is computed automatically.                                                                                                      |
+| `wolfram.documentationCommentMarkers`                 | boolean     | `false`                             | Treats trailing comments beginning with `<` as documentation comments aligned at `printWidth`.                                                                                                                           |
 | `wolfram.topLevelSpacingMode`                         | string      | `"declarations"`                    | Top-level blank-line policy. Allowed values are `declarations`, `all`, and `none`.                                                                                                                                        |
 | `wolfram.preserveTildeInfixFunctions`                 | string      | `""`                                | Comma-separated function names that stay in `x ~ f ~ y` form instead of normalizing to `f[x, y]`.                                                                                                                         |
 | `wolfram.moduleVarsBreakThreshold`                    | integer     | `40`                                | Character count at which block-structure variable lists break across lines.                                                                                                                                               |

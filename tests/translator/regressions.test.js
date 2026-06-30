@@ -1840,23 +1840,58 @@ scrapeCustomerStoryData[]:=
 				node,
 				{
 					...opts,
-					printWidth: 80,
+					printWidth: 20,
+					wolframDocumentationCommentMarkers: true,
 				},
 				leafPrint,
 			),
 		);
-		expect(result).toBe("operation1;  (* < doc *)");
+		expect(result).toBe("operation1;         (* < doc *)");
 	});
+
+	it("keeps < trailing comments ordinary by default", async () => {
+		const result = await prettier.format("operation1; (*< doc *)", {
+			parser: "wolfram",
+			plugins: [plugin],
+			printWidth: 20,
+			tabWidth: 2,
+		});
+
+		expect(result).toBe("operation1; (*< doc *)");
+	}, 15000);
 
 	it("formats < trailing comments as documentation comments through Prettier", async () => {
 		const result = await prettier.format("operation1; (*< doc *)", {
 			parser: "wolfram",
 			plugins: [plugin],
-			printWidth: 80,
+			printWidth: 20,
 			tabWidth: 2,
+			wolfram: {
+				documentationCommentMarkers: true,
+			},
 		});
 
-		expect(result).toBe("operation1;  (* < doc *)");
+		expect(result).toBe("operation1;         (* < doc *)");
+	}, 15000);
+
+	it("aligns < trailing comments at the print-width column across top-level statements", async () => {
+		const result = await prettier.format(
+			"a; (*< first *)\nlongOperation; (*   < second *)",
+			{
+				parser: "wolfram",
+				plugins: [plugin],
+				printWidth: 20,
+				tabWidth: 2,
+				wolfram: {
+					documentationCommentMarkers: true,
+				},
+			},
+		);
+		const lines = result.split("\n");
+
+		expect(lines.map((line) => line.indexOf("(*"))).toEqual([20, 20]);
+		expect(result).toContain("(* < first *)");
+		expect(result).toContain("(* < second *)");
 	}, 15000);
 
 	it("prints list contents inside InfixNode[Comma] wrappers", () => {

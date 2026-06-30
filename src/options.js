@@ -109,6 +109,13 @@ export const wolframOptions = {
 		description:
 			"Minimum spaces between code and an aligned trailing documentation comment in auto mode.",
 	},
+	documentationCommentMarkers: {
+		type: "boolean",
+		default: false,
+		legacyName: "wolframDocumentationCommentMarkers",
+		description:
+			"Treat trailing comments beginning with < as documentation comments aligned at printWidth.",
+	},
 	topLevelSpacingMode: {
 		type: "string",
 		default: "declarations",

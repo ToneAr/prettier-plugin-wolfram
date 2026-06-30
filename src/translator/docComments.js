@@ -19,11 +19,25 @@ export function isDocumentationCommentMarkerText(text) {
 	return /^\(\*\s*</u.test(String(text ?? ""));
 }
 
-export function hasDocumentationCommentMarker(comment) {
+function documentationCommentMarkersEnabled(options) {
+	return (
+		normalizeWolframOptions(options).wolframDocumentationCommentMarkers ===
+		true
+	);
+}
+
+export function hasDocumentationCommentMarker(comment, options) {
+	if (!documentationCommentMarkersEnabled(options)) return false;
 	const node = comment?.node ?? comment;
 	return (
 		node?.kind === "Token`Comment" &&
 		isDocumentationCommentMarkerText(node.value)
+	);
+}
+
+function hasMarkedDocumentationCommentEntry(entry, options) {
+	return (entry?.trailingComments ?? []).some((comment) =>
+		hasDocumentationCommentMarker(comment, options),
 	);
 }
 
@@ -34,6 +48,7 @@ function normalizeDocumentationCommentMarker(text) {
 function normalizedCommentDoc(comment, options) {
 	const rendered = renderFlatDoc(comment.doc, options);
 	if (
+		!documentationCommentMarkersEnabled(options) ||
 		!isDocumentationCommentMarkerText(rendered) ||
 		rendered.includes("\n")
 	) {
@@ -80,6 +95,13 @@ export function documentationCommentColumn(
 	options = normalizeWolframOptions(options);
 	const manual = options.wolframDocumentationCommentColumn ?? 0;
 	if (manual > 0) return manual;
+	if (
+		entries.some((entry) =>
+			hasMarkedDocumentationCommentEntry(entry, options),
+		)
+	) {
+		return options.printWidth ?? 80;
+	}
 	const padding = Math.max(
 		1,
 		options.wolframDocumentationCommentPadding ?? 2,

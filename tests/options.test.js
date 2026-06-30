@@ -12,11 +12,13 @@ describe("Wolfram option normalization", () => {
 				wolfram: {
 					spaceAfterComma: false,
 					trailingNewline: true,
+					documentationCommentMarkers: true,
 				},
 			}),
 		).toMatchObject({
 			wolframSpaceAfterComma: false,
 			wolframTrailingNewline: true,
+			wolframDocumentationCommentMarkers: true,
 		});
 	});
 

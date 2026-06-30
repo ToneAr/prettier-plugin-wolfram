@@ -2,7 +2,7 @@
 	"name": "prettier-vscode-wolfram",
 	"displayName": "Wolfram Prettier Plugin",
 	"description": "Formats Wolfram Language files and surfaces formatter-backed diagnostics using bundled Prettier.",
-	"version": "0.7.9",
+	"version": "0.7.10",
 	"license": "MIT",
 	"publisher": "Tone",
 	"icon": "assets/icon.png",
@@ -30,7 +30,7 @@
 	},
 	"dependencies": {
 		"prettier": "^3.4.0",
-		"prettier-plugin-wolfram": "^0.7.9"
+		"prettier-plugin-wolfram": "^0.7.10"
 	},
 	"contributes": {
 		"configuration": {

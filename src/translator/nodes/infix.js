@@ -192,7 +192,9 @@ export function printInfix(node, options, print) {
 			(entry) => entry.trailingCommentDoc,
 		);
 		const hasMarkedDocumentationComment = trailingEntries.some((entry) =>
-			entry.trailingComments.some(hasDocumentationCommentMarker),
+			entry.trailingComments.some((comment) =>
+				hasDocumentationCommentMarker(comment, options),
+			),
 		);
 		const alignTrailingComments =
 			(options.wolframDocumentationCommentColumn ?? 0) > 0 ||
