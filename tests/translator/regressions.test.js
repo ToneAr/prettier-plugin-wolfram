@@ -1860,6 +1860,17 @@ scrapeCustomerStoryData[]:=
 		expect(result).toBe("operation1; (*< doc *)");
 	}, 15000);
 
+	it("keeps < trailing comments in expression blocks ordinary by default", async () => {
+		const result = await prettier.format("f[a (*< doc *), b]", {
+			parser: "wolfram",
+			plugins: [plugin],
+			printWidth: 30,
+			tabWidth: 2,
+		});
+
+		expect(result).toBe("f[a (*< doc *), b]");
+	}, 15000);
+
 	it("formats < trailing comments as documentation comments through Prettier", async () => {
 		const result = await prettier.format("operation1; (*< doc *)", {
 			parser: "wolfram",
@@ -1893,6 +1904,81 @@ scrapeCustomerStoryData[]:=
 		expect(result).toContain("(* < first *)");
 		expect(result).toContain("(* < second *)");
 	}, 15000);
+
+	it.each([
+		[
+			"call",
+			"f[a (*< a doc *), longName (*< b doc *)]",
+			"f[\n" +
+				"  a,                          (* < a doc *)\n" +
+				"  longName                    (* < b doc *)\n" +
+				"]",
+		],
+		[
+			"list",
+			"{a -> 1 (*< a doc *), longName -> 2 (*   < b doc *)}",
+			"{\n" +
+				"  a -> 1,                     (* < a doc *)\n" +
+				"  longName -> 2               (* < b doc *)\n" +
+				"}",
+		],
+		[
+			"association",
+			'<|"a" -> 1 (*< a doc *), "long" -> 2 (*< b doc *)|>',
+			"<|\n" +
+				'  "a" -> 1,                   (* < a doc *)\n' +
+				'  "long" -> 2                 (* < b doc *)\n' +
+				"|>",
+		],
+		[
+			"Module variable list",
+			"Module[{a = 1 (*< a doc *), longName = 2 (*< b doc *)}, body]",
+			"Module[\n" +
+				"  {\n" +
+				"    a = 1,                    (* < a doc *)\n" +
+				"    longName = 2              (* < b doc *)\n" +
+				"  },\n" +
+				"  body\n" +
+				"]",
+		],
+		[
+			"If branch arguments",
+			"If[cond, a (*< then *), b (*< else *)]",
+			"If[\n" +
+				"  cond,\n" +
+				"  a,                          (* < then *)\n" +
+				"  b                           (* < else *)\n" +
+				"]",
+		],
+		[
+			"part specification",
+			"m[[1 (*< one *), 2 (*< two *)]]",
+			"m[[\n" +
+				"  1,                          (* < one *)\n" +
+				"  2                           (* < two *)\n" +
+				"]]",
+		],
+	])(
+		"formats < trailing comments in expression blocks: %s",
+		async (_label, source, expected) => {
+			const result = await prettier.format(source, {
+				parser: "wolfram",
+				plugins: [plugin],
+				printWidth: 30,
+				tabWidth: 2,
+				wolfram: {
+					documentationCommentMarkers: true,
+				},
+			});
+
+			expect(result).toBe(expected);
+			for (const line of result.split("\n")) {
+				const commentColumn = line.indexOf("(*");
+				if (commentColumn !== -1) expect(commentColumn).toBe(30);
+			}
+		},
+		15000,
+	);
 
 	it("prints list contents inside InfixNode[Comma] wrappers", () => {
 		const node = {

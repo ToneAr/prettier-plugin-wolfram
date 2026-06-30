@@ -1,11 +1,16 @@
 // src/translator/nodes/call.js
 import { doc } from "prettier";
 const { builders } = doc;
-import { isComment, isTrivia } from "./leaf.js";
+import { isComment, isTrivia, stringLineIndentDepth } from "./leaf.js";
 import { alignedRuleDoc, withAlignedRuleValues } from "../ruleAlignment.js";
 import { commentBoundarySeparator } from "../commentSpacing.js";
+import {
+	documentationCommentColumn,
+	withAlignedTrailingComment,
+	withMarkedTrailingCommentDocs,
+} from "../docComments.js";
 import { normalizeWolframOptions } from "../../options.js";
-const { group, indent, softline, line } = builders;
+const { group, indent, softline, line, hardline } = builders;
 
 const BRACKET_KINDS = new Set(["Token`OpenSquare", "Token`CloseSquare"]);
 
@@ -14,7 +19,7 @@ function isBracketToken(node) {
 }
 
 function isCommaToken(node) {
-	return node.type === "LeafNode" && node.kind === "Token`Comma";
+	return node?.type === "LeafNode" && node.kind === "Token`Comma";
 }
 
 function nextContentEntry(entries, startIndex) {
@@ -154,19 +159,48 @@ function printedEntries(path, print, entries) {
 	}));
 }
 
-function sequenceDocs(entries, options, itemKind) {
+function sequenceDocs(rawEntries, options, itemKind, columnOffset = 0) {
+	const entries = withMarkedTrailingCommentDocs(rawEntries, options);
 	const docs = [];
 	const commaGap = options.wolframSpaceAfterComma ? line : softline;
 	const alignmentGroupId = entries.some((entry) => entry.alignedRuleDoc)
 		? Symbol("wolfram-align-rule-values")
 		: null;
+	for (let i = 0; i < entries.length; i++) {
+		if (entries[i].trailingCommentDoc) {
+			entries[i].trailingCommentSuffix = trailingCommentSuffix(
+				entries,
+				i,
+			);
+		}
+	}
+	const trailingCommentEntries = entries.filter(
+		(entry) => entry.trailingCommentDoc,
+	);
+	const trailingCommentColumn =
+		trailingCommentEntries.length > 0
+			? documentationCommentColumn(
+					trailingCommentEntries,
+					options,
+					(entry) => entry.trailingCommentSuffix ?? "",
+					columnOffset,
+				)
+			: null;
 	let previousKind = null;
 
 	for (let i = 0; i < entries.length; i++) {
 		const entry = entries[i];
 		if (isCommaToken(entry.node)) {
-			if (previousKind === null || previousKind === "comma") continue;
 			const previousEntry = previousContentEntry(entries, i);
+			if (
+				previousEntry?.trailingCommentDoc &&
+				previousEntry.trailingCommentSuffix === ","
+			) {
+				previousKind = "comma";
+				continue;
+			}
+
+			if (previousKind === null || previousKind === "comma") continue;
 			const followingEntry = nextContentEntry(entries, i);
 			const separator =
 				followingEntry &&
@@ -192,7 +226,27 @@ function sequenceDocs(entries, options, itemKind) {
 			);
 		}
 
-		docs.push(alignedRuleDoc(entry, alignmentGroupId));
+		const entryDoc = alignedRuleDoc(entry, alignmentGroupId);
+		if (entry.trailingCommentDoc) {
+			docs.push(
+				withAlignedTrailingComment(
+					{ ...entry, doc: entryDoc },
+					options,
+					trailingCommentColumn,
+					entry.trailingCommentSuffix ?? "",
+				),
+			);
+			if (
+				entry.trailingCommentSuffix === "," &&
+				nextContentEntry(entries, i)
+			) {
+				docs.push(hardline);
+				previousKind = "comma";
+				continue;
+			}
+		} else {
+			docs.push(entryDoc);
+		}
 		previousKind = isComment(entry.node) ? "comment" : itemKind;
 	}
 
@@ -203,6 +257,14 @@ function grouped(contents, alignmentGroupId) {
 	return alignmentGroupId
 		? group(contents, { id: alignmentGroupId })
 		: group(contents);
+}
+
+function contentColumnOffset(path, options) {
+	return stringLineIndentDepth(path) * (options.tabWidth ?? 2);
+}
+
+function trailingCommentSuffix(entries, index) {
+	return isCommaToken(entries[index + 1]?.node) ? "," : "";
 }
 
 function printPartCall(path, options, print, node, head) {
@@ -223,7 +285,12 @@ function printPartCall(path, options, print, node, head) {
 
 	if (args.length === 0) return [head, "[[]]"];
 
-	const { docs, alignmentGroupId } = sequenceDocs(entries, options, "part");
+	const { docs, alignmentGroupId } = sequenceDocs(
+		entries,
+		options,
+		"part",
+		contentColumnOffset(path, options),
+	);
 	return grouped(
 		[head, "[[", indent([softline, ...docs]), softline, "]]"],
 		alignmentGroupId,
@@ -246,7 +313,12 @@ export function printCall(path, options, print, node) {
 
 	if (args.length === 0) return [head, "[]"];
 
-	const { docs, alignmentGroupId } = sequenceDocs(entries, options, "arg");
+	const { docs, alignmentGroupId } = sequenceDocs(
+		entries,
+		options,
+		"arg",
+		contentColumnOffset(path, options),
+	);
 	const contents = [head, "[", indent([softline, ...docs]), softline, "]"];
 
 	return grouped(contents, alignmentGroupId);

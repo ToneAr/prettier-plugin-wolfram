@@ -1,6 +1,7 @@
 import { doc } from "prettier";
 import { normalizeWolframOptions } from "../options.js";
 import { sameLineCommentSeparator } from "./commentSpacing.js";
+import { sourceLineGap } from "./sourceLines.js";
 
 export function joinDocsWithSpace(docs) {
 	const nonEmptyDocs = docs.filter(
@@ -41,6 +42,19 @@ function hasMarkedDocumentationCommentEntry(entry, options) {
 	);
 }
 
+function isCommaEntry(entry) {
+	return entry?.node?.type === "LeafNode" && entry.node.kind === "Token`Comma";
+}
+
+function canAttachMarkedTrailingComment(previousEntry, commentEntry, options) {
+	return (
+		previousEntry &&
+		!isCommaEntry(previousEntry) &&
+		hasDocumentationCommentMarker(commentEntry, options) &&
+		sourceLineGap(previousEntry.node, commentEntry.node, options) === 0
+	);
+}
+
 function normalizeDocumentationCommentMarker(text) {
 	return String(text).replace(/^\(\*\s*<\s*/u, "(* < ");
 }
@@ -77,6 +91,30 @@ export function joinCommentDocs(comments, options) {
 	return joined;
 }
 
+export function withMarkedTrailingCommentDocs(entries, options) {
+	const result = [];
+
+	for (const entry of entries) {
+		const previousEntry = result[result.length - 1];
+		if (canAttachMarkedTrailingComment(previousEntry, entry, options)) {
+			previousEntry.trailingComments ??= [];
+			previousEntry.trailingComments.push({
+				node: entry.node,
+				doc: entry.doc,
+			});
+			previousEntry.trailingCommentDoc = joinCommentDocs(
+				previousEntry.trailingComments,
+				options,
+			);
+			continue;
+		}
+
+		result.push(entry);
+	}
+
+	return result;
+}
+
 export function renderFlatDoc(docNode, options) {
 	const rendered = doc.printer.printDocToString(docNode, {
 		printWidth: 100000,
@@ -91,16 +129,17 @@ export function documentationCommentColumn(
 	entries,
 	options,
 	suffixForEntry = () => "",
+	columnOffset = 0,
 ) {
 	options = normalizeWolframOptions(options);
 	const manual = options.wolframDocumentationCommentColumn ?? 0;
-	if (manual > 0) return manual;
+	if (manual > 0) return Math.max(1, manual - columnOffset);
 	if (
 		entries.some((entry) =>
 			hasMarkedDocumentationCommentEntry(entry, options),
 		)
 	) {
-		return options.printWidth ?? 80;
+		return Math.max(1, (options.printWidth ?? 80) - columnOffset);
 	}
 	const padding = Math.max(
 		1,
