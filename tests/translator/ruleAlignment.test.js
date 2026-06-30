@@ -3,6 +3,20 @@ import prettier from "prettier";
 import { printNode } from "../../src/translator/index.js";
 import { printCall } from "../../src/translator/nodes/call.js";
 import { printGroup } from "../../src/translator/nodes/group.js";
+import * as plugin from "../../src/index.js";
+
+function format(source, printWidth = 40) {
+	return prettier.format(source, {
+		parser: "wolfram",
+		plugins: [plugin],
+		wolframAlignRuleValues: true,
+		wolframSpaceAfterComma: true,
+		wolframSpaceAroundOperators: true,
+		printWidth,
+		tabWidth: 2,
+		useTabs: false,
+	});
+}
 
 const baseOptions = {
 	wolframAlignRuleValues: true,
@@ -130,6 +144,66 @@ describe("rule value alignment", () => {
 				"  longer  :> 2,\n" +
 				"  longest -> 3\n" +
 				"]",
+		);
+	});
+
+	it("aligns rule values in an association with a leading comment", async () => {
+		const result = await format(
+			"<|\n" +
+				"(* leading *)\n" +
+				'"URL" -> 1,\n' +
+				'"Title" -> 2,\n' +
+				'"Content" -> 3\n' +
+				"|>",
+		);
+
+		expect(result).toBe(
+			"<|\n" +
+				"  (* leading *)\n" +
+				'  "URL"     -> 1,\n' +
+				'  "Title"   -> 2,\n' +
+				'  "Content" -> 3\n' +
+				"|>",
+		);
+	});
+
+	it("aligns rule values in a list with a leading comment", async () => {
+		const result = await format(
+			"{\n" +
+				"(* leading *)\n" +
+				"aaa -> 1,\n" +
+				"b -> 2,\n" +
+				"cccccc -> 3\n" +
+				"}",
+		);
+
+		expect(result).toBe(
+			"{\n" +
+				"  (* leading *)\n" +
+				"  aaa    -> 1,\n" +
+				"  b      -> 2,\n" +
+				"  cccccc -> 3\n" +
+				"}",
+		);
+	});
+
+	it("aligns rule values in a list with a trailing comment", async () => {
+		const result = await format(
+			"{\n" +
+				"aaa -> 1,\n" +
+				"b -> 2,\n" +
+				"cccccc -> 3\n" +
+				"(* trailing *)\n" +
+				"}",
+		);
+
+		expect(result).toBe(
+			"{\n" +
+				"  aaa    -> 1,\n" +
+				"  b      -> 2,\n" +
+				"  cccccc -> 3\n" +
+				"  (* trailing *)\n" +
+				"}",
 		);
 	});
 });

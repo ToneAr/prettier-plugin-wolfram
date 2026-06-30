@@ -288,7 +288,6 @@ function adaptCall(node, ctx, openKind, openText, closeKind, closeText) {
 // The tree-sitter "part" node uses "[[" and "]]" tokens; we split each into two "["/"]" leaves.
 function adaptPart(node, ctx) {
 	const headNode = node.childForFieldName("head");
-	const argsNode = node.childForFieldName("arguments");
 	// Find the "[[" and "]]" anonymous tokens
 	let openDoubleToken = null, closeDoubleToken = null;
 	for (let i = 0; i < node.childCount; i++) {
@@ -309,9 +308,23 @@ function adaptPart(node, ctx) {
 	const outerCloseSrc = [offsetToLineCol(ctx.lineIndex, closeDoubleToken.startIndex + 1), offsetToLineCol(ctx.lineIndex, closeDoubleToken.endIndex)];
 	const innerCloseLeaf = { type: "LeafNode", kind: "Token`CloseSquare", value: "]", source: innerCloseSrc };
 	const outerCloseLeaf = { type: "LeafNode", kind: "Token`CloseSquare", value: "]", source: outerCloseSrc };
-	// Build GroupNode(GroupSquare) wrapping the content
+	// Build GroupNode(GroupSquare) wrapping the content. Iterate the named
+	// children between the delimiters (args + any comment extras) in source
+	// order, injecting whitespace trivia, so comments inside [[...]] survive —
+	// previously only the `arguments` field was read and comments were dropped.
+	const innerOpenEnd = openDoubleToken.startIndex + 1;
+	const innerCloseStart = closeDoubleToken.startIndex;
 	const groupChildren = [innerOpenLeaf];
-	if (argsNode) groupChildren.push(adaptArguments(argsNode, ctx));
+	let lastIdx = innerOpenEnd;
+	for (const c of namedChildren(node)) {
+		if (c === headNode) continue;
+		if (c.startIndex < innerOpenEnd || c.endIndex > innerCloseStart) continue;
+		for (const t of triviaLeaves(lastIdx, c.startIndex, ctx)) groupChildren.push(t);
+		if (c.type === "comment") groupChildren.push(leaf(c, ctx));
+		else groupChildren.push(adaptArguments(c, ctx));
+		lastIdx = c.endIndex;
+	}
+	for (const t of triviaLeaves(lastIdx, innerCloseStart, ctx)) groupChildren.push(t);
 	groupChildren.push(innerCloseLeaf);
 	const groupSrc = [offsetToLineCol(ctx.lineIndex, openDoubleToken.startIndex + 1), offsetToLineCol(ctx.lineIndex, closeDoubleToken.startIndex + 1)];
 	const groupNode = { type: "GroupNode", kind: "GroupSquare", children: groupChildren, source: groupSrc };
@@ -677,29 +690,27 @@ function adaptMessageName(node, ctx) {
 	const tagText = ctx.source.slice(tagStart, tagEnd);
 	const tagSource = [offsetToLineCol(ctx.lineIndex, tagStart), offsetToLineCol(ctx.lineIndex, tagEnd)];
 	const tagLeaf = { type: "LeafNode", kind: "String", value: tagText, source: tagSource };
-	return { type: "InfixNode", op: "MessageName", children: [lhs, colonColonLeaf, tagLeaf], source: nodeSource(node, ctx.lineIndex) };
+	// Preserve any comment that sits between the LHS and "::" (threaded as trivia).
+	const between = triviaLeaves(named[0].endIndex, colonColonToken.startIndex, ctx);
+	return { type: "InfixNode", op: "MessageName", children: [lhs, ...between, colonColonLeaf, tagLeaf], source: nodeSource(node, ctx.lineIndex) };
 }
 
 // get: << expr — emit PrefixNode(Get, [Token`LessLess, expr])
+// Iterate in source order so any comment between "<<" and the operand survives.
 function adaptGet(node, ctx) {
-	const { named, tokens } = parts(node);
-	const opToken = tokens[0];
-	const opLeafNode = { type: "LeafNode", kind: "Token`LessLess", value: "<<", source: nodeSource(opToken, ctx.lineIndex) };
-	return { type: "PrefixNode", op: "Get", children: [opLeafNode, adaptNode(named[0], ctx)], source: nodeSource(node, ctx.lineIndex) };
+	return { type: "PrefixNode", op: "Get", children: adaptChildrenInOrder(node, ctx), source: nodeSource(node, ctx.lineIndex) };
 }
 
 // put: lhs >> rhs or lhs >>> rhs — emit BinaryNode(Put/PutAppend, [lhs, op, rhs])
+// Iterate in source order so comments between operands/operator survive.
 function adaptPut(node, ctx) {
-	const { named, tokens } = parts(node);
-	const opToken = tokens[0];
-	const opText = ctx.source.slice(opToken.startIndex, opToken.endIndex);
+	const { tokens } = parts(node);
+	const opText = ctx.source.slice(tokens[0].startIndex, tokens[0].endIndex);
 	const op = opText === ">>>" ? "PutAppend" : "Put";
-	const kind = opText === ">>>" ? "Token`GreaterGreaterGreater" : "Token`GreaterGreater";
-	const opLeafNode = { type: "LeafNode", kind, value: opText, source: nodeSource(opToken, ctx.lineIndex) };
 	return {
 		type: "BinaryNode",
 		op,
-		children: [adaptNode(named[0], ctx), opLeafNode, adaptNode(named[1], ctx)],
+		children: adaptChildrenInOrder(node, ctx),
 		source: nodeSource(node, ctx.lineIndex),
 	};
 }
@@ -713,44 +724,68 @@ function adaptTildeInfix(node, ctx) {
 
 // span: ;; with optional LHS and RHS
 // Forms: a ;; b, a ;;, ;; b, ;; (bare)
+//
+// Operands are the named children that aren't comments. Comments are named
+// "extras" the grammar threads between the operands; they must be kept in the
+// children (so the printer can preserve them) AND excluded from the operand
+// count — counting a comment as an operand previously matched none of the
+// arity branches and collapsed `a ;; (* c *) b` to the implicit `1 ;; All`.
+// The 3-part form a ;; b ;; c nests as span(a, span(b, c)), so a single span
+// node has at most two operands.
 function adaptSpan(node, ctx) {
-	const named = [], semiSemiTokens = [];
+	const operands = [];
+	let semiSemiToken = null;
 	for (let i = 0; i < node.childCount; i++) {
 		const c = node.child(i);
-		if (c.isNamed) named.push(c);
-		else if (ctx.source.slice(c.startIndex, c.endIndex) === ";;") semiSemiTokens.push(c);
-	}
-	const semiSemiToken = semiSemiTokens[0];
-	const semiSemiLeaf = { type: "LeafNode", kind: "Token`SemiSemi", value: ";;", source: nodeSource(semiSemiToken, ctx.lineIndex) };
-
-	// Determine LHS and RHS based on what's present
-	// We look at whether the ";;" comes after or before named children by comparing indices
-	let lhsNode = null, rhsNode = null;
-	if (named.length === 2) {
-		// a ;; b
-		lhsNode = named[0];
-		rhsNode = named[1];
-	} else if (named.length === 1) {
-		if (named[0].startIndex < semiSemiToken.startIndex) {
-			// a ;;
-			lhsNode = named[0];
-		} else {
-			// ;; b
-			rhsNode = named[0];
+		if (!c.isNamed) {
+			if (semiSemiToken === null && ctx.source.slice(c.startIndex, c.endIndex) === ";;") {
+				semiSemiToken = c;
+			}
+		} else if (c.type !== "comment") {
+			operands.push(c);
 		}
 	}
-	// else named.length === 0: bare ;;
 
-	const lhs = lhsNode
-		? adaptNode(lhsNode, ctx)
-		: { type: "LeafNode", kind: "Integer", value: "1", source: nodeSource(semiSemiToken, ctx.lineIndex) };
-	const rhs = rhsNode
-		? adaptNode(rhsNode, ctx)
-		: { type: "LeafNode", kind: "Symbol", value: "All", source: nodeSource(semiSemiToken, ctx.lineIndex) };
+	// Classify the (at most two) operands as LHS/RHS by position around ";;".
+	let lhsNode = null, rhsNode = null;
+	if (operands.length >= 2) {
+		lhsNode = operands[0];
+		rhsNode = operands[1];
+	} else if (operands.length === 1) {
+		if (operands[0].startIndex < semiSemiToken.startIndex) lhsNode = operands[0];
+		else rhsNode = operands[0];
+	}
+
+	const implicitBound = (kind, value) => ({
+		type: "LeafNode", kind, value, source: nodeSource(semiSemiToken, ctx.lineIndex),
+	});
+
+	// Emit children in source order, threading comments and whitespace trivia.
+	// Absent operands are filled with the implicit Span bounds (1 / All) at the
+	// ";;" boundary, preserving prior output for comment-free spans.
+	const children = [];
+	let lastEndIndex = node.startIndex;
+	let emittedSemi = false;
+	for (let i = 0; i < node.childCount; i++) {
+		const c = node.child(i);
+		for (const t of triviaLeaves(lastEndIndex, c.startIndex, ctx)) children.push(t);
+		if (!emittedSemi && !c.isNamed && ctx.source.slice(c.startIndex, c.endIndex) === ";;") {
+			if (lhsNode === null) children.push(implicitBound("Integer", "1"));
+			children.push({ type: "LeafNode", kind: "Token`SemiSemi", value: ";;", source: nodeSource(c, ctx.lineIndex) });
+			if (rhsNode === null) children.push(implicitBound("Symbol", "All"));
+			emittedSemi = true;
+		} else if (c.type === "comment") {
+			children.push(leaf(c, ctx));
+		} else if (c.isNamed) {
+			children.push(adaptNode(c, ctx));
+		}
+		lastEndIndex = c.endIndex;
+	}
+
 	return {
 		type: "BinaryNode",
 		op: "Span",
-		children: [lhs, semiSemiLeaf, rhs],
+		children,
 		source: nodeSource(node, ctx.lineIndex),
 	};
 }

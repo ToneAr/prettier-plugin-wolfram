@@ -1821,6 +1821,44 @@ scrapeCustomerStoryData[]:=
 		expect(result).toBe("operation1;         (* doc *)");
 	});
 
+	it("uses < trailing comments as documentation comments in statement; comment form", () => {
+		const node = {
+			type: "InfixNode",
+			op: "CompoundExpression",
+			children: [
+				{ type: "LeafNode", kind: "Symbol", value: "operation1" },
+				{ type: "LeafNode", kind: "Token`Semi", value: ";" },
+				{
+					type: "LeafNode",
+					kind: "Token`Comment",
+					value: "(*    <   doc *)",
+				},
+			],
+		};
+		const result = fmt(
+			printInfix(
+				node,
+				{
+					...opts,
+					printWidth: 80,
+				},
+				leafPrint,
+			),
+		);
+		expect(result).toBe("operation1;  (* < doc *)");
+	});
+
+	it("formats < trailing comments as documentation comments through Prettier", async () => {
+		const result = await prettier.format("operation1; (*< doc *)", {
+			parser: "wolfram",
+			plugins: [plugin],
+			printWidth: 80,
+			tabWidth: 2,
+		});
+
+		expect(result).toBe("operation1;  (* < doc *)");
+	}, 15000);
+
 	it("prints list contents inside InfixNode[Comma] wrappers", () => {
 		const node = {
 			type: "GroupNode",

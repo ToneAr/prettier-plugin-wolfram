@@ -4,6 +4,7 @@ const { builders } = doc;
 import { isTrivia, isComment } from "./leaf.js";
 import {
 	documentationCommentColumn,
+	hasDocumentationCommentMarker,
 	joinCommentDocs,
 	withAlignedTrailingComment,
 } from "../docComments.js";
@@ -190,9 +191,13 @@ export function printInfix(node, options, print) {
 		const trailingEntries = entries.filter(
 			(entry) => entry.trailingCommentDoc,
 		);
+		const hasMarkedDocumentationComment = trailingEntries.some((entry) =>
+			entry.trailingComments.some(hasDocumentationCommentMarker),
+		);
 		const alignTrailingComments =
 			(options.wolframDocumentationCommentColumn ?? 0) > 0 ||
-			trailingEntries.length > 1;
+			trailingEntries.length > 1 ||
+			hasMarkedDocumentationComment;
 		const trailingColumn =
 			alignTrailingComments && trailingEntries.length > 0
 				? documentationCommentColumn(

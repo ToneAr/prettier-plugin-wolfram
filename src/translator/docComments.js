@@ -15,13 +15,40 @@ export function joinDocsWithSpace(docs) {
 	return joined;
 }
 
+export function isDocumentationCommentMarkerText(text) {
+	return /^\(\*\s*</u.test(String(text ?? ""));
+}
+
+export function hasDocumentationCommentMarker(comment) {
+	const node = comment?.node ?? comment;
+	return (
+		node?.kind === "Token`Comment" &&
+		isDocumentationCommentMarkerText(node.value)
+	);
+}
+
+function normalizeDocumentationCommentMarker(text) {
+	return String(text).replace(/^\(\*\s*<\s*/u, "(* < ");
+}
+
+function normalizedCommentDoc(comment, options) {
+	const rendered = renderFlatDoc(comment.doc, options);
+	if (
+		!isDocumentationCommentMarkerText(rendered) ||
+		rendered.includes("\n")
+	) {
+		return comment.doc;
+	}
+	return normalizeDocumentationCommentMarker(rendered);
+}
+
 export function joinCommentDocs(comments, options) {
 	const nonEmptyComments = comments.filter(
 		(comment) => comment?.doc !== "" && comment?.doc != null,
 	);
 	if (nonEmptyComments.length === 0) return "";
 
-	const joined = [nonEmptyComments[0].doc];
+	const joined = [normalizedCommentDoc(nonEmptyComments[0], options)];
 	for (let i = 1; i < nonEmptyComments.length; i++) {
 		joined.push(
 			sameLineCommentSeparator(
@@ -29,7 +56,7 @@ export function joinCommentDocs(comments, options) {
 				nonEmptyComments[i].node,
 				options,
 			),
-			nonEmptyComments[i].doc,
+			normalizedCommentDoc(nonEmptyComments[i], options),
 		);
 	}
 	return joined;

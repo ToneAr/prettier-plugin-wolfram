@@ -64,29 +64,29 @@ function commentBoundary(leftEntry, rightEntry, options, fallback = line) {
 }
 
 function sequenceEntries(path, print, node) {
-	const contents = node.children.filter(
-		(child) => !isTrivia(child) && !isBracketToken(child),
+	// The comma-separated contents are wrapped in a single InfixNode[Comma].
+	// Flatten that wrapper wherever it sits so its rules become individual
+	// entries even when siblings (e.g. comments) keep it from being the sole
+	// content of the group.
+	const wrapperIdx = node.children.findIndex(
+		(child) => child.type === "InfixNode" && child.op === "Comma",
 	);
-
-	if (
-		contents.length === 1 &&
-		contents[0].type === "InfixNode" &&
-		contents[0].op === "Comma"
-	) {
-		const wrapperIdx = node.children.indexOf(contents[0]);
-		return contents[0].children.reduce((entries, child, idx) => {
-			if (isTrivia(child)) return entries;
-			entries.push({
-				node: child,
-				doc: path.call(print, "children", wrapperIdx, "children", idx),
-				path: ["children", wrapperIdx, "children", idx],
-			});
-			return entries;
-		}, []);
-	}
 
 	return node.children.reduce((entries, child, idx) => {
 		if (isTrivia(child) || isBracketToken(child)) return entries;
+
+		if (idx === wrapperIdx) {
+			child.children.forEach((wrappedChild, wrappedIdx) => {
+				if (isTrivia(wrappedChild)) return;
+				entries.push({
+					node: wrappedChild,
+					doc: path.call(print, "children", idx, "children", wrappedIdx),
+					path: ["children", idx, "children", wrappedIdx],
+				});
+			});
+			return entries;
+		}
+
 		entries.push({
 			node: child,
 			doc: path.call(print, "children", idx),

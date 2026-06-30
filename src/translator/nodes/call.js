@@ -117,28 +117,27 @@ function partGroupEntry(node) {
 }
 
 function groupPathEntries(groupNode, groupPath) {
-	const contents = groupNode.children.filter(
-		(child) => !isTrivia(child) && !isBracketToken(child),
+	// Flatten the comma-separated wrapper wherever it sits so its elements become
+	// individual entries even when a sibling comment keeps it from being the sole
+	// content of the group (mirrors rawArgEntries).
+	const wrapperIdx = groupNode.children.findIndex(
+		(child) => child.type === "InfixNode" && child.op === "Comma",
 	);
-
-	if (
-		contents.length === 1 &&
-		contents[0].type === "InfixNode" &&
-		contents[0].op === "Comma"
-	) {
-		const wrapperIdx = groupNode.children.indexOf(contents[0]);
-		return contents[0].children.reduce((entries, child, idx) => {
-			if (isTrivia(child)) return entries;
-			entries.push({
-				node: child,
-				path: [...groupPath, "children", wrapperIdx, "children", idx],
-			});
-			return entries;
-		}, []);
-	}
 
 	return groupNode.children.reduce((entries, child, idx) => {
 		if (isTrivia(child) || isBracketToken(child)) return entries;
+
+		if (idx === wrapperIdx) {
+			child.children.forEach((wrappedChild, wrappedIdx) => {
+				if (isTrivia(wrappedChild)) return;
+				entries.push({
+					node: wrappedChild,
+					path: [...groupPath, "children", idx, "children", wrappedIdx],
+				});
+			});
+			return entries;
+		}
+
 		entries.push({
 			node: child,
 			path: [...groupPath, "children", idx],
