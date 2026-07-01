@@ -21,6 +21,15 @@ describe("adapter leaves", () => {
 		expect(cst.kind).toBe("String");
 		expect(cst.children[0]).toMatchObject({ type: "LeafNode", kind: "Symbol", value: "x", source: [[1, 1], [1, 2]] });
 	});
+	it("parses symbols with multiple leading dollar signs", () => {
+		const cst = adapt(parser.parse("$$twikiResponseFmt"), "$$twikiResponseFmt");
+		expect(cst.children[0]).toMatchObject({
+			type: "LeafNode",
+			kind: "Symbol",
+			value: "$$twikiResponseFmt",
+			source: [[1, 1], [1, 19]],
+		});
+	});
 	it("maps integer/real/string leaves", () => {
 		expect(adapt(parser.parse("42"), "42").children[0]).toMatchObject({ kind: "Integer", value: "42" });
 		expect(adapt(parser.parse("3.5"), "3.5").children[0]).toMatchObject({ kind: "Real", value: "3.5" });

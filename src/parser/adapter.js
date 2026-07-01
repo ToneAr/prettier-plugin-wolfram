@@ -1,5 +1,6 @@
 import { makeLineIndex, nodeSource, offsetToLineCol } from "./position.js";
 import { INFIX_OPS, BINARY_OPS, PREFIX_OPS, POSTFIX_OPS, opName } from "./operators.js";
+import { IMPLICIT_NULL_SYMBOL } from "./sentinels.js";
 
 const LEAF_KIND = { symbol: "Symbol", integer: "Integer", real: "Real", string: "String", comment: "Token`Comment" };
 
@@ -47,18 +48,36 @@ export function adapt(tree, source, preprocessedSource, map) {
 
 function shouldHoistTopLevelSemicolonChain(node, ctx) {
 	if (node.type !== "infix" || operatorLiteral(node, ctx) !== ";") return false;
-	return hasTrailingSemicolon(node) || spansMultipleLines(node, ctx);
+	return hasTrailingSemicolon(node, ctx) || spansMultipleLines(node, ctx);
 }
 
-// Returns true if the infix node ends with a MISSING node (i.e. has a trailing ";").
-function hasTrailingSemicolon(node) {
-	const last = node.child(node.childCount - 1);
-	return last !== null && last.isMissing;
+// Returns true if the infix node ends with ";" and has no real RHS. Raw trailing
+// semicolons may be represented as a MISSING node, while preprocessed ones use
+// the internal fake-null symbol.
+function hasTrailingSemicolon(node, ctx) {
+	for (let i = node.childCount - 1; i >= 0; i--) {
+		const child = node.child(i);
+		if (child.isMissing) return true;
+		if (child.isNamed) {
+			if (child.type === "comment") continue;
+			if (isImplicitNullSymbol(child, ctx)) return true;
+			return false;
+		}
+		return child.type === ";";
+	}
+	return false;
 }
 
 function spansMultipleLines(node, ctx) {
 	const source = nodeSource(node, ctx.lineIndex);
 	return source?.[0]?.[0] !== source?.[1]?.[0];
+}
+
+function isImplicitNullSymbol(node, ctx) {
+	return (
+		node?.type === "symbol" &&
+		ctx.source.slice(node.startIndex, node.endIndex) === IMPLICIT_NULL_SYMBOL
+	);
 }
 
 // Collect all leaf statements from a semicolon infix chain (possibly left-recursive),
@@ -76,7 +95,7 @@ function collectSemicolonSegments(node, ctx, segments) {
 		if (!c.isNamed) {
 			// ";" operator token
 			semiToken = c;
-		} else if (c.isMissing) {
+		} else if (c.isMissing || isImplicitNullSymbol(c, ctx)) {
 			// trailing implicit null — rhs is nothing (trailing semicolon)
 		} else if (c.type === "comment") {
 			if (lhs === null) leadingComments.push(c);
@@ -138,7 +157,10 @@ function isLeadingCommentForNextSegment(comment, semiToken, ctx) {
 function hoistSemicolonChildren(node, ctx, out) {
 	const segments = [];
 	collectSemicolonSegments(node, ctx, segments);
+	emitSemicolonSegments(segments, ctx, out);
+}
 
+function emitSemicolonSegments(segments, ctx, out) {
 	for (const seg of segments) {
 		for (const c of seg.leadingComments ?? []) out.push(leaf(c, ctx));
 		if (seg.nodes.length === 0) continue;
@@ -195,6 +217,9 @@ function namedChildren(node) {
 }
 
 function leaf(node, ctx, kind = LEAF_KIND[node.type]) {
+	if (isImplicitNullSymbol(node, ctx)) {
+		return { type: "LeafNode", kind: "Token`Fake`ImplicitNull", value: "", source: nodeSource(node, ctx.lineIndex) };
+	}
 	return { type: "LeafNode", kind, value: ctx.source.slice(node.startIndex, node.endIndex), source: nodeSource(node, ctx.lineIndex) };
 }
 

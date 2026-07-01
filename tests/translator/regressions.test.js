@@ -100,6 +100,45 @@ describe("translator regressions", () => {
 		expect(result).toBe("expr[[\n  1,\n  2\n]]");
 	}, 15000);
 
+	it("formats package globals with multiple leading dollar signs", async () => {
+		const result = await prettier.format(
+			'$$twikiResponseFmt=None;\n\n\n\n\ntwikiResponseHandler::fail="``";',
+			{
+				parser: "wolfram",
+				plugins: [plugin],
+				printWidth: 80,
+				tabWidth: 4,
+				useTabs: true,
+			},
+		);
+
+		expect(result).toBe(
+			'$$twikiResponseFmt = None;\n\ntwikiResponseHandler::fail = "``";',
+		);
+	});
+
+	it("formats subvalue definitions with trailing semicolons", async () => {
+		const result = await prettier.format("f[x_][y_]:=x+y;", {
+			parser: "wolfram",
+			plugins: [plugin],
+			printWidth: 80,
+			tabWidth: 2,
+		});
+
+		expect(result).toBe("f[x_][y_] := x + y;");
+	});
+
+	it("formats definitions whose RHS contains a terminated compound expression", async () => {
+		const result = await prettier.format("f[x_]:=Module[{},2+2;]", {
+			parser: "wolfram",
+			plugins: [plugin],
+			printWidth: 80,
+			tabWidth: 2,
+		});
+
+		expect(result).toBe("f[x_] := Module[{}, 2 + 2;]");
+	});
+
 	it("keeps prefix and postfix same-subject definitions contiguous", async () => {
 		const source =
 			"Options @ f = {}\n\n" +

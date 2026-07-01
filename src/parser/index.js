@@ -3,6 +3,7 @@ import { dirname, resolve } from "path";
 import { fileURLToPath } from "url";
 import { readFileSync } from "fs";
 import { adapt } from "./adapter.js";
+import { IMPLICIT_NULL_SYMBOL } from "./sentinels.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const WASM_PATH = resolve(here, "tree-sitter-wolfram.wasm");
@@ -24,10 +25,11 @@ async function getLanguage() {
 // Returns { text, map } where `text` is the preprocessed source and `map` is an
 // index translation table: map[i] is the original-source character offset that
 // corresponds to preprocessed-text offset i (map[text.length] === src.length).
-// Because the only length-changing transform collapses a run of spaces into a
-// single InvisibleTimes char, this map lets callers translate tree-sitter node
-// positions (computed on the preprocessed text) back to exact offsets in the
-// original source, without lossy line/col round-trips.
+// Length-changing transforms collapse a run of spaces into a single
+// InvisibleTimes char or insert an internal fake Null symbol after terminating
+// semicolons. This map lets callers translate tree-sitter node positions
+// (computed on the preprocessed text) back to exact offsets in the original
+// source, without lossy line/col round-trips.
 export function preprocess(src) {
 	let result = "";
 	const map = [];
@@ -37,6 +39,37 @@ export function preprocess(src) {
 		for (let k = start; k < end; k++) map.push(k);
 		result += src.slice(start, end);
 	};
+	const appendSynthetic = (text, originalOffset) => {
+		for (let k = 0; k < text.length; k++) map.push(originalOffset);
+		result += text;
+	};
+	const skipTrivia = (start) => {
+		let j = start;
+		while (j < n) {
+			if (/\s/.test(src[j])) {
+				j++;
+				continue;
+			}
+			if (src[j] === "(" && src[j + 1] === "*") {
+				j += 2;
+				let depth = 1;
+				while (j < n && depth > 0) {
+					if (src[j] === "(" && src[j + 1] === "*") { depth++; j += 2; }
+					else if (src[j] === "*" && src[j + 1] === ")") { depth--; j += 2; }
+					else j++;
+				}
+				continue;
+			}
+			break;
+		}
+		return j;
+	};
+	const isTerminatorBoundary = (offset) =>
+		offset >= n ||
+		src[offset] === "]" ||
+		src[offset] === "}" ||
+		src[offset] === ")" ||
+		(src[offset] === "|" && src[offset + 1] === ">");
 	let i = 0;
 	while (i < n) {
 		// Skip quoted string
@@ -62,6 +95,15 @@ export function preprocess(src) {
 			}
 			copyVerbatim(start, i);
 			continue;
+		}
+		if (src[i] === ";" && src[i - 1] !== ";" && src[i + 1] !== ";") {
+			const boundary = skipTrivia(i + 1);
+			if (isTerminatorBoundary(boundary)) {
+				copyVerbatim(i, boundary);
+				appendSynthetic(IMPLICIT_NULL_SYMBOL, boundary);
+				i = boundary;
+				continue;
+			}
 		}
 		// Two or more spaces between word chars on same line → InvisibleTimes
 		if (src[i] === " " && src[i + 1] === " ") {
