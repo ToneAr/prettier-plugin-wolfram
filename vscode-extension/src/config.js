@@ -35,6 +35,11 @@ function mergeConfiguredPlugins(resolvedConfig, pluginPath) {
 }
 
 async function resolveProjectConfig(prettier, filePath) {
+	// Unsaved buffers have no on-disk location, so there is no project
+	// .prettierrc/.editorconfig to resolve against. Probing with a synthetic
+	// path would search unrelated directories, so fall back to defaults.
+	if (!filePath) return normalizeResolvedConfig({});
+
 	const resolvedConfig =
 		(await prettier.resolveConfig(filePath, {
 			editorconfig: true,

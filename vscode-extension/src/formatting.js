@@ -87,12 +87,14 @@ async function getWolframParse(pluginModule) {
 }
 
 function createFormatOptions(filePath, resolvedConfig, plugins) {
-	return {
+	const options = {
 		...resolvedConfig,
-		filepath: filePath,
 		parser: "wolfram",
 		plugins,
 	};
+	// Unsaved buffers have no path; Prettier only needs the explicit parser.
+	if (filePath) options.filepath = filePath;
+	return options;
 }
 
 async function buildFormattingEditPlan({

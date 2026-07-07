@@ -29,6 +29,7 @@ const {
 	scheduleDiagnostics,
 } = require("./diagnosticRefresh");
 const { mergeConfiguredPlugins, resolveProjectConfig } = require("./config");
+const { resolveDocumentContext } = require("./documentContext");
 const {
 	classifyFormattingHunk,
 	differsOnlyByFinalNewline,
@@ -70,6 +71,7 @@ function resolvePackagedPlugin(requestPaths) {
 }
 
 function resolveWorkspacePluginEntries(workspaceFolder) {
+	if (!workspaceFolder) return null;
 	const workspacePackagePath = path.join(workspaceFolder, "package.json");
 	if (!fs.existsSync(workspacePackagePath)) return null;
 
@@ -93,6 +95,7 @@ function resolveWorkspacePluginEntries(workspaceFolder) {
 }
 
 function resolveDirectDependency(packageName, workspaceFolder) {
+	if (!workspaceFolder) return null;
 	const packageJsonPath = path.join(
 		workspaceFolder,
 		"node_modules",
@@ -170,24 +173,28 @@ async function loadFormatterPlugin(pluginPath) {
 	return pluginModuleCache.get(pluginPath);
 }
 
-function formatOptionsForDocument(document, ctx) {
-	return {
+function formatOptionsForDocument(filePath, ctx) {
+	const options = {
 		...ctx.resolvedConfig,
-		filepath: document.uri.fsPath,
 		parser: "wolfram",
 		plugins: ctx.plugins,
 	};
+	// Unsaved buffers have no path; Prettier only needs the explicit parser.
+	if (filePath) options.filepath = filePath;
+	return options;
+}
+
+function documentContext(document) {
+	return resolveDocumentContext(document, {
+		getWorkspaceFolder: (uri) => vscode.workspace.getWorkspaceFolder(uri),
+		workspaceFolders: vscode.workspace.workspaceFolders,
+	});
 }
 
 async function getFormattedText(document) {
-	const workspaceFolder =
-		vscode.workspace.getWorkspaceFolder(document.uri)?.uri.fsPath ??
-		path.dirname(document.uri.fsPath);
+	const { filePath, workspaceFolder } = documentContext(document);
 
-	const ctx = await resolveFormatterContext(
-		workspaceFolder,
-		document.uri.fsPath,
-	);
+	const ctx = await resolveFormatterContext(workspaceFolder, filePath);
 	if (!ctx) {
 		vscode.window.showErrorMessage(
 			"wolfram-prettier-range: Could not resolve Prettier and the Wolfram plugin " +
@@ -199,18 +206,13 @@ async function getFormattedText(document) {
 	const { prettier } = ctx;
 	const text = document.getText();
 
-	return prettier.format(text, formatOptionsForDocument(document, ctx));
+	return prettier.format(text, formatOptionsForDocument(filePath, ctx));
 }
 
 async function getFormattingPlan(document, range) {
-	const workspaceFolder =
-		vscode.workspace.getWorkspaceFolder(document.uri)?.uri.fsPath ??
-		path.dirname(document.uri.fsPath);
+	const { filePath, workspaceFolder } = documentContext(document);
 
-	const ctx = await resolveFormatterContext(
-		workspaceFolder,
-		document.uri.fsPath,
-	);
+	const ctx = await resolveFormatterContext(workspaceFolder, filePath);
 	if (!ctx) {
 		vscode.window.showErrorMessage(
 			"wolfram-prettier-range: Could not resolve Prettier and the Wolfram plugin " +
@@ -221,7 +223,7 @@ async function getFormattingPlan(document, range) {
 
 	return buildFormattingEditPlan({
 		text: document.getText(),
-		filePath: document.uri.fsPath,
+		filePath,
 		range,
 		prettier: ctx.prettier,
 		resolvedConfig: ctx.resolvedConfig,
@@ -488,11 +490,14 @@ async function collectDiagnostics(document, collection, generation) {
 
 /** @param {vscode.ExtensionContext} context */
 function activate(context) {
-	const selector = [
-		{ language: "wolfram", scheme: "file" },
-		{ language: "wolframscript", scheme: "file" },
-		{ language: "wolfram-notebook", scheme: "file" },
-	];
+	// Register for saved files ("file", which also covers remote/WSL hosts where
+	// the extension host sees local paths) and for unsaved "untitled" buffers so
+	// scratch documents can be formatted before they are written to disk.
+	const languages = ["wolfram", "wolframscript", "wolfram-notebook"];
+	const selector = languages.flatMap((language) => [
+		{ language, scheme: "file" },
+		{ language, scheme: "untitled" },
+	]);
 	const diagnostics =
 		vscode.languages.createDiagnosticCollection("prettier-wolfram");
 

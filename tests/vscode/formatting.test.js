@@ -56,6 +56,27 @@ describe("VS Code formatting helpers", () => {
 		});
 	});
 
+	it("omits filepath when formatting a pathless (unsaved) document", async () => {
+		const prettier = {
+			format: vi.fn().mockResolvedValue("a = 1\n"),
+		};
+
+		await buildFormattingEditPlan({
+			text: "a=1\n",
+			filePath: null,
+			range: undefined,
+			prettier,
+			resolvedConfig: {},
+			plugins: ["/tmp/plugin.js"],
+			pluginModule: {},
+			positionToOffset: (offset) => offset,
+		});
+
+		const options = prettier.format.mock.calls[0][1];
+		expect(options).not.toHaveProperty("filepath");
+		expect(options.parser).toBe("wolfram");
+	});
+
 	it("maps range formatting onto the same slice produced by full document formatting", async () => {
 		const original = "a=1\n" + "\n" + "bb=cc[ d,e]\n" + "\n" + "z=3\n";
 		const formatted =

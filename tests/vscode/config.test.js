@@ -115,5 +115,17 @@ describe("VS Code config helpers", () => {
 				},
 			});
 		});
+
+		it("returns an empty config for a pathless (unsaved) document without probing the filesystem", async () => {
+			const prettierStub = {
+				resolveConfig() {
+					throw new Error("resolveConfig should not be called");
+				},
+			};
+
+			await expect(
+				resolveProjectConfig(prettierStub, null),
+			).resolves.toEqual({});
+		});
 	});
 });
