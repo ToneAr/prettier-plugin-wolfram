@@ -127,6 +127,7 @@ Typical `.prettierrc` example:
 		"spaceAfterComma": true,
 		"spaceAroundOperators": true,
 		"alignRuleValues": false,
+		"logicalOperatorsToFullForm": true,
 		"documentationCommentColumn": 0,
 		"documentationCommentPadding": 2,
 		"documentationCommentMarkers": false,
@@ -157,6 +158,7 @@ this plugin.
 | `wolfram.spaceAfterComma`                             | boolean     | `true`                              | Inserts a space after commas in argument lists, lists, and associations. |
 | `wolfram.spaceAroundOperators`                        | boolean     | `true`                              | Inserts spaces around most infix, binary, and ternary operators. Operators that are normally tight, such as `::`, `?`, and `;;`, stay tight. |
 | `wolfram.alignRuleValues`                             | boolean     | `false`                             | Vertically aligns `Rule` and `RuleDelayed` values in multiline argument, list, and association layouts. |
+| `wolfram.logicalOperatorsToFullForm`                   | boolean     | `true`                              | Rewrites overflowing logical infix chains, such as `&&` and `\|\|`, as multiline function calls. |
 | `wolfram.documentationCommentColumn`                  | integer     | `0`                                 | Column for trailing documentation comments. `0` computes a column per contiguous block. |
 | `wolfram.documentationCommentPadding`                 | integer     | `2`                                 | Minimum spaces between code and an aligned trailing documentation comment when the column is computed automatically. |
 | `wolfram.documentationCommentMarkers`                 | boolean     | `false`                             | Treats trailing comments beginning with `<` as documentation comments aligned at `printWidth`. |
@@ -256,7 +258,7 @@ Build the standalone `.vsix` that bundles Prettier and this plugin:
 npm run package:vscode:standalone
 ```
 
-This writes `vscode-extension/wolfram-prettier-vscode-<version>.vsix`.
+This writes `vscode-extension/prettier-vscode-wolfram-<version>.vsix`.
 
 For Marketplace pre-release publishing, use the workspace-safe publish wrapper:
 

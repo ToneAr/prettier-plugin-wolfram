@@ -4,6 +4,8 @@ export const INFIX_OPS = {
 	".": "Dot", "**": "NonCommutativeMultiply",
 	"~~": "StringExpression", "<>": "StringJoin",
 	"|": "Alternatives", "||": "Or", "&&": "And",
+	"\\[Equivalent]": "Equivalent", "\\[Or]": "Or", "\\[Nor]": "Nor",
+	"\\[Xor]": "Xor", "\\[Xnor]": "Xnor", "\\[And]": "And", "\\[Nand]": "Nand",
 	"===": "SameQ", "=!=": "UnsameQ",
 	"==": "Equal", "!=": "Unequal", "<": "Less", "<=": "LessEqual",
 	">": "Greater", ">=": "GreaterEqual",

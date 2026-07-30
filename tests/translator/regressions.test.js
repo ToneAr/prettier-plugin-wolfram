@@ -80,6 +80,39 @@ function makePath(root, printFn) {
 }
 
 describe("translator regressions", () => {
+	it("rewrites overflowing logical chains as function calls by default", async () => {
+		const result = await prettier.format(
+			"firstCondition || secondCondition || thirdCondition",
+			{
+				parser: "wolfram",
+				plugins: [plugin],
+				printWidth: 30,
+				tabWidth: 2,
+			},
+		);
+
+		expect(result).toBe(
+			"Or[\n  firstCondition,\n  secondCondition,\n  thirdCondition\n]",
+		);
+	});
+
+	it("keeps overflowing logical chains infix when function form is disabled", async () => {
+		const result = await prettier.format(
+			"firstCondition && secondCondition && thirdCondition",
+			{
+				parser: "wolfram",
+				plugins: [plugin],
+				printWidth: 30,
+				tabWidth: 2,
+				wolfram: { logicalOperatorsToFullForm: false },
+			},
+		);
+
+		expect(result).toBe(
+			"firstCondition &&\nsecondCondition &&\nthirdCondition",
+		);
+	});
+
 	it("prints raw string leaves without double-quoting", () => {
 		expect(
 			printLeaf(
@@ -127,6 +160,32 @@ describe("translator regressions", () => {
 
 		expect(result).toBe("f[x_][y_] := x + y;");
 	});
+
+	it("preserves the end of a commented tab-indented definition", async () => {
+		const source =
+			"ANSITools[\n" +
+			'\t"Style",\n' +
+			"\tOrderlessPatternSequence[\n" +
+			'\t\tclr : (_?ColorQ | Null) : Null,\n' +
+			"\t\twght : (Bold | Italic | Reverse | Underlined | Struckthrough | Inverse | Invisible | Null) : Null\n" +
+			"\t],\n" +
+			"\topts : OptionsPattern[StyleOptions]\n" +
+			"][\n" +
+			"\ttext_String\n" +
+			"] :=\n" +
+			"\t(* wl-disable-next-line DocCommentArityMismatch *)\n" +
+			'\tANSITools["Style", text, clr, wght, opts];\n';
+
+		const result = await prettier.format(source, {
+			parser: "wolfram",
+			plugins: [plugin],
+			printWidth: 80,
+			tabWidth: 4,
+			useTabs: true,
+		});
+
+		expect(result).toBe(source.trimEnd());
+	}, 15000);
 
 	it("formats definitions whose RHS contains a terminated compound expression", async () => {
 		const result = await prettier.format("f[x_]:=Module[{},2+2;]", {
@@ -947,7 +1006,7 @@ describe("translator regressions", () => {
 		}
 	}, 15000);
 
-	it("groups leading comments with the following definition and keeps the separating blank line above the comment block", async () => {
+	it("spaces standalone comments around definitions using the surrounding definition context", async () => {
 		const source = "a = 1\n(* docs for b *)\n\nb := 2";
 		const once = await prettier.format(source, {
 			parser: "wolfram",
@@ -962,7 +1021,7 @@ describe("translator regressions", () => {
 			tabWidth: 2,
 		});
 
-		expect(once).toBe("a = 1\n\n(* docs for b *)\nb := 2");
+		expect(once).toBe("a = 1\n(* docs for b *)\n\nb := 2");
 		expect(twice).toBe(once);
 	}, 15000);
 
@@ -1013,6 +1072,35 @@ scrapeCustomerStoryData[]:=
 		});
 
 		expect(comments(result)).toEqual(comments(source));
+	}, 15000);
+
+	it("keeps comments from changing special-form layout decisions", async () => {
+		const options = {
+			parser: "wolfram",
+			plugins: [plugin],
+			printWidth: 80,
+			tabWidth: 2,
+			wolframModuleVarsBreakThreshold: 0,
+		};
+
+		const moduleResult = await prettier.format(
+			"Module[{(* var *) a = 1, b = 2}, (* body *) a + b]",
+			options,
+		);
+		const ifResult = await prettier.format(
+			"If[(* cond *) x > 0, (* then *) x, (* else *) -x]",
+			options,
+		);
+
+		expect(moduleResult).toContain("Module[\n  {");
+		expect(moduleResult).toContain("\n]");
+		expect(ifResult).toContain("If[\n  (* cond *) x > 0");
+		expect(comments(moduleResult)).toEqual(["(* var *)", "(* body *)"]);
+		expect(comments(ifResult)).toEqual([
+			"(* cond *)",
+			"(* then *)",
+			"(* else *)",
+		]);
 	}, 15000);
 
 	it("keeps wl-disable-line comments attached to the preceding statement inside Module bodies", async () => {

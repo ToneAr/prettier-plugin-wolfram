@@ -15,6 +15,9 @@ function wolframOptionDefinition(definition) {
 	return {
 		type: definition.type,
 		category: "Wolfram",
+		...(hasOwn(definition, "exception")
+			? { exception: definition.exception }
+			: {}),
 		...(hasOwn(definition, "default")
 			? { default: definition.default }
 			: {}),
@@ -22,42 +25,61 @@ function wolframOptionDefinition(definition) {
 	};
 }
 
+function isBlankLineRange(value) {
+	return (
+		isPlainObject(value) &&
+		Number.isInteger(value.min) &&
+		Number.isInteger(value.max) &&
+		value.min >= 0 &&
+		value.max >= value.min
+	);
+}
+
+function blankLineRangeOption(defaultValue, description) {
+	return {
+		type: "int",
+		...(defaultValue == null ? {} : { default: defaultValue }),
+		exception: (value) =>
+			(Number.isInteger(value) && value >= 0) || isBlankLineRange(value),
+		description,
+	};
+}
+
 export const wolframOptions = {
 	newlinesBetweenDefinitions: {
-		type: "int",
-		default: 1,
-		minimum: 0,
+		...blankLineRangeOption(
+			{ min: 1, max: 1 },
+			"Allowed blank lines between adjacent definitions.",
+		),
 		legacyName: "wolframNewlinesBetweenDefinitions",
-		description: "Blank lines inserted between adjacent definitions.",
 	},
 	newlinesBetweenSetDefinitions: {
-		type: "int",
-		minimum: 0,
+		...blankLineRangeOption(
+			null,
+			"Allowed blank lines between adjacent Set-family definitions. Inherits newlinesBetweenDefinitions when unset.",
+		),
 		legacyName: "wolframNewlinesBetweenSetDefinitions",
-		description:
-			"Blank lines inserted between adjacent Set-family definitions. Inherits newlinesBetweenDefinitions when unset.",
 	},
 	newlinesBetweenSetDelayedDefinitions: {
-		type: "int",
-		minimum: 0,
+		...blankLineRangeOption(
+			null,
+			"Allowed blank lines between adjacent SetDelayed-family definitions. Inherits newlinesBetweenDefinitions when unset.",
+		),
 		legacyName: "wolframNewlinesBetweenSetDelayedDefinitions",
-		description:
-			"Blank lines inserted between adjacent SetDelayed-family definitions. Inherits newlinesBetweenDefinitions when unset.",
 	},
 	newlinesBetweenSetAndSetDelayedDefinitions: {
-		type: "int",
-		minimum: 0,
+		...blankLineRangeOption(
+			null,
+			"Allowed blank lines between mixed Set-family and SetDelayed-family definitions. Inherits newlinesBetweenDefinitions when unset.",
+		),
 		legacyName: "wolframNewlinesBetweenSetAndSetDelayedDefinitions",
-		description:
-			"Blank lines inserted between mixed Set-family and SetDelayed-family definitions. Inherits newlinesBetweenDefinitions when unset.",
 	},
 	newlinesBetweenSameNameDefinitions: {
-		type: "int",
-		default: 0,
-		minimum: 0,
+		...blankLineRangeOption(
+			{ min: 0, max: 0 },
+			"Allowed blank lines between adjacent definitions that belong to the same symbol.",
+		),
 		legacyName: "wolframNewlinesBetweenSameNameDefinitions",
-		description:
-			"Blank lines inserted between adjacent definitions that belong to the same symbol.",
 	},
 	maxBlankLinesBetweenCode: {
 		type: "int",
@@ -92,6 +114,13 @@ export const wolframOptions = {
 		legacyName: "wolframAlignRuleValues",
 		description:
 			"Align Rule and RuleDelayed values vertically in multiline argument, list, and association layouts.",
+	},
+	logicalOperatorsToFullForm: {
+		type: "boolean",
+		default: true,
+		legacyName: "wolframLogicalOperatorsToFullForm",
+		description:
+			"Rewrite overflowing logical infix chains as multiline function calls.",
 	},
 	documentationCommentColumn: {
 		type: "int",

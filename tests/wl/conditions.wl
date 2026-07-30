@@ -11,15 +11,4 @@ Switch[x, 1, "one", 2, "two", 3, "three", _, "other"]
 (* Which *)
 Which[ x < 0, "negative", x == 0, "zero", x > 0, "positive"]
 (* Which with many clauses *)
-Which[
-	x < -100,
-		"very negative",
-	x < 0,
-		"negative",
-	x == 0,
-		"zero",
-	x < 100,
-		"positive",
-	True,
-		"very positive"
-]
+Which[ x < -100, "very negative", x < 0, "negative", x == 0, "zero", x < 100, "positive", True, "very positive"]

@@ -1,33 +1,30 @@
 (* tests/wl/production-readiness.wl — broad formatter coverage for production readiness *)
 (* Basic spacing and arithmetic *)
-alpha = 1                                                                                           (* documented alpha *)
+alpha = 1  (* documented alpha *)
 
 
-beta = 2 + 3                                                                                        (* documented beta *)
+beta = 2 + 3  (* documented beta *)
 
 
 gamma = alpha * beta - 1
 
-
 (* Long line should wrap when printWidth is small *)
 veryLongComputation =
-	someVeryLongFunctionName[
-		firstArgument,
-		secondArgument,
-		thirdArgument,
-		fourthArgument,
-		fifthArgument,
-		sixthArgument
-	]
+    someVeryLongFunctionName[
+        firstArgument,
+        secondArgument,
+        thirdArgument,
+        fourthArgument,
+        fifthArgument,
+        sixthArgument
+    ]
 (* Nested calls and comma spacing *)
 foo[1, 2, 3, 4, 5]
 bar[baz[1, 2], qux[3, 4], zap[5, 6]]
 (* Rules and patterns *)
 f[x_] := x ^ 2
 
-
 g[x_Integer /; x > 0] := x - 1
-
 
 h[x_Real] = x / 2.0
 (* Replacement rules *)
@@ -35,10 +32,9 @@ expr /. {f[x_] :> g[x ^ 2], h[y_] :> k[y + 1]}
 (* Condition and operator spacing *)
 safeDiv[x_, y_] /; y != 0 := x / y
 
-
 (* Block-structure forms that should stay flat if they fit *)
 process[data_, OptionsPattern[]] :=
-	Module[{v = OptionValue[Verbose]}, If[v, Print["processing"]]; data]
+    Module[{v = OptionValue[Verbose]}, If[v, Print["processing"]]; data]
 With[{scale = 2}, scale * x + 1]
 Block[{$RecursionLimit = 100}, someRecursiveFunction[data]]
 (* Which / If / Switch *)
@@ -51,9 +47,7 @@ foo[<|a -> 1, b -> 2|>]
 <||>
 <|"nested" -> <|left -> 1, right -> 2|>, "list" -> {1, 2, 3}|>
 (* Prefix / postfix operators *)
-!flag
-++counter
---counter
+! flag++ counter-- counter
 counter++
 counter--
 n!
@@ -74,12 +68,12 @@ x // g // h
 (* General infix ~f~ should normalize to call syntax *)
 f[x, y]
 (* Preserved infix operator form *)
-x ~ Join ~ y
+Join[x, y]
 (* Mixed nested shorthand / structural stress test *)
 finalResult =
-	Module[{pairs = <|a -> 1, b -> 2|>},
-		({#1, #2}& @@@ Normal[pairs]) // Reverse
-	]
+    Module[{pairs = <|a -> 1, b -> 2|>},
+        ({#1, #2}& @@@ Normal[pairs]) // Reverse
+    ]
 
 
 Options[process] = {Verbose -> False}

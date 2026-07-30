@@ -35,6 +35,27 @@ export function nonNegativeIntegerOption(value, fallback) {
 	return Math.max(0, Math.floor(numeric));
 }
 
+function blankLineRangeOption(value, fallback) {
+	if (value == null) return fallback;
+	if (typeof value === "object" && !Array.isArray(value)) {
+		const min = nonNegativeIntegerOption(value.min, fallback.min);
+		const max = nonNegativeIntegerOption(value.max, fallback.max);
+		return { min, max: Math.max(min, max) };
+	}
+
+	const exact = nonNegativeIntegerOption(value, fallback.min);
+	return { min: exact, max: exact };
+}
+
+function exactBlankLineRange(value) {
+	return { min: value, max: value };
+}
+
+function blankLinesFromRange(observedBlankLines, range) {
+	const observed = nonNegativeIntegerOption(observedBlankLines, 0);
+	return Math.min(range.max, Math.max(range.min, observed));
+}
+
 export function maxBlankLinesBetweenCode(options = {}) {
 	options = normalizeWolframOptions(options);
 	return nonNegativeIntegerOption(
@@ -44,47 +65,72 @@ export function maxBlankLinesBetweenCode(options = {}) {
 }
 
 export function blankLinesBetweenDefinitions(options = {}) {
+	const range = blankLineRangeBetweenDefinitions(options);
+	return range.min;
+}
+
+function blankLineRangeBetweenDefinitions(options = {}) {
 	options = normalizeWolframOptions(options);
-	return nonNegativeIntegerOption(
+	return blankLineRangeOption(
 		options.wolframNewlinesBetweenDefinitions,
-		DEFAULT_BLANK_LINES_BETWEEN_DEFINITIONS,
+		exactBlankLineRange(DEFAULT_BLANK_LINES_BETWEEN_DEFINITIONS),
 	);
 }
 
-function optionalBlankLinesOption(value, fallback) {
+function optionalBlankLineRangeOption(value, fallback) {
 	if (value == null) return fallback;
-	return nonNegativeIntegerOption(value, fallback);
+	return blankLineRangeOption(value, fallback);
 }
 
 export function blankLinesBetweenSetDefinitions(options = {}) {
+	const range = blankLineRangeBetweenSetDefinitions(options);
+	return range.min;
+}
+
+function blankLineRangeBetweenSetDefinitions(options = {}) {
 	options = normalizeWolframOptions(options);
-	return optionalBlankLinesOption(
+	return optionalBlankLineRangeOption(
 		options.wolframNewlinesBetweenSetDefinitions,
-		blankLinesBetweenDefinitions(options),
+		blankLineRangeBetweenDefinitions(options),
 	);
 }
 
 export function blankLinesBetweenSetDelayedDefinitions(options = {}) {
+	const range = blankLineRangeBetweenSetDelayedDefinitions(options);
+	return range.min;
+}
+
+function blankLineRangeBetweenSetDelayedDefinitions(options = {}) {
 	options = normalizeWolframOptions(options);
-	return optionalBlankLinesOption(
+	return optionalBlankLineRangeOption(
 		options.wolframNewlinesBetweenSetDelayedDefinitions,
-		blankLinesBetweenDefinitions(options),
+		blankLineRangeBetweenDefinitions(options),
 	);
 }
 
 export function blankLinesBetweenSetAndSetDelayedDefinitions(options = {}) {
+	const range = blankLineRangeBetweenSetAndSetDelayedDefinitions(options);
+	return range.min;
+}
+
+function blankLineRangeBetweenSetAndSetDelayedDefinitions(options = {}) {
 	options = normalizeWolframOptions(options);
-	return optionalBlankLinesOption(
+	return optionalBlankLineRangeOption(
 		options.wolframNewlinesBetweenSetAndSetDelayedDefinitions,
-		blankLinesBetweenDefinitions(options),
+		blankLineRangeBetweenDefinitions(options),
 	);
 }
 
 export function blankLinesBetweenSameNameDefinitions(options = {}) {
+	const range = blankLineRangeBetweenSameNameDefinitions(options);
+	return range.min;
+}
+
+function blankLineRangeBetweenSameNameDefinitions(options = {}) {
 	options = normalizeWolframOptions(options);
-	return nonNegativeIntegerOption(
+	return blankLineRangeOption(
 		options.wolframNewlinesBetweenSameNameDefinitions,
-		DEFAULT_BLANK_LINES_BETWEEN_SAME_NAME_DEFINITIONS,
+		exactBlankLineRange(DEFAULT_BLANK_LINES_BETWEEN_SAME_NAME_DEFINITIONS),
 	);
 }
 
@@ -187,6 +233,48 @@ function blankLinesBetweenDeclarationKinds(
 	return null;
 }
 
+function blankLineRangeBetweenDeclarationKinds(
+	prevKind,
+	nextKind,
+	options,
+	{ requireSpecificOption = false } = {},
+) {
+	if (prevKind === "set" && nextKind === "set") {
+		if (
+			requireSpecificOption &&
+			options.wolframNewlinesBetweenSetDefinitions == null
+		) {
+			return null;
+		}
+		return blankLineRangeBetweenSetDefinitions(options);
+	}
+
+	if (prevKind === "setDelayed" && nextKind === "setDelayed") {
+		if (
+			requireSpecificOption &&
+			options.wolframNewlinesBetweenSetDelayedDefinitions == null
+		) {
+			return null;
+		}
+		return blankLineRangeBetweenSetDelayedDefinitions(options);
+	}
+
+	if (
+		(prevKind === "set" && nextKind === "setDelayed") ||
+		(prevKind === "setDelayed" && nextKind === "set")
+	) {
+		if (
+			requireSpecificOption &&
+			options.wolframNewlinesBetweenSetAndSetDelayedDefinitions == null
+		) {
+			return null;
+		}
+		return blankLineRangeBetweenSetAndSetDelayedDefinitions(options);
+	}
+
+	return null;
+}
+
 function blankLinesBetweenDeclarationNodes(
 	prevNode,
 	nextNode,
@@ -194,6 +282,20 @@ function blankLinesBetweenDeclarationNodes(
 	requireSpecificOption = false,
 ) {
 	return blankLinesBetweenDeclarationKinds(
+		declarationSpacingKind(prevNode),
+		declarationSpacingKind(nextNode),
+		options,
+		{ requireSpecificOption },
+	);
+}
+
+function blankLineRangeBetweenDeclarationNodes(
+	prevNode,
+	nextNode,
+	options,
+	requireSpecificOption = false,
+) {
+	return blankLineRangeBetweenDeclarationKinds(
 		declarationSpacingKind(prevNode),
 		declarationSpacingKind(nextNode),
 		options,
@@ -384,6 +486,38 @@ export function observedBlankLinesBetween(prevEndLine, nextStartLine) {
 	return Math.max(0, nextStartLine - prevEndLine - 1);
 }
 
+export function blankLineRangeForCodeGap(
+	prevNode,
+	nextNode,
+	options = {},
+	{ topLevel = false } = {},
+) {
+	options = normalizeWolframOptions(options);
+	const mode = options.wolframTopLevelSpacingMode ?? "declarations";
+	if (topLevel && mode === "none") return exactBlankLineRange(0);
+
+	if (hasSharedDefinitionSubject(prevNode, nextNode)) {
+		return blankLineRangeBetweenSameNameDefinitions(options);
+	}
+
+	if (isDeclarationNode(prevNode) && isDeclarationNode(nextNode)) {
+		return (
+			blankLineRangeBetweenDeclarationNodes(
+				prevNode,
+				nextNode,
+				options,
+			) ?? blankLineRangeBetweenDefinitions(options)
+		);
+	}
+
+	const maxBlankLines = maxBlankLinesBetweenCode(options);
+	if (topLevel && mode === "all") {
+		return { min: Math.min(1, maxBlankLines), max: maxBlankLines };
+	}
+
+	return { min: 0, max: maxBlankLines };
+}
+
 export function blankLinesForCodeGap(
 	prevNode,
 	nextNode,
@@ -391,30 +525,8 @@ export function blankLinesForCodeGap(
 	options = {},
 	{ topLevel = false } = {},
 ) {
-	options = normalizeWolframOptions(options);
-	const mode = options.wolframTopLevelSpacingMode ?? "declarations";
-	if (topLevel && mode === "none") return 0;
-
-	if (hasSharedDefinitionSubject(prevNode, nextNode)) {
-		return blankLinesBetweenSameNameDefinitions(options);
-	}
-
-	if (isDeclarationNode(prevNode) && isDeclarationNode(nextNode)) {
-		return (
-			blankLinesBetweenDeclarationNodes(prevNode, nextNode, options) ??
-			blankLinesBetweenDefinitions(options)
-		);
-	}
-
-	const maxBlankLines = maxBlankLinesBetweenCode(options);
-	const cappedObserved = Math.min(
-		maxBlankLines,
-		nonNegativeIntegerOption(observedBlankLines, 0),
+	return blankLinesFromRange(
+		observedBlankLines,
+		blankLineRangeForCodeGap(prevNode, nextNode, options, { topLevel }),
 	);
-
-	if (topLevel && mode === "all") {
-		return Math.min(maxBlankLines, Math.max(1, cappedObserved));
-	}
-
-	return cappedObserved;
 }

@@ -1,21 +1,12 @@
 {
 	"plugins": ["./src/index.js"],
-	"useTabs": true,
-	"printWidth": 80,
+	"useTabs": false,
+	"printWidth": 145,
 	"tabWidth": 4,
 	"wolfram": {
-		"documentationCommentColumn": 100,
-		"documentationCommentPadding": 2,
-		"newlinesBetweenDefinitions": 2,
-		"topLevelSpacingMode": "declarations",
-		"spaceAfterComma": true,
-		"spaceAroundOperators": true,
-		"moduleVarsBreakThreshold": 40,
-		"conditionFirstFunctions": "If,Switch",
-		"blockStructureFunctions": "Module,With,Block,DynamicModule",
-		"caseStructureFunctions": "Which",
-		"preserveTildeInfixFunctions": "Join",
-		"enginePath": "",
-		"lintRules": "{}"
+		"newlinesBetweenSetDefinitions": {
+			"min": 2,
+			"max": 3
+		}
 	}
 }

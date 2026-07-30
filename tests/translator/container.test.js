@@ -92,7 +92,7 @@ describe("printContainer", () => {
 		expect(out).toBe("(* a *)(* b *)");
 	});
 
-	it("keeps leading comments attached to the following declaration and inserts blank lines above the comment block", () => {
+	it("prints standalone comment blocks using surrounding definition spacing", () => {
 		const node = {
 			type: "ContainerNode",
 			kind: "String",
@@ -112,10 +112,10 @@ describe("printContainer", () => {
 		const print = (child) => String(child.value ?? "");
 		const out = fmt(printContainer(node, {}, print));
 
-		expect(out).toBe("(* c1 *)\na = 1\n\n(* c2 *)\nb := 2\nPrint[x]");
+		expect(out).toBe("(* c1 *)\na = 1\n(* c2 *)\nb := 2\nPrint[x]");
 	});
 
-	it("removes blank lines between a leading comment block and the following definition", () => {
+	it("does not add definition spacing around a standalone comment block", () => {
 		const node = {
 			type: "ContainerNode",
 			kind: "String",
@@ -133,7 +133,221 @@ describe("printContainer", () => {
 		const print = (child) => String(child.value ?? "");
 		const out = fmt(printContainer(node, {}, print));
 
-		expect(out).toBe("a = 1\n\n(* docs *)\nb := 2");
+		expect(out).toBe("a = 1\n(* docs *)\nb := 2");
+	});
+
+	it("preserves blank lines on each side of a standalone comment block independently", () => {
+		const node = {
+			type: "ContainerNode",
+			kind: "String",
+			children: [
+				{
+					type: "BinaryNode",
+					op: "Set",
+					value: "a = 1",
+					source: [
+						[1, 1],
+						[1, 6],
+					],
+				},
+				{
+					type: "LeafNode",
+					kind: "Token`Comment",
+					value: "(* docs *)",
+					source: [
+						[3, 1],
+						[3, 11],
+					],
+				},
+				{
+					type: "BinaryNode",
+					op: "SetDelayed",
+					value: "b := 2",
+					source: [
+						[6, 1],
+						[6, 7],
+					],
+				},
+			],
+		};
+
+		const print = (child) => String(child.value ?? "");
+		const out = fmt(printContainer(node, {}, print));
+
+		expect(out).toBe("a = 1\n\n(* docs *)\n\nb := 2");
+	});
+
+	it("caps overflowing blank lines below a standalone comment", () => {
+		const node = {
+			type: "ContainerNode",
+			kind: "String",
+			children: [
+				{
+					type: "BinaryNode",
+					op: "Set",
+					value: "a = 1",
+					source: [
+						[1, 1],
+						[1, 6],
+					],
+				},
+				{
+					type: "LeafNode",
+					kind: "Token`Comment",
+					value: "(* docs *)",
+					source: [
+						[2, 1],
+						[2, 11],
+					],
+				},
+				{
+					type: "BinaryNode",
+					op: "SetDelayed",
+					value: "b := 2",
+					source: [
+						[6, 1],
+						[6, 7],
+					],
+				},
+			],
+		};
+
+		const print = (child) => String(child.value ?? "");
+		const out = fmt(
+			printContainer(node, { wolframMaxBlankLinesBetweenCode: 2 }, print),
+		);
+
+		expect(out).toBe("a = 1\n(* docs *)\n\n\nb := 2");
+	});
+
+	it("preserves balanced comment-region spacing within the configured max", () => {
+		const node = {
+			type: "ContainerNode",
+			kind: "String",
+			children: [
+				{
+					type: "BinaryNode",
+					op: "Set",
+					value: "a = 1",
+					source: [
+						[1, 1],
+						[1, 6],
+					],
+				},
+				{
+					type: "LeafNode",
+					kind: "Token`Comment",
+					value: "(* docs *)",
+					source: [
+						[3, 1],
+						[3, 11],
+					],
+				},
+				{
+					type: "BinaryNode",
+					op: "SetDelayed",
+					value: "b := 2",
+					source: [
+						[5, 1],
+						[5, 7],
+					],
+				},
+			],
+		};
+
+		const print = (child) => String(child.value ?? "");
+		const out = fmt(
+			printContainer(node, { wolframMaxBlankLinesBetweenCode: 2 }, print),
+		);
+
+		expect(out).toBe("a = 1\n\n(* docs *)\n\nb := 2");
+	});
+
+	it("caps blank lines on each side of a comment independently of the other side", () => {
+		const node = {
+			type: "ContainerNode",
+			kind: "String",
+			children: [
+				{
+					type: "BinaryNode",
+					op: "Set",
+					value: "a = 1",
+					source: [
+						[1, 1],
+						[1, 6],
+					],
+				},
+				{
+					type: "LeafNode",
+					kind: "Token`Comment",
+					value: "(* docs *)",
+					source: [
+						[8, 1],
+						[8, 11],
+					],
+				},
+				{
+					type: "BinaryNode",
+					op: "SetDelayed",
+					value: "b := 2",
+					source: [
+						[11, 1],
+						[11, 7],
+					],
+				},
+			],
+		};
+
+		const print = (child) => String(child.value ?? "");
+		const out = fmt(
+			printContainer(node, { wolframMaxBlankLinesBetweenCode: 2 }, print),
+		);
+
+		// 6 blank lines above the comment are capped to the configured max of
+		// 2, while the 2 blank lines below (already within the max) are left
+		// untouched instead of being reduced to make room for the overflow above.
+		expect(out).toBe("a = 1\n\n\n(* docs *)\n\n\nb := 2");
+	});
+
+	it("treats multiline standalone comments as a single comment block for spacing", () => {
+		const node = {
+			type: "ContainerNode",
+			kind: "String",
+			children: [
+				{
+					type: "BinaryNode",
+					op: "Set",
+					value: "a = 1",
+					source: [
+						[1, 1],
+						[1, 6],
+					],
+				},
+				{
+					type: "LeafNode",
+					kind: "Token`Comment",
+					value: "(* docs\n   more docs\n*)",
+					source: [
+						[3, 1],
+						[5, 3],
+					],
+				},
+				{
+					type: "BinaryNode",
+					op: "SetDelayed",
+					value: "b := 2",
+					source: [
+						[7, 1],
+						[7, 7],
+					],
+				},
+			],
+		};
+
+		const print = (child) => String(child.value ?? "");
+		const out = fmt(printContainer(node, {}, print));
+
+		expect(out).toBe("a = 1\n\n(* docs\n   more docs\n*)\n\nb := 2");
 	});
 
 	it("keeps same-line leading comments as prefix comments", () => {
@@ -454,6 +668,44 @@ describe("printContainer", () => {
 		expect(out).toBe("a = 1\n\n\nb := 2");
 	});
 
+	it("preserves allowed blank-line ranges between adjacent definitions", () => {
+		const node = {
+			type: "ContainerNode",
+			kind: "String",
+			children: [
+				{
+					type: "BinaryNode",
+					op: "Set",
+					value: "a = 1",
+					source: [
+						[1, 1],
+						[1, 6],
+					],
+				},
+				{
+					type: "BinaryNode",
+					op: "SetDelayed",
+					value: "b := 2",
+					source: [
+						[4, 1],
+						[4, 7],
+					],
+				},
+			],
+		};
+
+		const print = (child) => String(child.value ?? "");
+		const out = fmt(
+			printContainer(
+				node,
+				{ wolframNewlinesBetweenDefinitions: { min: 1, max: 2 } },
+				print,
+			),
+		);
+
+		expect(out).toBe("a = 1\n\n\nb := 2");
+	});
+
 	it("does not insert blank lines between same-name function, option, and attribute definitions", () => {
 		const node = {
 			type: "ContainerNode",
@@ -633,7 +885,7 @@ describe("printContainer", () => {
 
 		expect(out).toBe(
 			'f::usage = "use f"\n\n\n' + "f[x_] := x\n" + "g[x_] := x",
-		);
+			);
 	});
 
 	it("treats semicolon-terminated top-level definitions as definitions for spacing", () => {

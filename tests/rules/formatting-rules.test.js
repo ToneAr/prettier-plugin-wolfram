@@ -61,7 +61,7 @@ function definition(op, lhs, source) {
 }
 
 describe("newlines-between-definitions", () => {
-	it("requires the blank line above a leading comment block, not between the comment and the definition", () => {
+	it("does not add definition minimum spacing around a comment block", () => {
 		const ctx = makeContext();
 		const node = {
 			type: "ContainerNode",
@@ -95,67 +95,6 @@ describe("newlines-between-definitions", () => {
 					kind: "Token`Newline",
 					source: [
 						[2, 6],
-						[3, 1],
-					],
-				},
-				{
-					type: "LeafNode",
-					kind: "Token`Comment",
-					source: [
-						[3, 1],
-						[3, 10],
-					],
-				},
-				{
-					type: "LeafNode",
-					kind: "Token`Newline",
-					source: [
-						[3, 10],
-						[4, 1],
-					],
-				},
-				{
-					type: "BinaryNode",
-					op: "Set",
-					source: [
-						[4, 1],
-						[4, 6],
-					],
-				},
-			],
-		};
-
-		newlinesRule.visit(node, ctx);
-		expect(ctx.reports).toHaveLength(1);
-		expect(ctx.reports[0].message).toMatch(/Expected 1 blank line/);
-	});
-
-	it("does not count a leading comment block as the separating blank line when there is already a blank line above it", () => {
-		const ctx = makeContext();
-		const node = {
-			type: "ContainerNode",
-			children: [
-				{
-					type: "BinaryNode",
-					op: "Set",
-					source: [
-						[1, 1],
-						[1, 6],
-					],
-				},
-				{
-					type: "LeafNode",
-					kind: "Token`Newline",
-					source: [
-						[1, 6],
-						[2, 1],
-					],
-				},
-				{
-					type: "LeafNode",
-					kind: "Token`Newline",
-					source: [
-						[2, 1],
 						[3, 1],
 					],
 				},
@@ -190,7 +129,160 @@ describe("newlines-between-definitions", () => {
 		expect(ctx.reports).toHaveLength(0);
 	});
 
-	it("requires leading comments to sit directly on top of the following statement", () => {
+	it("caps excess blank lines on one side of a comment block independently", () => {
+		const ctx = makeContext();
+		const node = {
+			type: "ContainerNode",
+			children: [
+				{
+					type: "BinaryNode",
+					op: "Set",
+					source: [
+						[1, 1],
+						[1, 6],
+					],
+				},
+				{
+					type: "LeafNode",
+					kind: "Token`Newline",
+					source: [
+						[1, 6],
+						[2, 1],
+					],
+				},
+				{
+					type: "LeafNode",
+					kind: "Token`Newline",
+					source: [
+						[2, 1],
+						[3, 1],
+					],
+				},
+				{
+					type: "LeafNode",
+					kind: "Token`Comment",
+					source: [
+						[3, 1],
+						[3, 10],
+					],
+				},
+				{
+					type: "LeafNode",
+					kind: "Token`Newline",
+					source: [
+						[3, 10],
+						[4, 1],
+					],
+				},
+				{
+					type: "BinaryNode",
+					op: "Set",
+					source: [
+						[6, 1],
+						[6, 6],
+					],
+				},
+			],
+		};
+
+		newlinesRule.visit(node, ctx);
+		expect(ctx.reports).toHaveLength(1);
+		expect(ctx.reports[0].message).toMatch(/Expected 1 blank line/);
+	});
+
+	it("caps overflowing blank lines below a comment independently of the gap above", () => {
+		const ctx = makeContext({
+			wolframMaxBlankLinesBetweenCode: 2,
+		});
+		const node = {
+			type: "ContainerNode",
+			children: [
+				definition("Set", sym("a"), [
+					[1, 1],
+					[1, 6],
+				]),
+				{
+					type: "LeafNode",
+					kind: "Token`Comment",
+					source: [
+						[2, 1],
+						[2, 10],
+					],
+				},
+				definition("SetDelayed", sym("b"), [
+					[6, 1],
+					[6, 7],
+				]),
+			],
+		};
+
+		newlinesRule.visit(node, ctx);
+		expect(ctx.reports).toHaveLength(1);
+		expect(ctx.reports[0].message).toMatch(/Expected 2 blank lines/);
+	});
+
+	it("preserves balanced comment-region spacing within the configured max", () => {
+		const ctx = makeContext({
+			wolframMaxBlankLinesBetweenCode: 2,
+		});
+		const node = {
+			type: "ContainerNode",
+			children: [
+				definition("Set", sym("a"), [
+					[1, 1],
+					[1, 6],
+				]),
+				{
+					type: "LeafNode",
+					kind: "Token`Comment",
+					source: [
+						[4, 1],
+						[4, 10],
+					],
+				},
+				definition("SetDelayed", sym("b"), [
+					[7, 1],
+					[7, 7],
+				]),
+			],
+		};
+
+		newlinesRule.visit(node, ctx);
+		expect(ctx.reports).toHaveLength(0);
+	});
+
+	it("caps blank lines on each side of a comment independently of the other side", () => {
+		const ctx = makeContext({
+			wolframMaxBlankLinesBetweenCode: 2,
+		});
+		const node = {
+			type: "ContainerNode",
+			children: [
+				definition("Set", sym("a"), [
+					[1, 1],
+					[1, 6],
+				]),
+				{
+					type: "LeafNode",
+					kind: "Token`Comment",
+					source: [
+						[8, 1],
+						[8, 10],
+					],
+				},
+				definition("SetDelayed", sym("b"), [
+					[11, 1],
+					[11, 7],
+				]),
+			],
+		};
+
+		newlinesRule.visit(node, ctx);
+		expect(ctx.reports).toHaveLength(1);
+		expect(ctx.reports[0].message).toMatch(/Expected 2 blank lines.*found 6/);
+	});
+
+	it("allows file-leading comments to preserve an allowed blank line above the following statement", () => {
 		const ctx = makeContext();
 		const node = {
 			type: "ContainerNode",
@@ -231,10 +323,36 @@ describe("newlines-between-definitions", () => {
 		};
 
 		newlinesRule.visit(node, ctx);
+		expect(ctx.reports).toHaveLength(0);
+	});
+
+	it("caps excessive blank lines below a file-leading comment block", () => {
+		const ctx = makeContext({ wolframMaxBlankLinesBetweenCode: 1 });
+		const node = {
+			type: "ContainerNode",
+			children: [
+				{
+					type: "LeafNode",
+					kind: "Token`Comment",
+					source: [
+						[1, 1],
+						[1, 10],
+					],
+				},
+				{
+					type: "BinaryNode",
+					op: "Set",
+					source: [
+						[4, 1],
+						[4, 6],
+					],
+				},
+			],
+		};
+
+		newlinesRule.visit(node, ctx);
 		expect(ctx.reports).toHaveLength(1);
-		expect(ctx.reports[0].message).toMatch(
-			/Expected 0 blank lines between a leading comment block/,
-		);
+		expect(ctx.reports[0].message).toMatch(/Expected 1 blank line/);
 	});
 
 	it("allows configured blank lines between non-declaration statements", () => {
@@ -452,6 +570,51 @@ describe("newlines-between-definitions", () => {
 						[3, 7],
 					],
 				},
+			],
+		};
+
+		newlinesRule.visit(node, ctx);
+		expect(ctx.reports).toHaveLength(1);
+		expect(ctx.reports[0].message).toMatch(/Expected 2 blank lines/);
+	});
+
+	it("allows configured blank-line ranges between adjacent definitions", () => {
+		const ctx = makeContext({
+			wolframNewlinesBetweenDefinitions: { min: 1, max: 2 },
+		});
+		const node = {
+			type: "ContainerNode",
+			children: [
+				definition("Set", sym("a"), [
+					[1, 1],
+					[1, 6],
+				]),
+				definition("SetDelayed", sym("b"), [
+					[4, 1],
+					[4, 7],
+				]),
+			],
+		};
+
+		newlinesRule.visit(node, ctx);
+		expect(ctx.reports).toHaveLength(0);
+	});
+
+	it("reports when definition blank lines exceed the configured range", () => {
+		const ctx = makeContext({
+			wolframNewlinesBetweenDefinitions: { min: 1, max: 2 },
+		});
+		const node = {
+			type: "ContainerNode",
+			children: [
+				definition("Set", sym("a"), [
+					[1, 1],
+					[1, 6],
+				]),
+				definition("SetDelayed", sym("b"), [
+					[5, 1],
+					[5, 7],
+				]),
 			],
 		};
 

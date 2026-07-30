@@ -1,4 +1,4 @@
-import { makeLineIndex, nodeSource, offsetToLineCol } from "./position.js";
+import { makeLineIndex, nodeSource, sourceRange } from "./position.js";
 import { INFIX_OPS, BINARY_OPS, PREFIX_OPS, POSTFIX_OPS, opName } from "./operators.js";
 import { IMPLICIT_NULL_SYMBOL } from "./sentinels.js";
 
@@ -324,13 +324,13 @@ function adaptPart(node, ctx) {
 		}
 	}
 	// Split "[[" into outer "[" (first char) and inner "[" (second char)
-	const outerOpenSrc = [offsetToLineCol(ctx.lineIndex, openDoubleToken.startIndex), offsetToLineCol(ctx.lineIndex, openDoubleToken.startIndex + 1)];
-	const innerOpenSrc = [offsetToLineCol(ctx.lineIndex, openDoubleToken.startIndex + 1), offsetToLineCol(ctx.lineIndex, openDoubleToken.endIndex)];
+	const outerOpenSrc = sourceRange(ctx.lineIndex, openDoubleToken.startIndex, openDoubleToken.startIndex + 1);
+	const innerOpenSrc = sourceRange(ctx.lineIndex, openDoubleToken.startIndex + 1, openDoubleToken.endIndex);
 	const outerOpenLeaf = { type: "LeafNode", kind: "Token`OpenSquare", value: "[", source: outerOpenSrc };
 	const innerOpenLeaf = { type: "LeafNode", kind: "Token`OpenSquare", value: "[", source: innerOpenSrc };
 	// Split "]]" into inner "]" (first char) and outer "]" (second char)
-	const innerCloseSrc = [offsetToLineCol(ctx.lineIndex, closeDoubleToken.startIndex), offsetToLineCol(ctx.lineIndex, closeDoubleToken.startIndex + 1)];
-	const outerCloseSrc = [offsetToLineCol(ctx.lineIndex, closeDoubleToken.startIndex + 1), offsetToLineCol(ctx.lineIndex, closeDoubleToken.endIndex)];
+	const innerCloseSrc = sourceRange(ctx.lineIndex, closeDoubleToken.startIndex, closeDoubleToken.startIndex + 1);
+	const outerCloseSrc = sourceRange(ctx.lineIndex, closeDoubleToken.startIndex + 1, closeDoubleToken.endIndex);
 	const innerCloseLeaf = { type: "LeafNode", kind: "Token`CloseSquare", value: "]", source: innerCloseSrc };
 	const outerCloseLeaf = { type: "LeafNode", kind: "Token`CloseSquare", value: "]", source: outerCloseSrc };
 	// Build GroupNode(GroupSquare) wrapping the content. Iterate the named
@@ -351,7 +351,7 @@ function adaptPart(node, ctx) {
 	}
 	for (const t of triviaLeaves(lastIdx, innerCloseStart, ctx)) groupChildren.push(t);
 	groupChildren.push(innerCloseLeaf);
-	const groupSrc = [offsetToLineCol(ctx.lineIndex, openDoubleToken.startIndex + 1), offsetToLineCol(ctx.lineIndex, closeDoubleToken.startIndex + 1)];
+	const groupSrc = sourceRange(ctx.lineIndex, openDoubleToken.startIndex + 1, closeDoubleToken.startIndex + 1);
 	const groupNode = { type: "GroupNode", kind: "GroupSquare", children: groupChildren, source: groupSrc };
 	// Build CallNode
 	const callChildren = [outerOpenLeaf, groupNode, outerCloseLeaf];
@@ -395,17 +395,17 @@ function triviaLeaves(fromIdx, toIdx, ctx) {
 			const commentText = gap.slice(start, i);
 			const startChar = fromIdx + start;
 			const endChar = fromIdx + i;
-			const src = [offsetToLineCol(ctx.lineIndex, startChar), offsetToLineCol(ctx.lineIndex, endChar)];
+			const src = sourceRange(ctx.lineIndex, startChar, endChar);
 			leaves.push({ type: "LeafNode", kind: "Token`Comment", value: commentText, source: src });
 		} else if (ch === "\n") {
 			const endChar = fromIdx + i + 1;
-			const src = [offsetToLineCol(ctx.lineIndex, fromIdx + i), offsetToLineCol(ctx.lineIndex, endChar)];
+			const src = sourceRange(ctx.lineIndex, fromIdx + i, endChar);
 			leaves.push({ type: "LeafNode", kind: "Token`Newline", value: "\n", source: src });
 			i++;
 		} else if (ch === "\r") {
 			const nl = gap[i + 1] === "\n" ? "\r\n" : "\r";
 			const endChar = fromIdx + i + nl.length;
-			const src = [offsetToLineCol(ctx.lineIndex, fromIdx + i), offsetToLineCol(ctx.lineIndex, endChar)];
+			const src = sourceRange(ctx.lineIndex, fromIdx + i, endChar);
 			leaves.push({ type: "LeafNode", kind: "Token`Newline", value: nl, source: src });
 			i += nl.length;
 		} else {
@@ -416,7 +416,7 @@ function triviaLeaves(fromIdx, toIdx, ctx) {
 			const ws = gap.slice(i, j);
 			const startChar = fromIdx + i;
 			const endChar = fromIdx + j;
-			const src = [offsetToLineCol(ctx.lineIndex, startChar), offsetToLineCol(ctx.lineIndex, endChar)];
+			const src = sourceRange(ctx.lineIndex, startChar, endChar);
 			if (/\S/.test(ws)) {
 				// Non-whitespace that isn't a comment — shouldn't happen in valid WL, skip it
 				i = j;
@@ -586,7 +586,7 @@ function adaptBinaryRight(node, literal, op, ctx) {
 		const lhsNode = operands[i];
 		const opToken = opTokens[i];
 		const lhs = adaptNode(lhsNode, ctx);
-		const src = [offsetToLineCol(ctx.lineIndex, lhsNode.startIndex), offsetToLineCol(ctx.lineIndex, last.endIndex)];
+		const src = sourceRange(ctx.lineIndex, lhsNode.startIndex, last.endIndex);
 		// Inject whitespace between lhs and operator, and between operator and rhs
 		const children = [lhs,
 			...triviaLeaves(lhsNode.endIndex, opToken.startIndex, ctx),
@@ -633,7 +633,7 @@ function adaptBlank(node, ctx) {
 	const underLeaf = { type: "LeafNode", kind: `Token\`${tokenKindName(underText)}`, value: underText, source: nodeSource(underToken, ctx.lineIndex) };
 	const headText = ctx.source.slice(underToken.endIndex, node.endIndex);
 	if (!headText) return underLeaf;
-	const headSource = [offsetToLineCol(ctx.lineIndex, underToken.endIndex), offsetToLineCol(ctx.lineIndex, node.endIndex)];
+	const headSource = sourceRange(ctx.lineIndex, underToken.endIndex, node.endIndex);
 	const headLeaf = { type: "LeafNode", kind: "Symbol", value: headText, source: headSource };
 	return { type: "CompoundNode", op: BLANK_OP[underText], children: [underLeaf, headLeaf], source: nodeSource(node, ctx.lineIndex) };
 }
@@ -651,7 +651,7 @@ function adaptPattern(node, ctx) {
 	if (!headText) {
 		return { type: "CompoundNode", op: patternOp, children: [symLeaf, underLeaf], source: nodeSource(node, ctx.lineIndex) };
 	}
-	const headSource = [offsetToLineCol(ctx.lineIndex, underToken.endIndex), offsetToLineCol(ctx.lineIndex, blankNode.endIndex)];
+	const headSource = sourceRange(ctx.lineIndex, underToken.endIndex, blankNode.endIndex);
 	const headLeaf = { type: "LeafNode", kind: "Symbol", value: headText, source: headSource };
 	const blankCompound = { type: "CompoundNode", op: BLANK_OP[underText], children: [underLeaf, headLeaf], source: nodeSource(blankNode, ctx.lineIndex) };
 	return { type: "CompoundNode", op: patternOp, children: [symLeaf, blankCompound], source: nodeSource(node, ctx.lineIndex) };
@@ -663,7 +663,7 @@ function adaptSlot(node, ctx) {
 	const hashLeaf = { type: "LeafNode", kind: "Token`Hash", value: "#", source: nodeSource(hashToken, ctx.lineIndex) };
 	const suffix = ctx.source.slice(node.startIndex + 1, node.endIndex);
 	if (!suffix) return hashLeaf;
-	const suffixSource = [offsetToLineCol(ctx.lineIndex, node.startIndex + 1), offsetToLineCol(ctx.lineIndex, node.endIndex)];
+	const suffixSource = sourceRange(ctx.lineIndex, node.startIndex + 1, node.endIndex);
 	if (/^[0-9]+$/.test(suffix)) {
 		const intLeaf = { type: "LeafNode", kind: "Integer", value: suffix, source: suffixSource };
 		return { type: "CompoundNode", op: "Slot", children: [hashLeaf, intLeaf], source: nodeSource(node, ctx.lineIndex) };
@@ -678,7 +678,7 @@ function adaptSlotSequence(node, ctx) {
 	const hashHashLeaf = { type: "LeafNode", kind: "Token`HashHash", value: "##", source: nodeSource(hashHashToken, ctx.lineIndex) };
 	const suffix = ctx.source.slice(node.startIndex + 2, node.endIndex);
 	if (!suffix) return hashHashLeaf;
-	const suffixSource = [offsetToLineCol(ctx.lineIndex, node.startIndex + 2), offsetToLineCol(ctx.lineIndex, node.endIndex)];
+	const suffixSource = sourceRange(ctx.lineIndex, node.startIndex + 2, node.endIndex);
 	const intLeaf = { type: "LeafNode", kind: "Integer", value: suffix, source: suffixSource };
 	return { type: "CompoundNode", op: "SlotSequence", children: [hashHashLeaf, intLeaf], source: nodeSource(node, ctx.lineIndex) };
 }
@@ -689,8 +689,8 @@ function adaptOut(node, ctx) {
 	if (text === "%") return { type: "LeafNode", kind: "Token`Percent", value: "%", source: nodeSource(node, ctx.lineIndex) };
 	if (/^%%+$/.test(text)) return { type: "LeafNode", kind: "Token`PercentPercent", value: text, source: nodeSource(node, ctx.lineIndex) };
 	// %n form
-	const percentSource = [offsetToLineCol(ctx.lineIndex, node.startIndex), offsetToLineCol(ctx.lineIndex, node.startIndex + 1)];
-	const nSource = [offsetToLineCol(ctx.lineIndex, node.startIndex + 1), offsetToLineCol(ctx.lineIndex, node.endIndex)];
+	const percentSource = sourceRange(ctx.lineIndex, node.startIndex, node.startIndex + 1);
+	const nSource = sourceRange(ctx.lineIndex, node.startIndex + 1, node.endIndex);
 	const percentLeaf = { type: "LeafNode", kind: "Token`Percent", value: "%", source: percentSource };
 	const nLeaf = { type: "LeafNode", kind: "Integer", value: text.slice(1), source: nSource };
 	return { type: "CompoundNode", op: "Out", children: [percentLeaf, nLeaf], source: nodeSource(node, ctx.lineIndex) };
@@ -713,7 +713,7 @@ function adaptMessageName(node, ctx) {
 	const tagStart = colonColonToken.endIndex;
 	const tagEnd = node.endIndex;
 	const tagText = ctx.source.slice(tagStart, tagEnd);
-	const tagSource = [offsetToLineCol(ctx.lineIndex, tagStart), offsetToLineCol(ctx.lineIndex, tagEnd)];
+	const tagSource = sourceRange(ctx.lineIndex, tagStart, tagEnd);
 	const tagLeaf = { type: "LeafNode", kind: "String", value: tagText, source: tagSource };
 	// Preserve any comment that sits between the LHS and "::" (threaded as trivia).
 	const between = triviaLeaves(named[0].endIndex, colonColonToken.startIndex, ctx);

@@ -25,6 +25,10 @@ function isPortableDependencySpec(spec) {
 	);
 }
 
+function isHttpsUrl(value) {
+	return typeof value === "string" && value.startsWith("https://");
+}
+
 describe("VS Code package metadata", () => {
 	it("keeps the extension and bundled plugin versions in sync", () => {
 		expect(extensionPackage.version).toBe(rootPackage.version);
@@ -42,5 +46,19 @@ describe("VS Code package metadata", () => {
 				isPortableDependencySpec,
 			),
 		).toBe(true);
+	});
+
+	it("uses marketplace-safe public metadata links", () => {
+		expect(isHttpsUrl(rootPackage.repository?.url)).toBe(true);
+		expect(isHttpsUrl(rootPackage.homepage)).toBe(true);
+		expect(isHttpsUrl(rootPackage.bugs?.url)).toBe(true);
+		expect(isHttpsUrl(extensionPackage.repository?.url)).toBe(true);
+		expect(isHttpsUrl(extensionPackage.homepage)).toBe(true);
+		expect(isHttpsUrl(extensionPackage.bugs?.url)).toBe(true);
+	});
+
+	it("keeps VS Code extension metadata out of the npm plugin manifest", () => {
+		expect(rootPackage.engines?.vscode).toBeUndefined();
+		expect(extensionPackage.engines?.vscode).toBe("^1.75.0");
 	});
 });

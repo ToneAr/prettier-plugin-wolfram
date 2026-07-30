@@ -7,6 +7,7 @@ describe("operator tables", () => {
 		expect(INFIX_OPS["+"]).toBe("Plus");
 		expect(INFIX_OPS["*"]).toBe("Times");
 		expect(INFIX_OPS[";"]).toBe("CompoundExpression");
+		expect(INFIX_OPS["\\[Nand]"]).toBe("Nand");
 		expect(BINARY_OPS["="]).toBe("Set");
 		expect(PREFIX_OPS["-"]).toBe("Minus");
 		expect(POSTFIX_OPS["&"]).toBe("Function");

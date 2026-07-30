@@ -19,7 +19,42 @@ import {
 	nodeStartLine,
 } from "../sourceLines.js";
 import { normalizeWolframOptions } from "../../options.js";
-const { group, indent, line, hardline, join, fill } = builders;
+const { conditionalGroup, group, indent, line, hardline, join, fill } =
+	builders;
+
+const LOGICAL_OPERATOR_FUNCTIONS = new Set([
+	"And",
+	"Or",
+	"Nand",
+	"Nor",
+	"Xor",
+	"Xnor",
+	"Equivalent",
+]);
+
+function logicalOperatorsUseFullForm(options) {
+	return options.wolframLogicalOperatorsToFullForm ?? true;
+}
+
+function logicalOperatorDisplay(node) {
+	const token = node.children.find(
+		(child) =>
+			child?.type === "LeafNode" &&
+			child.kind.startsWith("Token`") &&
+			!isSemanticTokenLeaf(child),
+	);
+	return token?.value ?? OP_DISPLAY[node.op] ?? node.op;
+}
+
+function logicalFunctionForm(operator, args) {
+	return [
+		operator,
+		"[",
+		indent([hardline, join([",", hardline], args)]),
+		hardline,
+		"]",
+	];
+}
 
 // Map WL op names to their display strings
 const OP_DISPLAY = {
@@ -359,6 +394,18 @@ export function printInfix(node, options, print) {
 				),
 			),
 		);
+	}
+
+	if (
+		LOGICAL_OPERATOR_FUNCTIONS.has(node.op) &&
+		logicalOperatorsUseFullForm(options)
+	) {
+		const parts = operands(node).map((operand) => print(operand));
+		const op = logicalOperatorDisplay(node);
+		return conditionalGroup([
+			join([` ${op} `], parts),
+			logicalFunctionForm(node.op, parts),
+		]);
 	}
 
 	if (node.op === "InfixInequality") {

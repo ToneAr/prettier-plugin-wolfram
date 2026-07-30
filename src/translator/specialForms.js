@@ -95,6 +95,10 @@ function isCommaToken(node) {
 	return node?.type === "LeafNode" && node.kind === "Token`Comma";
 }
 
+function isCommentNode(node) {
+	return node?.type === "LeafNode" && node.kind === "Token`Comment";
+}
+
 function isStringJoinOperatorToken(node) {
 	return node?.type === "LeafNode" && node.kind === "Token`LessGreater";
 }
@@ -459,7 +463,7 @@ function semanticGroupEntries(callNode, groupNode) {
 	) {
 		const commaWrapperIdx = groupNode.children.indexOf(semanticChildren[0]);
 		return semanticChildren[0].children.reduce((entries, child, idx) => {
-			if (isTrivia(child)) return entries;
+			if (isTrivia(child) || isCommentNode(child)) return entries;
 			if (child.type === "LeafNode" && child.kind === "Token`Comma")
 				return entries;
 			entries.push({
@@ -477,7 +481,7 @@ function semanticGroupEntries(callNode, groupNode) {
 	}
 
 	return (groupNode.children ?? []).reduce((entries, child, idx) => {
-		if (isTrivia(child)) return entries;
+		if (isTrivia(child) || isCommentNode(child)) return entries;
 		if (
 			child.type === "LeafNode" &&
 			(child.kind === "Token`OpenCurly" ||

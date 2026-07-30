@@ -20,6 +20,19 @@ const schemaTypeForOptionType = {
 	string: "string",
 };
 
+function expectOptionSchemaMatchesType(optionSchema, option) {
+	if (option.exception) {
+		expect(optionSchema).toMatchObject({
+			$ref: "#/definitions/blankLineRange",
+		});
+		return;
+	}
+
+	expect(optionSchema).toMatchObject({
+		type: schemaTypeForOptionType[option.type],
+	});
+}
+
 describe("VS Code .prettierrc schema", () => {
 	it("is contributed for JSON Prettier config files", () => {
 		const validation = extensionPackage.contributes.jsonValidation.find(
@@ -43,13 +56,14 @@ describe("VS Code .prettierrc schema", () => {
 		});
 
 		for (const [name, option] of Object.entries(wolframOptions)) {
-			expect(schema.properties.wolfram.properties[name]).toMatchObject({
-				type: schemaTypeForOptionType[option.type],
-			});
+			expectOptionSchemaMatchesType(
+				schema.properties.wolfram.properties[name],
+				option,
+			);
 			if (option.default !== undefined) {
-				expect(schema.properties.wolfram.properties[name].default).toBe(
-					option.default,
-				);
+				expect(
+					schema.properties.wolfram.properties[name].default,
+				).toStrictEqual(option.default);
 			} else {
 				expect(
 					schema.properties.wolfram.properties[name],

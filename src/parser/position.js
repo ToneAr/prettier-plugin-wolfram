@@ -54,10 +54,10 @@ export function offsetToLineCol(lineIndex, charOffset) {
 	return [line + 1, wlOffset - lineStarts[line] + 1];
 }
 
-export function nodeSource(tsNode, lineIndex) {
+export function sourceRange(lineIndex, startIndex, endIndex) {
 	const source = [
-		offsetToLineCol(lineIndex, tsNode.startIndex),
-		offsetToLineCol(lineIndex, tsNode.endIndex),
+		offsetToLineCol(lineIndex, startIndex),
+		offsetToLineCol(lineIndex, endIndex),
 	];
 	// When a preprocessing offset map is available, record the exact original
 	// character offsets (non-enumerably, so node.source stays a [[l,c],[l,c]]
@@ -67,8 +67,8 @@ export function nodeSource(tsNode, lineIndex) {
 	// non-ASCII characters earlier on the line).
 	const map = lineIndex?.map;
 	if (map) {
-		const charStart = map[tsNode.startIndex];
-		const charEnd = map[tsNode.endIndex];
+		const charStart = map[startIndex];
+		const charEnd = map[endIndex];
 		if (typeof charStart === "number" && typeof charEnd === "number") {
 			Object.defineProperties(source, {
 				charStart: { value: charStart, enumerable: false },
@@ -77,4 +77,8 @@ export function nodeSource(tsNode, lineIndex) {
 		}
 	}
 	return source;
+}
+
+export function nodeSource(tsNode, lineIndex) {
+	return sourceRange(lineIndex, tsNode.startIndex, tsNode.endIndex);
 }

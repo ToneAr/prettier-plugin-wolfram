@@ -10,6 +10,7 @@ import {
 	withMarkedTrailingCommentDocs,
 } from "../docComments.js";
 import { normalizeWolframOptions } from "../../options.js";
+import { buildDispatchSets } from "../specialForms.js";
 const { group, indent, softline, line, hardline } = builders;
 
 const BRACKET_KINDS = new Set(["Token`OpenSquare", "Token`CloseSquare"]);
@@ -38,6 +39,24 @@ function previousContentEntry(entries, startIndex) {
 
 function hasCommentBoundary(leftEntry, rightEntry) {
 	return isComment(leftEntry?.node) || isComment(rightEntry?.node);
+}
+
+function callHeadName(node) {
+	return node.head?.type === "LeafNode" && node.head.kind === "Symbol"
+		? node.head.value
+		: null;
+}
+
+function shouldBreakCommentedSpecialCall(node, options, entries) {
+	if (!entries.some((entry) => isComment(entry.node))) return false;
+	const name = callHeadName(node);
+	if (!name) return false;
+	const sets = buildDispatchSets(options);
+	return (
+		sets.conditionFirst.has(name) ||
+		sets.blockStructure.has(name) ||
+		sets.caseStructure.has(name)
+	);
 }
 
 function commentBoundary(leftEntry, rightEntry, options, fallback = line) {
@@ -321,5 +340,8 @@ export function printCall(path, options, print, node) {
 	);
 	const contents = [head, "[", indent([softline, ...docs]), softline, "]"];
 
-	return grouped(contents, alignmentGroupId);
+	const shouldBreak = shouldBreakCommentedSpecialCall(node, options, entries);
+	return alignmentGroupId
+		? group(contents, { id: alignmentGroupId, shouldBreak })
+		: group(contents, { shouldBreak });
 }

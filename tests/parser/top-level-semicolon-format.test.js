@@ -18,7 +18,7 @@ describe("top-level semicolon formatting", () => {
 		expect(out).toBe("a = 1;\n\nb := 2");
 	});
 
-	it("keeps standalone inter-definition comments attached to the next definition", async () => {
+	it("spaces standalone inter-definition comments using surrounding definition context", async () => {
 		const out = await format(
 			"$SQLSnippets:=1;\n" +
 				"(* getSQLSnippet *)\n" +
@@ -27,7 +27,7 @@ describe("top-level semicolon formatting", () => {
 		);
 
 		expect(out).toBe(
-			"$SQLSnippets := 1;\n\n" +
+			"$SQLSnippets := 1;\n" +
 				"(* getSQLSnippet *)\n" +
 				'getSQLSnippet::unk = "x";\n' +
 				"getSQLSnippet[x_] := x",
@@ -43,9 +43,9 @@ describe("top-level semicolon formatting", () => {
 		);
 
 		expect(out).toBe(
-			"a = 1; (* trailing a *)\n\n" +
+			"a = 1; (* trailing a *)\n" +
 				"(* leading b *)\n" +
-				"b = 2;\n\n" +
+				"b = 2;\n" +
 				"(* prefix c *) c = 3",
 		);
 	});
