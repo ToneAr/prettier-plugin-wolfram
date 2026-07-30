@@ -2,12 +2,12 @@
 	"[wolfram]": {
 		"editor.defaultFormatter": "Tone.prettier-vscode-wolfram",
 		"editor.formatOnSave": true,
-		"editor.formatOnSaveMode": "file"
+		"editor.formatOnSaveMode": "file",
 	},
 	"prettier.documentSelectors": [
 		{
-			"language": "wolfram"
-		}
+			"language": "wolfram",
+		},
 	],
-	"prettier.plugins": ["./src/index.js"]
+	"prettier.plugins": ["./src/index.js"],
 }

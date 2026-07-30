@@ -37,10 +37,34 @@ function run(command, args, options = {}) {
 	return result;
 }
 
-const tempDir = mkdtempSync(join(tmpdir(), "wolfram-prettier-vscode-"));
+const tempDir = mkdtempSync(join(tmpdir(), "prettier-vscode-wolfram-"));
 
 function shouldCopyExtensionPath(src) {
 	return !src.startsWith(extensionNodeModules) && !src.endsWith(".vsix");
+}
+
+function prunePackagedRuntimeArtifacts(extensionBuildDir) {
+	const webTreeSitterRoot = join(
+		extensionBuildDir,
+		"node_modules",
+		"web-tree-sitter",
+	);
+
+	for (const relativePath of [
+		"debug",
+		"lib",
+		"src",
+		"tree-sitter.cjs.map",
+		"tree-sitter.js.map",
+		"tree-sitter.wasm.map",
+		"web-tree-sitter.d.ts",
+		"web-tree-sitter.d.ts.map",
+	]) {
+		rmSync(join(webTreeSitterRoot, relativePath), {
+			recursive: true,
+			force: true,
+		});
+	}
 }
 
 try {
@@ -84,6 +108,7 @@ try {
 		cwd: extensionBuildDir,
 		stdio: "inherit",
 	});
+	prunePackagedRuntimeArtifacts(extensionBuildDir);
 
 	pkg.dependencies[packagedPluginName] = `^${packagedPluginVersion}`;
 	writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n");
@@ -99,6 +124,10 @@ try {
 		"@vscode/vsce",
 		"--",
 		"package",
+		"--baseContentUrl",
+		"https://github.com/ToneAr/prettier-plugin-wolfram/blob/main/vscode-extension",
+		"--baseImagesUrl",
+		"https://raw.githubusercontent.com/ToneAr/prettier-plugin-wolfram/main/vscode-extension",
 		"-o",
 		outPath,
 	];

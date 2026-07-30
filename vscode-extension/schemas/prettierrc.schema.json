@@ -13,31 +13,26 @@
 			"markdownDescription": "Wolfram Language formatter options.",
 			"properties": {
 				"newlinesBetweenDefinitions": {
-					"type": "integer",
-					"default": 1,
-					"minimum": 0,
-					"markdownDescription": "Blank lines inserted between adjacent definitions."
+					"$ref": "#/definitions/blankLineRange",
+					"default": { "min": 1, "max": 1 },
+					"markdownDescription": "Allowed blank lines between adjacent definitions."
 				},
 				"newlinesBetweenSetDefinitions": {
-					"type": "integer",
-					"minimum": 0,
-					"markdownDescription": "Blank lines inserted between adjacent `Set`-family definitions. When omitted, inherits `newlinesBetweenDefinitions`."
+					"$ref": "#/definitions/blankLineRange",
+					"markdownDescription": "Allowed blank lines between adjacent `Set`-family definitions. When omitted, inherits `newlinesBetweenDefinitions`."
 				},
 				"newlinesBetweenSetDelayedDefinitions": {
-					"type": "integer",
-					"minimum": 0,
-					"markdownDescription": "Blank lines inserted between adjacent `SetDelayed`-family definitions. When omitted, inherits `newlinesBetweenDefinitions`."
+					"$ref": "#/definitions/blankLineRange",
+					"markdownDescription": "Allowed blank lines between adjacent `SetDelayed`-family definitions. When omitted, inherits `newlinesBetweenDefinitions`."
 				},
 				"newlinesBetweenSetAndSetDelayedDefinitions": {
-					"type": "integer",
-					"minimum": 0,
-					"markdownDescription": "Blank lines inserted between mixed `Set`-family and `SetDelayed`-family definitions. When omitted, inherits `newlinesBetweenDefinitions`."
+					"$ref": "#/definitions/blankLineRange",
+					"markdownDescription": "Allowed blank lines between mixed `Set`-family and `SetDelayed`-family definitions. When omitted, inherits `newlinesBetweenDefinitions`."
 				},
 				"newlinesBetweenSameNameDefinitions": {
-					"type": "integer",
-					"default": 0,
-					"minimum": 0,
-					"markdownDescription": "Blank lines inserted between adjacent definitions that belong to the same symbol."
+					"$ref": "#/definitions/blankLineRange",
+					"default": { "min": 0, "max": 0 },
+					"markdownDescription": "Allowed blank lines between adjacent definitions that belong to the same symbol."
 				},
 				"maxBlankLinesBetweenCode": {
 					"type": "integer",
@@ -64,6 +59,11 @@
 					"type": "boolean",
 					"default": false,
 					"markdownDescription": "Align `Rule` and `RuleDelayed` values vertically in multiline argument, list, and association layouts."
+				},
+				"logicalOperatorsToFullForm": {
+					"type": "boolean",
+					"default": true,
+					"markdownDescription": "Rewrite overflowing logical infix chains, such as `&&` and `||`, as multiline function calls."
 				},
 				"documentationCommentColumn": {
 					"type": "integer",
@@ -125,6 +125,31 @@
 					"markdownDescription": "JSON object string of per-rule level overrides, for example `{\"prefer-rule-delayed\":\"error\"}`."
 				}
 			}
+		}
+	},
+	"definitions": {
+		"blankLineRange": {
+			"oneOf": [
+				{
+					"type": "integer",
+					"minimum": 0
+				},
+				{
+					"type": "object",
+					"additionalProperties": false,
+					"required": ["min", "max"],
+					"properties": {
+						"min": {
+							"type": "integer",
+							"minimum": 0
+						},
+						"max": {
+							"type": "integer",
+							"minimum": 0
+						}
+					}
+				}
+			]
 		}
 	}
 }
