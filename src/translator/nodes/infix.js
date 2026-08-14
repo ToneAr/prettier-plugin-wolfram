@@ -41,6 +41,7 @@ function logicalOperatorDisplay(node) {
 		(child) =>
 			child?.type === "LeafNode" &&
 			child.kind.startsWith("Token`") &&
+			!isTrivia(child) &&
 			!isSemanticTokenLeaf(child),
 	);
 	return token?.value ?? OP_DISPLAY[node.op] ?? node.op;

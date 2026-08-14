@@ -80,6 +80,19 @@ function makePath(root, printFn) {
 }
 
 describe("translator regressions", () => {
+	it.each([
+		["And", "a && b"],
+		["Or", "a || b"],
+	])("preserves short %s operator shorthands", async (_name, source) => {
+		const result = await prettier.format(source, {
+			parser: "wolfram",
+			plugins: [plugin],
+			printWidth: 80,
+		});
+
+		expect(result).toBe(source);
+	});
+
 	it("rewrites overflowing logical chains as function calls by default", async () => {
 		const result = await prettier.format(
 			"firstCondition || secondCondition || thirdCondition",
